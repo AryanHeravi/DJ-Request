@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bar Song Request</title>
+<style>
+  /* --- General Styles --- */
+  body {
+    font-family: 'Arial', sans-serif;
+    background: #0a0a0a;
+    color: #fff;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background: #1c1c1c;
+    padding: 25px 30px;
+    border-radius: 15px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #ff4d4d;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+  }
+
+  input::placeholder {
+    color: #bbb;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    background: #ff4d4d;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  button:hover {
+    background: #ff1a1a;
+  }
+
+  .tip-info {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 12px;
+    color: #aaa;
+  }
+
+  @media (max-width: 450px) {
+    .container {
+      padding: 20px;
+    }
+
+    button {
+      padding: 12px;
+      font-size: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Request a Song 🎶</h2>
+  <form id="songForm">
+    <input type="text" id="name" placeholder="Your Name (optional)">
+    <input type="text" id="song" placeholder="Song Name" required>
+    <input type="text" id="artist" placeholder="Artist Name" required>
+    <input type="text" id="tip" placeholder="Tip Amount (optional)">
+    <button type="submit">Send Request</button>
+  </form>
+  <div class="tip-info">
+    If you wish to tip, send e-transfer to: <strong>YOUREMAIL@EMAIL.COM</strong>
+  </div>
+</div>
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
+<script>
+  // Initialize EmailJS
+  (function(){
+    emailjs.init("aryaux"); // Replace with your EmailJS user ID
+  })();
+
+  const form = document.getElementById('songForm');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value;
+    const song = document.getElementById('song').value;
+    const artist = document.getElementById('artist').value;
+    const tip = document.getElementById('tip').value;
+
+    emailjs.send("service_guiqpfc", "template_z5uy1ms" , {
+      name: name,
+      song: song,
+      artist: artist,
+      tip: tip
+    })
+    .then(() => {
+      alert("🎵 Your song request has been sent! Thanks!");
+      form.reset();
+    }, (err) => {
+      alert("⚠️ Oops! Something went wrong. Try again.");
+      console.error(err);
+    });
+  });
+</script>
+
+</body>
+</html>
