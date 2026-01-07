@@ -7,56 +7,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* Global */
-* { box-sizing:border-box; margin:0; padding:0; }
+* { box-sizing: border-box; margin:0; padding:0; }
 body {
   font-family: 'Montserrat', sans-serif;
-  background:#cc2300;
-  overflow-x:hidden;
-  color:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  padding:10px;
-  position:relative;
-}
-
-/* Lightning background */
-.lightning-container {
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  z-index:0;
-  pointer-events:none;
-}
-
-.lightning-bolt {
-  position:absolute;
-  background:url('/photos/icons8-flash-on-100.png') no-repeat center center;
-  background-size:contain;
-  opacity:2.15;
-  animation:pulse 3s ease-in-out infinite alternate;
-}
-
-@keyframes pulse {
-  0% { opacity:0.1; transform:scale(1) rotate(0deg); }
-  50% { opacity:0.35; transform:scale(1.1) rotate(5deg); }
-  100% { opacity:0.2; transform:scale(1) rotate(-5deg); }
+  background: #cc2300;
+  overflow-x: hidden;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 10px;
 }
 
 /* Container */
 .container {
-  position:relative;
-  z-index:10;
+  position: relative;
+  z-index: 10;
   background: rgba(28,28,28,0.95);
   backdrop-filter: blur(10px);
-  padding:20px;
-  border-radius:20px;
-  width:100%;
-  max-width:400px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+  padding: 20px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.7);
 }
 
 h1,h2 { text-align:center; color:#ffffff; margin-bottom:15px; font-size:1.8rem; }
@@ -90,9 +64,9 @@ button:hover { background: linear-gradient(90deg,#ff1a1a,#ff4d4d); transform: sc
 /* Tip / Bank Section */
 .tip-card {
   background: rgba(255,255,255,0.05);
-  border-radius:12px;
-  padding:12px 15px;
-  margin-top:18px;
+  border-radius: 12px;
+  padding: 12px 15px;
+  margin-top: 18px;
   color:#fff;
   border-left:4px solid #ff4d4d;
 }
@@ -162,9 +136,6 @@ button:hover { background: linear-gradient(90deg,#ff1a1a,#ff4d4d); transform: sc
 </head>
 <body>
 
-<!-- Lightning background -->
-<div class="lightning-container" id="lightningContainer"></div>
-
 <div class="container">
   <h1>GRANVILLE WAREHOUSE</h1>
   <h2>Request a Song 🎶</h2>
@@ -180,9 +151,10 @@ button:hover { background: linear-gradient(90deg,#ff1a1a,#ff4d4d); transform: sc
     <h3>💸 Tip via E‑Transfer</h3>
     <p class="tip-text">Tap below to copy the e‑transfer email, then select your bank.</p>
 
+    <!-- Copy button -->
     <button type="button" class="copy-btn" id="copyBtn">Copy: aryauxgranville@gmail.com</button>
 
-    <!-- Bank dropdown with your links -->
+    <!-- Bank dropdown -->
     <div class="bank-dropdown" id="bankDropdown">
       <button class="bank-btn" data-link="https://www.td.com/ca/en/personal-banking">TD Bank</button>
       <button class="bank-btn" data-link="https://www.rbcroyalbank.com/personal.html">RBC</button>
@@ -203,7 +175,7 @@ button:hover { background: linear-gradient(90deg,#ff1a1a,#ff4d4d); transform: sc
 const form = document.getElementById('songForm');
 const confirmation = document.getElementById('confirmation');
 
-form.addEventListener('submit', function(e){
+form.addEventListener('submit', function(e) {
   e.preventDefault();
 
   emailjs.sendForm(
@@ -211,16 +183,18 @@ form.addEventListener('submit', function(e){
     "template_dyxg225",
     this,
     "iueAUOM_QorKi02S6"
-  ).then((response)=>{
-    if(response.status>=200 && response.status<300){
+  )
+  .then((response) => {
+    if(response.status >=200 && response.status<300){
       confirmation.classList.add('show');
       form.reset();
       setTimeout(()=>confirmation.classList.remove('show'),4000);
     } else {
       throw new Error("Unexpected response status: "+response.status);
     }
-  }).catch((err)=>{
-    console.error("EmailJS error:",err);
+  })
+  .catch((err)=>{
+    console.error("EmailJS error:", err);
     confirmation.style.color="#ff5555";
     confirmation.textContent="⚠️ Oops! Something went wrong. Try again.";
     confirmation.classList.add('show');
@@ -242,32 +216,20 @@ copyBtn.addEventListener('click', ()=>{
     copyBtn.textContent = "Copied ✓ Select Your Bank";
     bankDropdown.style.display = 'flex';
     bankDropdown.style.flexDirection = 'column';
-    setTimeout(()=>{ copyBtn.textContent = "Copy: aryauxgranville@gmail.com"; },3000);
+    setTimeout(()=>{
+      copyBtn.textContent = "Copy: aryauxgranville@gmail.com";
+    },3000);
   });
 });
 
-// Bank button clicks
+// Bank button clicks (replace # with real bank links)
 document.querySelectorAll('.bank-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const link = btn.dataset.link;
-    if(link) window.open(link,'_blank');
+  btn.addEventListener('click',()=>{
+    const link = btn.dataset.link; // replace with real bank URL
+    if(link!=='#') window.location.href = link;
+    else alert("Add the banking app link here.");
   });
 });
-
-// Lightning bolts
-const lightningContainer = document.getElementById('lightningContainer');
-for(let i=0;i<50;i++){
-  const bolt=document.createElement('div');
-  bolt.classList.add('lightning-bolt');
-  bolt.style.top = Math.random()*100+'vh';
-  bolt.style.left = Math.random()*100+'vw';
-  bolt.style.width = 15+Math.random()*25+'px';
-  bolt.style.height = 50+Math.random()*80+'px';
-  bolt.style.animationDelay = Math.random()*5+'s';
-  bolt.style.transform=`rotate(${Math.random()*30-15}deg)`;
-  lightningContainer.appendChild(bolt);
-}
 </script>
-
 </body>
 </html>
