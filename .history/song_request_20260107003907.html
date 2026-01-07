@@ -1,0 +1,136 @@
+<body>
+  <!-- Lightning background -->
+  <div class="lightning-container"></div>
+
+  <div class="container">
+    <h1 style="text-align: center;">GRANVILLE WAREHOUSE</h1>
+    <h2>Request a Song 🎶</h2>
+    <form id="songForm">
+      <input type="text" name="name" placeholder="Your Name (optional)">
+      <input type="text" name="song" placeholder="Song Name" required>
+      <input type="text" name="artist" placeholder="Artist Name" required>
+      <button type="submit">Send Request</button>
+    </form>
+
+    <div class="tip-card">
+      <h3>💸 Tip via E‑Transfer</h3>
+      <p>If you’d like to tip, you can send an e‑transfer to: <strong>aryauxgranville@gmail.com</strong></p>
+      <p>Tips help keep the music coming and support the DJ’s work at the bar.</p>
+    </div>
+
+    <div class="confirmation" id="confirmation">
+      🎵 Your song request has been sent! Thanks!
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+<script>
+  // EmailJS form code (unchanged)
+  const form = document.getElementById('songForm');
+  const confirmation = document.getElementById('confirmation');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    emailjs.sendForm(
+      "service_3dp90wc",
+      "template_dyxg225",
+      this,
+      "iueAUOM_QorKi02S6"
+    )
+    .then((response) => {
+      if (response.status >= 200 && response.status < 300) {
+        confirmation.classList.add('show');
+        form.reset();
+        setTimeout(() => confirmation.classList.remove('show'), 4000);
+      } else {
+        throw new Error("Unexpected response status: " + response.status);
+      }
+    })
+    .catch((err) => {
+      console.error("EmailJS error:", err);
+      confirmation.style.color = "#ff5555";
+      confirmation.textContent = "⚠️ Oops! Something went wrong. Try again.";
+      confirmation.classList.add('show');
+      setTimeout(() => {
+        confirmation.classList.remove('show');
+        confirmation.style.color = "#00ff99";
+        confirmation.textContent = "🎵 Your song request has been sent! Thanks!";
+      }, 4000);
+    });
+  });
+
+  // Generate 50 lightning bolts
+  const lightningContainer = document.querySelector('.lightning-container');
+  const bolts = 50;
+  for(let i=0;i<bolts;i++){
+    const bolt = document.createElement('div');
+    bolt.classList.add('lightning-bolt');
+
+    // random position
+    bolt.style.top = Math.random() * 100 + 'vh';
+    bolt.style.left = Math.random() * 100 + 'vw';
+    bolt.style.width = 20 + Math.random()*40 + 'px';
+    bolt.style.height = 60 + Math.random()*120 + 'px';
+    bolt.style.animationDelay = (Math.random()*5) + 's';
+
+    lightningContainer.appendChild(bolt);
+  }
+</script>
+
+<style>
+body {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #0b0b14;
+  overflow: hidden;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Lightning container */
+.lightning-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none; /* allow clicks through bolts */
+}
+
+.lightning-bolt {
+  position: absolute;
+  background: url('your-lightning-image.png') no-repeat center center;
+  background-size: contain;
+  opacity: 0.2;
+  animation: pulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.1); }
+  100% { opacity: 0.2; transform: scale(1); }
+}
+
+/* Container styling */
+.container {
+  position: relative;
+  z-index: 10;
+  background: rgba(28,28,28,0.95);
+  backdrop-filter: blur(10px);
+  padding: 30px 25px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+}
+
+/* form + inputs + button + tip card styles can remain the same as your previous version */
+</style>
+</body>
