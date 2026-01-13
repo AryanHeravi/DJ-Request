@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Granville Warehouse Song Request</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Montserrat,sans-serif;background:#000;color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:10px}
+.container{background:rgba(28,28,28,.95);padding:20px;border-radius:20px;width:100%;max-width:420px;box-shadow:0 10px 25px rgba(0,0,0,.7)}
+h1,h2{text-align:center;margin-bottom:12px}
+form{display:flex;flex-direction:column;gap:12px}
+input,button{padding:14px;border-radius:12px;border:none;font-size:14px}
+input{background:rgba(255,255,255,.08);color:#fff}
+button{background:linear-gradient(90deg,#ff4d4d,#ff1a1a);color:#fff;font-weight:600;cursor:pointer}
+.tip-card{margin-top:18px;background:rgba(255,255,255,.05);padding:15px;border-radius:15px;border-left:4px solid #ff4d4d}
+.tip-options{display:flex;gap:8px;margin-bottom:8px}
+.tip-btn{flex:1;padding:10px;border-radius:10px;border:none;font-weight:600;background:#222;color:#fff;cursor:pointer}
+.tip-btn.active{background:#00ff99;color:#000}
+#customTip{margin-bottom:10px}
+#payment-request-button{margin-bottom:10px}
+.copy-btn{width:100%;padding:12px;border-radius:12px;background:#00ff99;color:#000;font-weight:600;cursor:pointer}
+.bank-dropdown{display:none;flex-direction:column;gap:6px;margin-top:8px}
+.bank-btn{padding:10px;border-radius:10px;border:none;background:#ffcc00;font-weight:600}
+.confirmation{text-align:center;margin-top:15px;color:#00ff99;display:none}
+.note{text-align:center;font-size:12px;color:#aaa;margin-top:6px}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>GRANVILLE WAREHOUSE</h1>
+  <h2>🎶 Request a Song 🎶</h2>
+
+  <form id="songForm">
+    <input name="name" placeholder="Your Name (optional)">
+    <input name="song" placeholder="Song Name" required>
+    <input name="artist" placeholder="Artist Name" required>
+    <button type="submit">Send Request</button>
+  </form>
+
+  <div class="tip-card">
+    <h3>💸 Tip the DJ</h3>
+
+    <div class="tip-options">
+      <button class="tip-btn" data-amount="300">$3</button>
+      <button class="tip-btn active" data-amount="500">$5</button>
+      <button class="tip-btn" data-amount="1000">$10</button>
+    </div>
+
+    <input id="customTip" type="number" min="1" placeholder="Custom tip ($)">
+
+    <div id="payment-request-button"></div>
+    <div class="note">Apple Pay / Google Pay appear when supported</div>
+
+    <hr style="opacity:.1;margin:10px 0">
+
+    <button class="copy-btn" id="copyBtn">Copy E‑Transfer Email</button>
+
+    <div class="bank-dropdown" id="bankDropdown">
+      <button class="bank-btn" data-link="https://www.td.com/ca/en/personal-banking">TD</button>
+      <button class="bank-btn" data-link="https://www.rbcroyalbank.com/personal.html">RBC</button>
+      <button class="bank-btn" data-link="https://www.scotiabank.com/ca/en/personal.html">Scotia</button>
+      <button class="bank-btn" data-link="https://www.bmo.com/en-ca/main/personal/">BMO</button>
+    </div>
+  </div>
+
+  <div class="confirmation" id="confirmation">🎵 Request sent. Thank you!</div>
+</div>
+
+<script>
+emailjs.init('iueAUOM_QorKi02S6');
+
+// Song request
+songForm.addEventListener('submit', e => {
+  e.preventDefault();
+  emailjs.sendForm('service_3dp90wc','template_dyxg225',songForm)
+  .then(()=>{
+    confirmation.style.display='block';
+    songForm.reset();
+    setTimeout(()=>confirmation.style.display='none',4000);
+  });
+});
+
+// Stripe
+const stripe = Stripe('pk_live_51SovIZRvUC6TkeGGua1eQx6lCfT1OgsXpk2eLDH2waqf5QR1zo9c5q7grHtFtYExaFWENtCR6awOoMwdMfSTeSe80087rSSJw8');
+let selectedAmount = 500;
+let prButton;
+
+const tipBtns = document.querySelectorAll('.tip-btn');
+const customTip = document.getElementById('customTip');
+
+async function mountStripe(){
+  if(prButton) prButton.unmount();
+
+  const paymentRequest = stripe.paymentRequest({
+    country:'CA',
+    currency:'cad',
+    total:{label:'DJ Tip',amount:selectedAmount},
+    requestPayerName:true
+  });
+
+  const elements = stripe.elements();
+  prButton = elements.create('paymentRequestButton',{paymentRequest});
+
+  const result = await paymentRequest.canMakePayment();
+  if(result) prButton.mount('#payment-request-button');
+
+  paymentRequest.on('paymentmethod', async ev => {
+    try{
+      const res = await fetch('/api/create-payment-intent',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({amount:selectedAmount})
+      });
+
+      const {clientSecret} = await res.json();
+
+      const {error, paymentIntent} = await stripe.confirmCardPayment(
+        clientSecret,
+        { payment_method: ev.paymentMethod.id }
+      );
+
+      if(error){
+        console.error(error);
+        ev.complete('fail');
+        return;
+      }
+
+      if(paymentIntent.status === 'succeeded'){
+        ev.complete('success');
+        confirmation.style.display='block';
+      } else {
+        ev.complete('fail');
+      }
+
+    } catch(err){
+      console.error(err);
+      ev.complete('fail');
+    }
+  });
+}
+
+// Preset tips
+tipBtns.forEach(btn=>{
+  btn.onclick=()=>{
+    tipBtns.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    customTip.value='';
+    selectedAmount=parseInt(btn.dataset.amount);
+    mountStripe();
+  };
+});
+
+// Custom tip
+customTip.addEventListener('input',()=>{
+  const val=parseFloat(customTip.value);
+  if(val>0){
+    tipBtns.forEach(b=>b.classList.remove('active'));
+    selectedAmount=Math.round(val*100);
+    mountStripe();
+  }
+});
+
+mountStripe();
+
+// E‑Transfer
+copyBtn.onclick=()=>{
+  navigator.clipboard.writeText('aryauxgranville@gmail.com');
+  bankDropdown.style.display='flex';
+};
+
+document.querySelectorAll('.bank-btn').forEach(b=>b.onclick=()=>window.open(b.dataset.link,'_blank'));
+</script>
+</body>
+</html>
