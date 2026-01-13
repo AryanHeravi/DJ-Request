@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bar Song Request</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Global */
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: 'Montserrat', sans-serif;
+  background:#000000;
+  overflow-x:hidden;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:10px;
+  position:relative;
+}
+
+/* Lightning background */
+.lightning-container {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+
+.lightning-bolt {
+  position:absolute;
+  background:url('/photos/icons8-flash-on-100.png') no-repeat center center;
+  background-size:contain;
+  opacity:2.15;
+  animation:pulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  0% { opacity:0.1; transform:scale(1) rotate(0deg); }
+  50% { opacity:0.35; transform:scale(1.1) rotate(5deg); }
+  100% { opacity:0.2; transform:scale(1) rotate(-5deg); }
+}
+
+/* Container */
+.container {
+  position:relative;
+  z-index:10;
+  background: rgba(28,28,28,0.95);
+  backdrop-filter: blur(10px);
+  padding:20px;
+  border-radius:20px;
+  width:100%;
+  max-width:400px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+}
+
+h1,h2 { text-align:center; color:#ffffff; margin-bottom:15px; font-size:1.8rem; }
+
+form { display:flex; flex-direction:column; gap:12px; }
+input {
+  padding:12px 14px;
+  border-radius:12px;
+  border:none;
+  outline:none;
+  font-size:14px;
+  background: rgba(255,255,255,0.05);
+  color:#fff;
+}
+input::placeholder { color:#bbb; }
+input:focus { background: rgba(255,255,255,0.15); box-shadow:0 0 8px rgba(255,77,77,0.5); }
+
+button {
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  background: linear-gradient(90deg,#ff4d4d,#ff1a1a);
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition: all 0.3s ease;
+}
+button:hover { background: linear-gradient(90deg,#ff1a1a,#ff4d4d); transform: scale(1.02); }
+
+/* Tip / Bank Section */
+.tip-card {
+  background: rgba(255,255,255,0.05);
+  border-radius:12px;
+  padding:12px 15px;
+  margin-top:18px;
+  color:#fff;
+  border-left:4px solid #ff4d4d;
+}
+
+.tip-card h3 { margin-bottom:6px; color:#ff4d4d; font-weight:600; font-size:1.1rem; }
+.tip-card p { font-size:13px; color:#ccc; margin-bottom:4px; }
+
+.copy-btn {
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  background: linear-gradient(90deg,#00ff99,#00cc77);
+  color:#000;
+  transition: all 0.25s ease;
+}
+.copy-btn:hover { transform:scale(1.02); box-shadow:0 0 12px rgba(0,255,153,0.5); }
+
+/* Bank dropdown */
+.bank-dropdown {
+  display:none;
+  flex-direction: column;
+  gap:6px;
+  margin-top:8px;
+}
+
+.bank-btn {
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  background: linear-gradient(90deg,#ffcc00,#ff9900);
+  color:#000;
+  transition: all 0.25s ease;
+}
+.bank-btn:hover { transform:scale(1.02); box-shadow:0 0 10px rgba(255,204,0,0.5); }
+
+.tip-note { font-size:13px; color:#ccc; margin-top:4px; }
+
+/* Confirmation */
+.confirmation {
+  text-align:center;
+  margin-top:15px;
+  font-size:15px;
+  color:#00ff99;
+  opacity:0;
+  transform:translateY(-5px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.confirmation.show { opacity:1; transform:translateY(0); }
+
+/* Responsive */
+@media(max-width:480px){
+  .container { padding:15px 12px; max-width:95%; }
+  h1,h2{ font-size:1.5rem; }
+  input,button { font-size:14px; padding:10px; }
+  .tip-card { padding:10px 12px; }
+  .copy-btn, .bank-btn { font-size:13px; padding:10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Lightning background -->
+<div class="lightning-container" id="lightningContainer"></div>
+
+<div class="container">
+  <h1>GRANVILLE WAREHOUSE</h1>
+  <h2>🎶 Request a Song 🎶</h2>
+
+  <form id="songForm">
+    <input type="text" name="name" placeholder="Your Name (optional)">
+    <input type="text" name="song" placeholder="Song Name" required>
+    <input type="text" name="artist" placeholder="Artist Name" required>
+    <button type="submit">Send Request</button>
+  </form>
+
+  <div class="tip-card">
+    <h3>💸 Tip via E‑Transfer</h3>
+    <p class="tip-text">Tap below to copy the e‑transfer email, then select your bank.</p>
+
+    <button type="button" class="copy-btn" id="copyBtn">Copy: aryauxgranville@gmail.com</button>
+
+    <!-- Bank dropdown with your links -->
+    <div class="bank-dropdown" id="bankDropdown">
+      <button class="bank-btn" data-link="https://www.td.com/ca/en/personal-banking">TD Bank</button>
+      <button class="bank-btn" data-link="https://www.rbcroyalbank.com/personal.html">RBC</button>
+      <button class="bank-btn" data-link="https://www.scotiabank.com/ca/en/personal.html">Scotia</button>
+      <button class="bank-btn" data-link="https://www.bmo.com/en-ca/main/personal/">BMO</button>
+      <button class="bank-btn" data-link="https://www.vancity.com/bank/">Vancity</button>
+    </div>
+
+    <p class="tip-note">Open your banking app → Send E‑Transfer → Paste email</p>
+  </div>
+
+  <div class="confirmation" id="confirmation">🎵 Your song request has been sent! Thanks!</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+// EmailJS form
+const form = document.getElementById('songForm');
+const confirmation = document.getElementById('confirmation');
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+
+  emailjs.sendForm(
+    "service_3dp90wc",
+    "template_dyxg225",
+    this,
+    "iueAUOM_QorKi02S6"
+  ).then((response)=>{
+    if(response.status>=200 && response.status<300){
+      confirmation.classList.add('show');
+      form.reset();
+      setTimeout(()=>confirmation.classList.remove('show'),4000);
+    } else {
+      throw new Error("Unexpected response status: "+response.status);
+    }
+  }).catch((err)=>{
+    console.error("EmailJS error:",err);
+    confirmation.style.color="#ff5555";
+    confirmation.textContent="⚠️ Oops! Something went wrong. Try again.";
+    confirmation.classList.add('show');
+    setTimeout(()=>{
+      confirmation.classList.remove('show');
+      confirmation.style.color="#00ff99";
+      confirmation.textContent="🎵 Your song request has been sent! Thanks!";
+    },4000);
+  });
+});
+
+// Copy e-transfer email & show dropdown
+const copyBtn = document.getElementById('copyBtn');
+const bankDropdown = document.getElementById('bankDropdown');
+
+copyBtn.addEventListener('click', ()=>{
+  const email = "aryauxgranville@gmail.com";
+  navigator.clipboard.writeText(email).then(()=>{
+    copyBtn.textContent = "Copied ✓ Select Your Bank";
+    bankDropdown.style.display = 'flex';
+    bankDropdown.style.flexDirection = 'column';
+    setTimeout(()=>{ copyBtn.textContent = "Copy: aryauxgranville@gmail.com"; },3000);
+  });
+});
+
+// Bank button clicks
+document.querySelectorAll('.bank-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const link = btn.dataset.link;
+    if(link) window.open(link,'_blank');
+  });
+});
+
+// Lightning bolts
+const lightningContainer = document.getElementById('lightningContainer');
+for(let i=0;i<50;i++){
+  const bolt=document.createElement('div');
+  bolt.classList.add('lightning-bolt');
+  bolt.style.top = Math.random()*100+'vh';
+  bolt.style.left = Math.random()*100+'vw';
+  bolt.style.width = 15+Math.random()*25+'px';
+  bolt.style.height = 50+Math.random()*80+'px';
+  bolt.style.animationDelay = Math.random()*5+'s';
+  bolt.style.transform=`rotate(${Math.random()*30-15}deg)`;
+  lightningContainer.appendChild(bolt);
+}
+</script>
+
+</body>
+</html>

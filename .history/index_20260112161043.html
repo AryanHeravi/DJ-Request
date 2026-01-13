@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intro Page</title>
+  <style>
+    /* Fullscreen centered container */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #111; /* dark background for contrast */
+      flex-direction: column;
+      font-family: sans-serif;
+    }
+
+    /* Image styling */
+    #splash-image {
+      max-width: 300px; /* adjust size as needed */
+      width: 50%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    /* Spinner styling */
+    .spinner {
+      border: 6px solid #f3f3f3; /* Light gray */
+      border-top: 6px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <img id="splash-image" src="/photos/wg-1logo.png" alt="Intro Image">
+  <h1>GRANVILLE WAREHOUSE</h1>
+  <h1>SONG REQUEST SYSTEM</h1>
+  <div class="spinner"></div>
+
+  <script>
+    // Redirect after 3 seconds
+    setTimeout(function() {
+      window.location.href = "song_request.html"; // Change this to your page
+    }, 3000);
+  </script>
+</body>
+</html>
