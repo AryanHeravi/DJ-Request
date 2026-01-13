@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Granville Warehouse Song Request</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
@@ -56,12 +56,11 @@ button{background:linear-gradient(90deg,#ff4d4d,#ff1a1a);color:#fff;font-weight:
     <input id="customTip" type="number" min="1" placeholder="Custom tip ($)">
 
     <div id="payment-request-button"></div>
-
-    <div class="note">Apple Pay / Google Pay available when supported</div>
+    <div class="note">Apple Pay / Google Pay appear when supported</div>
 
     <hr style="opacity:.1;margin:10px 0">
 
-    <button class="copy-btn" id="copyBtn">Copy E-Transfer Email</button>
+    <button class="copy-btn" id="copyBtn">Copy E‑Transfer Email</button>
 
     <div class="bank-dropdown" id="bankDropdown">
       <button class="bank-btn" data-link="https://www.td.com/ca/en/personal-banking">TD</button>
@@ -88,7 +87,7 @@ songForm.addEventListener('submit', e => {
   });
 });
 
-// Stripe setup
+// Stripe
 const stripe = Stripe('pk_live_51SovIZRvUC6TkeGGua1eQx6lCfT1OgsXpk2eLDH2waqf5QR1zo9c5q7grHtFtYExaFWENtCR6awOoMwdMfSTeSe80087rSSJw8');
 let selectedAmount = 500;
 let prButton;
@@ -113,18 +112,37 @@ async function mountStripe(){
   if(result) prButton.mount('#payment-request-button');
 
   paymentRequest.on('paymentmethod', async ev => {
-    const res = await fetch('/api/create-payment-intent',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({amount:selectedAmount})
-    });
+    try{
+      const res = await fetch('/api/create-payment-intent',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({amount:selectedAmount})
+      });
 
-    const {clientSecret} = await res.json();
+      const {clientSecret} = await res.json();
 
-    const {error} = await stripe.confirmCardPayment(clientSecret,{payment_method:ev.paymentMethod.id},{handleActions:false});
+      const {error, paymentIntent} = await stripe.confirmCardPayment(
+        clientSecret,
+        { payment_method: ev.paymentMethod.id }
+      );
 
-    if(error){ev.complete('fail');}
-    else{ev.complete('success');confirmation.style.display='block';}
+      if(error){
+        console.error(error);
+        ev.complete('fail');
+        return;
+      }
+
+      if(paymentIntent.status === 'succeeded'){
+        ev.complete('success');
+        confirmation.style.display='block';
+      } else {
+        ev.complete('fail');
+      }
+
+    } catch(err){
+      console.error(err);
+      ev.complete('fail');
+    }
   });
 }
 
@@ -151,7 +169,7 @@ customTip.addEventListener('input',()=>{
 
 mountStripe();
 
-// E-Transfer
+// E‑Transfer
 copyBtn.onclick=()=>{
   navigator.clipboard.writeText('aryauxgranville@gmail.com');
   bankDropdown.style.display='flex';
