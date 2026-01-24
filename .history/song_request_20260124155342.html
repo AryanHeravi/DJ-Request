@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Song Request</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:Montserrat,sans-serif;
+  background:#000;
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.wrapper{
+  width:100%;
+  max-width:360px;
+  padding:24px;
+  text-align:center;
+}
+
+h1{
+  font-size:20px;
+  font-weight:600;
+  letter-spacing:2px;
+  opacity:.9;
+  margin-bottom:30px;
+}
+
+form{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+input, input[type=number]{
+  background:#0d0d0d;
+  border:1px solid #1a1a1a;
+  border-radius:14px;
+  padding:16px;
+  color:#fff;
+  font-size:15px;
+}
+
+input::placeholder{color:#666}
+
+button{
+  padding:16px;
+  border:none;
+  border-radius:16px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.submit-btn{
+  background:linear-gradient(90deg,#ff2e2e,#ff0000);
+  color:#fff;
+}
+
+.review-btn{
+  margin-top:16px;
+  background:#111;
+  border:1px solid #222;
+  color:#aaa;
+  width:100%;
+}
+
+button:active{transform:scale(.98)}
+
+.thank-you{
+  display:none;
+  font-size:15px;
+  line-height:1.6;
+  opacity:.9;
+  margin-bottom:14px;
+}
+
+.tip-section{
+  display:none;
+  flex-direction:column;
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.tip-section label{
+  font-size:13px;
+  color:#777;
+  text-align:left;
+}
+
+.tip-section input{
+  width:100%;
+  border:1px solid #333;
+  border-radius:8px;
+  padding:10px;
+  font-size:14px;
+  background:#111;
+  color:#fff;
+}
+
+.paypal-tip a{
+  display:inline-block;
+  text-align:center;
+  padding:12px 20px;
+  background-color:#FFC439;
+  color:#111;
+  font-weight:bold;
+  text-decoration:none;
+  border-radius:8px;
+  font-size:16px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.paypal-tip a:hover{background-color:#FFB700; transform:scale(1.05);}
+.paypal-tip a:active{transform:scale(0.98);}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+  <h1>GRANVILLE WAREHOUSE</h1>
+  <h1>SONG REQUEST</h1>
+  <h1>⚡⚡⚡⚡</h1>
+
+  <form id="songForm">
+    <input name="song" placeholder="Song title" required>
+    <input name="artist" placeholder="Artist" required>
+    <input name="name" placeholder="Your name (optional)">
+    <input type="hidden" name="time" id="timeField">
+    <button class="submit-btn" type="submit">Send</button>
+  </form>
+
+  <div class="thank-you" id="thankYou">
+    Thanks for submitting a song request.<br>
+    If approved, it will be played shortly.
+  </div>
+
+  <!-- Tip Section -->
+  <div class="tip-section" id="tipSection">
+    <label for="tipAmount">Tip Jar — enter amount ($):</label>
+    <input type="number" id="tipAmount" placeholder="5" min="1">
+
+    <div class="paypal-tip">
+      <a href="#" target="_blank" id="paypalButton">💸 Tip $5 via PayPal</a>
+    </div>
+  </div>
+
+  <a href="https://reviewthis.biz/gr989" target="_blank">
+    <button class="review-btn">Leave a Google Review</button>
+  </a>
+
+</div>
+
+<script>
+emailjs.init('6o_OSihC1KZB6rAKo');
+
+const form = document.getElementById('songForm');
+const thankYou = document.getElementById('thankYou');
+const tipSection = document.getElementById('tipSection');
+const timeField = document.getElementById('timeField');
+const tipAmount = document.getElementById('tipAmount');
+const paypalButton = document.getElementById('paypalButton');
+
+// Update PayPal link dynamically based on input
+tipAmount.addEventListener('input', () => {
+  let amount = tipAmount.value || 5; // default $5
+  paypalButton.href = `https://paypal.me/aryaux/${amount}`;
+  paypalButton.textContent = `💸 Tip $${amount} via PayPal`;
+});
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+
+  timeField.value = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  emailjs.sendForm(
+    'service_rl9aj5f',
+    'template_nrix76r',
+    form
+  ).then(() => {
+    form.style.display = 'none';
+    thankYou.style.display = 'block';
+    tipSection.style.display = 'flex';
+  });
+});
+</script>
+
+</body>
+</html>
