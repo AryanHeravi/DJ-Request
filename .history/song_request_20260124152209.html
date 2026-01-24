@@ -68,7 +68,7 @@ button{
 }
 
 .review-btn{
-  margin-top:16px;
+  margin-top:18px;
   background:#111;
   border:1px solid #222;
   color:#aaa;
@@ -82,21 +82,14 @@ button:active{transform:scale(.98)}
   font-size:15px;
   line-height:1.6;
   opacity:.9;
-  margin-bottom:14px;
-}
-
-.tip-note{
-  display:none;
-  font-size:13px;
-  color:#777;
-  margin-bottom:14px;
+  margin-bottom:20px;
 }
 </style>
 </head>
 
 <body>
 <div class="wrapper">
-
+  <h1>GRANVILLE WAREHOUSE</h1>
   <h1>SONG REQUEST</h1>
 
   <form id="songForm">
@@ -112,10 +105,6 @@ button:active{transform:scale(.98)}
     If approved, it will be played shortly.
   </div>
 
-  <div class="tip-note" id="tipNote">
-    Tip jar’s by the DJ booth 🖤
-  </div>
-
   <a href="https://reviewthis.biz/gr989" target="_blank">
     <button class="review-btn">Leave a Google Review</button>
   </a>
@@ -127,7 +116,6 @@ emailjs.init('6o_OSihC1KZB6rAKo');
 
 const form = document.getElementById('songForm');
 const thankYou = document.getElementById('thankYou');
-const tipNote = document.getElementById('tipNote');
 const timeField = document.getElementById('timeField');
 
 form.addEventListener('submit', e => {
@@ -145,7 +133,6 @@ form.addEventListener('submit', e => {
   ).then(() => {
     form.style.display = 'none';
     thankYou.style.display = 'block';
-    tipNote.style.display = 'block';
   });
 });
 </script>

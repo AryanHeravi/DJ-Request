@@ -25,10 +25,10 @@ body{
   width:100%;
   max-width:360px;
   padding:24px;
-  text-align:center;
 }
 
 h1{
+  text-align:center;
   font-size:20px;
   font-weight:600;
   letter-spacing:2px;
@@ -51,7 +51,9 @@ input{
   font-size:15px;
 }
 
-input::placeholder{color:#666}
+input::placeholder{
+  color:#666;
+}
 
 button{
   padding:16px;
@@ -65,90 +67,70 @@ button{
 .submit-btn{
   background:linear-gradient(90deg,#ff2e2e,#ff0000);
   color:#fff;
+  margin-top:6px;
 }
 
 .review-btn{
-  margin-top:16px;
+  margin-top:14px;
   background:#111;
   border:1px solid #222;
   color:#aaa;
-  width:100%;
 }
 
-button:active{transform:scale(.98)}
+button:active{
+  transform:scale(.98);
+}
 
-.thank-you{
+.confirmation{
+  text-align:center;
+  margin-top:20px;
+  font-size:14px;
+  color:#00ff99;
   display:none;
-  font-size:15px;
-  line-height:1.6;
   opacity:.9;
-  margin-bottom:14px;
-}
-
-.tip-note{
-  display:none;
-  font-size:13px;
-  color:#777;
-  margin-bottom:14px;
 }
 </style>
 </head>
 
 <body>
 <div class="wrapper">
-
   <h1>SONG REQUEST</h1>
 
   <form id="songForm">
     <input name="song" placeholder="Song title" required>
     <input name="artist" placeholder="Artist" required>
     <input name="name" placeholder="Your name (optional)">
-    <input type="hidden" name="time" id="timeField">
     <button class="submit-btn" type="submit">Send</button>
   </form>
 
-  <div class="thank-you" id="thankYou">
-    Thanks for submitting a song request.<br>
-    If approved, it will be played shortly.
-  </div>
-
-  <div class="tip-note" id="tipNote">
-    Tip jar’s by the DJ booth 🖤
-  </div>
-
-  <a href="https://reviewthis.biz/gr989" target="_blank">
+  <a href="PASTE_GOOGLE_REVIEW_LINK_HERE" target="_blank">
     <button class="review-btn">Leave a Google Review</button>
   </a>
 
+  <div class="confirmation" id="confirmation">
+    Request sent 🖤
+  </div>
 </div>
 
 <script>
-emailjs.init('6o_OSihC1KZB6rAKo');
+emailjs.init('iueAUOM_QorKi02S6');
 
 const form = document.getElementById('songForm');
-const thankYou = document.getElementById('thankYou');
-const tipNote = document.getElementById('tipNote');
-const timeField = document.getElementById('timeField');
+const confirmation = document.getElementById('confirmation');
 
 form.addEventListener('submit', e => {
   e.preventDefault();
 
-  timeField.value = new Date().toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
   emailjs.sendForm(
-    'service_rl9aj5f',
-    'template_nrix76r',
+    'service_3dp90wc',
+    'template_dyxg225',
     form
   ).then(() => {
-    form.style.display = 'none';
-    thankYou.style.display = 'block';
-    tipNote.style.display = 'block';
+    confirmation.style.display = 'block';
+    form.reset();
+    setTimeout(() => confirmation.style.display = 'none', 3000);
   });
 });
 </script>
-
 </body>
 </html>

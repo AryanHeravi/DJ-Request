@@ -68,7 +68,7 @@ button{
 }
 
 .review-btn{
-  margin-top:16px;
+  margin-top:18px;
   background:#111;
   border:1px solid #222;
   color:#aaa;
@@ -82,14 +82,7 @@ button:active{transform:scale(.98)}
   font-size:15px;
   line-height:1.6;
   opacity:.9;
-  margin-bottom:14px;
-}
-
-.tip-note{
-  display:none;
-  font-size:13px;
-  color:#777;
-  margin-bottom:14px;
+  margin-bottom:20px;
 }
 </style>
 </head>
@@ -103,7 +96,6 @@ button:active{transform:scale(.98)}
     <input name="song" placeholder="Song title" required>
     <input name="artist" placeholder="Artist" required>
     <input name="name" placeholder="Your name (optional)">
-    <input type="hidden" name="time" id="timeField">
     <button class="submit-btn" type="submit">Send</button>
   </form>
 
@@ -112,40 +104,28 @@ button:active{transform:scale(.98)}
     If approved, it will be played shortly.
   </div>
 
-  <div class="tip-note" id="tipNote">
-    Tip jar’s by the DJ booth 🖤
-  </div>
-
-  <a href="https://reviewthis.biz/gr989" target="_blank">
+  <a href="PASTE_GOOGLE_REVIEW_LINK_HERE" target="_blank">
     <button class="review-btn">Leave a Google Review</button>
   </a>
 
 </div>
 
 <script>
-emailjs.init('6o_OSihC1KZB6rAKo');
+emailjs.init('iueAUOM_QorKi02S6');
 
 const form = document.getElementById('songForm');
 const thankYou = document.getElementById('thankYou');
-const tipNote = document.getElementById('tipNote');
-const timeField = document.getElementById('timeField');
 
 form.addEventListener('submit', e => {
   e.preventDefault();
 
-  timeField.value = new Date().toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
   emailjs.sendForm(
-    'service_rl9aj5f',
-    'template_nrix76r',
+    'service_3dp90wc',
+    'template_dyxg225',
     form
   ).then(() => {
     form.style.display = 'none';
     thankYou.style.display = 'block';
-    tipNote.style.display = 'block';
   });
 });
 </script>
