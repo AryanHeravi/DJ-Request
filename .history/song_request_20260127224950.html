@@ -28,22 +28,15 @@ body {
 .status {
     font-size: 0.85rem;
     letter-spacing: 2px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .status.open { color: #00ff9c; }
 .status.closed { color: #ff4d4d; }
 
 .countdown {
-    font-size: 0.95rem;
-    color: #aaa;
-    margin-bottom: 1rem;
-}
-
-.note {
-    font-size: 0.8rem;
-    color: #777;
-    line-height: 1.4;
+    font-size: 0.9rem;
+    color: #888;
     margin-bottom: 1.2rem;
 }
 
@@ -96,15 +89,9 @@ button {
 
 <body>
 <div class="container">
-    <h1>GRANVILLE WAREHOUSE</h1> 
-    <h1>SONG REQUEST</h1>
+
     <div id="status" class="status"></div>
     <div id="countdown" class="countdown"></div>
-    
-    <div id="note" class="note hidden">
-        We appreciate you using this song request web app.<br>
-        Please use it <strong>Thursday to Monday, 8:00 PM – 2:00 AM</strong>.
-    </div>
 
     <form id="songForm">
         <h1 id="headline">Request a Track</h1>
@@ -141,21 +128,19 @@ const thankYou = document.getElementById('thankYou');
 const statusEl = document.getElementById('status');
 const countdownEl = document.getElementById('countdown');
 const headline = document.getElementById('headline');
-const note = document.getElementById('note');
-
-const workingDays = [0,1,4,5,6]; // Sun, Mon, Thu, Fri, Sat
-const openHour = 20;
 
 function getNextOpening() {
     const now = new Date();
+    const openHour = 20; // 8PM
+    const days = [0,1,4,5,6]; // Sun, Mon, Thu, Fri, Sat
 
     for (let i = 0; i < 7; i++) {
-        const d = new Date(now);
-        d.setDate(now.getDate() + i);
-        d.setHours(openHour,0,0,0);
+        const check = new Date(now);
+        check.setDate(now.getDate() + i);
+        check.setHours(openHour,0,0,0);
 
-        if (workingDays.includes(d.getDay()) && d > now) {
-            return d;
+        if (days.includes(check.getDay()) && check > now) {
+            return check;
         }
     }
 }
@@ -166,25 +151,13 @@ function isOpen() {
     const hour = now.getHours();
     const min = now.getMinutes();
 
+    const workingDays = [0,1,4,5,6];
     const isDay = workingDays.includes(day);
     const isHour =
         (hour >= 20 && hour <= 23) ||
         (hour >= 0 && hour < 2);
 
     return { isDay, isHour, hour, min };
-}
-
-function updateCountdown(target) {
-    const now = new Date();
-    const diff = target - now;
-
-    const days = Math.floor(diff / 86400000);
-    const hours = Math.floor((diff % 86400000) / 3600000);
-    const minutes = Math.floor((diff % 3600000) / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
-
-    countdownEl.textContent =
-        `Requests open in ${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
 function updateUI() {
@@ -195,22 +168,25 @@ function updateUI() {
         statusEl.textContent = "OPEN";
         statusEl.className = "status open";
         countdownEl.textContent = "";
-        note.classList.add('hidden');
 
-        headline.textContent =
-            (hour === 1 && min >= 30)
-            ? "Last Call for Requests"
-            : "Request a Track";
+        if (hour === 1 && min >= 30) {
+            headline.textContent = "Last Call for Requests";
+        } else {
+            headline.textContent = "Request a Track";
+        }
 
         form.classList.remove('hidden');
     } else {
         statusEl.textContent = "CLOSED";
         statusEl.className = "status closed";
         form.classList.add('hidden');
-        note.classList.remove('hidden');
 
         const nextOpen = getNextOpening();
-        updateCountdown(nextOpen);
+        const diff = nextOpen - now;
+        const hrs = Math.floor(diff / 1000 / 60 / 60);
+        const mins = Math.floor((diff / 1000 / 60) % 60);
+
+        countdownEl.textContent = `Requests open in ${hrs}h ${mins}m`;
     }
 }
 
