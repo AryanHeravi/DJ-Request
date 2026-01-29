@@ -26,7 +26,7 @@ body {
 }
 
 .status {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   letter-spacing: 3px;
   margin-bottom: 0.4rem;
 }
@@ -34,7 +34,7 @@ body {
 .status.closed { color: #ff4d4d; }
 
 .countdown {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #aaa;
   margin-bottom: 1rem;
 }
@@ -51,26 +51,22 @@ h1 {
   margin-bottom: 1.2rem;
 }
 
-/* unified sizing fix */
-input,
-button {
+input {
   width: 100%;
   padding: 14px;
-  box-sizing: border-box;
-  border-radius: 10px;
-  font-size: 1rem;
-  line-height: 1.2;
-}
-
-input {
   margin-bottom: 1rem;
   background: #0e0e0e;
   border: 1px solid #222;
+  border-radius: 10px;
   color: #fff;
 }
 
 button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
   border: none;
+  font-size: 1rem;
   cursor: pointer;
 }
 
@@ -87,9 +83,7 @@ button {
   margin-top: 0.7rem;
 }
 
-.hidden {
-  display: none;
-}
+.hidden { display: none; }
 
 .tip-note {
   font-size: 0.85rem;
@@ -133,7 +127,7 @@ button {
       <button class="review-btn">Leave a Google Review</button>
     </a>
 
-    <a href="https://paypal.me/aryaux" target="_blank">
+    <a href="https://www.paypal.me/YOURPAYPAL" target="_blank">
       <button class="paypal-btn">Tip via PayPal</button>
     </a>
   </div>
@@ -152,23 +146,23 @@ const note = document.getElementById('note');
 
 function isOpenNow() {
   const now = new Date();
-  const day = now.getDay(); // 0 = Sun
+  const day = now.getDay(); // 0 Sun - 6 Sat
   const hour = now.getHours();
   const min = now.getMinutes();
 
-  const open =
+  const nightOpen =
     (day === 4 && hour >= 20) || // Thu
-    (day === 5 && hour < 2)  ||
-    (day === 5 && hour >= 20)||
-    (day === 6 && hour < 2)  ||
-    (day === 6 && hour >= 20)||
-    (day === 0 && hour < 2)  ||
-    (day === 0 && hour >= 20)||
-    (day === 1 && hour < 2)  ||
-    (day === 1 && hour >= 20)||
+    (day === 5 && hour < 2) ||   // Fri early
+    (day === 5 && hour >= 20) ||
+    (day === 6 && hour < 2) ||
+    (day === 6 && hour >= 20) ||
+    (day === 0 && hour < 2) ||
+    (day === 0 && hour >= 20) ||
+    (day === 1 && hour < 2) ||
+    (day === 1 && hour >= 20) ||
     (day === 2 && hour < 2);
 
-  return { open, hour, min };
+  return { open: nightOpen, hour, min };
 }
 
 function getNextOpen() {
@@ -177,16 +171,18 @@ function getNextOpen() {
     const d = new Date(now);
     d.setDate(now.getDate() + i);
     d.setHours(20, 0, 0, 0);
-    if ([4,5,6,0,1].includes(d.getDay()) && d > now) return d;
+
+    const day = d.getDay();
+    if ([4,5,6,0,1].includes(day) && d > now) return d;
   }
 }
 
 function updateCountdown(target) {
   const diff = target - new Date();
   const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
+  const h = Math.floor(diff % 86400000 / 3600000);
+  const m = Math.floor(diff % 3600000 / 60000);
+  const s = Math.floor(diff % 60000 / 1000);
   countdownEl.textContent = `Opens in ${d}d ${h}h ${m}m ${s}s`;
 }
 
@@ -201,8 +197,8 @@ function updateUI() {
 
     headline.textContent =
       (hour === 1 && min >= 30)
-        ? "Last Call for Requests"
-        : "Request a Track";
+      ? "Last Call for Requests"
+      : "Request a Track";
 
     form.classList.remove('hidden');
   } else {
@@ -210,6 +206,7 @@ function updateUI() {
     statusEl.className = "status closed";
     form.classList.add('hidden');
     note.classList.remove('hidden');
+
     updateCountdown(getNextOpen());
   }
 }
@@ -219,7 +216,6 @@ updateUI();
 
 form.addEventListener('submit', e => {
   e.preventDefault();
-
   emailjs.sendForm(
     'service_rl9aj5f',
     'template_nrix76r',
