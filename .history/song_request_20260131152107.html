@@ -141,6 +141,12 @@ button {
 </div>
 
 <script>
+  const FORCE_OPEN = true;
+  function isOpenNow() {
+  if (FORCE_OPEN) {
+    const now = new Date();
+    return { open: true, hour: now.getHours(), min: now.getMinutes() };
+  }
 emailjs.init('zZ9hyStHZbajM0m2U');
 
 const form = document.getElementById('songForm');

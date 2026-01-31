@@ -141,6 +141,8 @@ button {
 </div>
 
 <script>
+  const FORCE_OPEN = true;
+  
 emailjs.init('zZ9hyStHZbajM0m2U');
 
 const form = document.getElementById('songForm');
@@ -150,6 +152,14 @@ const countdownEl = document.getElementById('countdown');
 const headline = document.getElementById('headline');
 const note = document.getElementById('note');
 
+function isOpenNow() {
+  if (FORCE_OPEN) {
+    const now = new Date();
+    return { open: true, hour: now.getHours(), min: now.getMinutes() };
+  }
+
+
+}
 function isOpenNow() {
   const now = new Date();
   const day = now.getDay(); // 0 = Sun
