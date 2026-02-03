@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel</title>
+<style>
+:root {
+  --bg:#0a0a0a;
+  --glass:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.12);
+  --text:#eaeaea;
+  --muted:#9a9a9a;
+  --gold:#d4af37;
+  --neon:#00ffd0;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:Inter, system-ui,sans-serif;
+  background: radial-gradient(circle at top,#141414,#000);
+  color:var(--text);
+  padding:20px;
+}
+
+h1{text-align:center; font-weight:600; letter-spacing:0.5px; margin-bottom:20px;}
+
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:20px;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  margin-bottom:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#0e0e0e;
+  color:white;
+  font-size:15px;
+}
+
+input::placeholder{color:#666;}
+
+button{
+  padding:12px 16px;
+  border:none;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:600;
+  margin-top:6px;
+}
+
+.approve{
+  background:linear-gradient(270deg,var(--gold),#ffec9e,var(--gold));
+  background-size:300% 300%;
+  animation: goldPulse 3s ease infinite;
+  color:black;
+}
+
+.remove{
+  background:#222;
+  color:white;
+  border:1px solid var(--border);
+}
+
+.pending{
+  background:#111;
+  border:1px dashed var(--border);
+  color:var(--muted);
+}
+
+@keyframes goldPulse{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+.lanes{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.lane h3{
+  font-weight:500;
+  margin-bottom:12px;
+}
+
+.request{
+  padding:14px;
+  margin-bottom:12px;
+  border-radius:14px;
+  background:#151515;
+  border:1px solid var(--border);
+}
+
+/* MOBILE RESPONSIVE */
+@media(max-width:700px){
+  .lanes{grid-template-columns:1fr;}
+  .request{font-size:14px;}
+  button{font-size:14px; padding:10px;}
+}
+</style>
+</head>
+<body>
+
+<h1>🎛️ Admin Panel</h1>
+
+<!-- Login -->
+<div class="glass" id="loginDiv">
+  <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+  <button onclick="checkPassword()">Login</button>
+</div>
+
+<!-- Panel hidden until login -->
+<div id="panel" style="display:none;">
+  <div class="lanes">
+    <div class="glass lane">
+      <h3>FREE LANE</h3>
+      <div id="freeLane"></div>
+    </div>
+    <div class="glass lane">
+      <h3>FAST PASS</h3>
+      <div id="fastLane"></div>
+    </div>
+  </div>
+
+  <!-- Pending requests section -->
+  <div class="glass lane" style="margin-top:20px;">
+    <h3>PENDING REQUESTS</h3>
+    <div id="pendingLane"></div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = "1234"; // admin password
+const loginDiv = document.getElementById('loginDiv');
+const panel = document.getElementById('panel');
+const freeLaneDiv = document.getElementById('freeLane');
+const fastLaneDiv = document.getElementById('fastLane');
+const pendingLaneDiv = document.getElementById('pendingLane');
+
+function checkPassword(){
+  const val = document.getElementById('adminPassword').value;
+  if(val===PASSWORD){
+    loginDiv.style.display='none';
+    panel.style.display='block';
+    renderLanes();
+  } else {
+    alert('Wrong password!');
+  }
+}
+
+/* Render lanes from localStorage */
+function renderLanes(){
+  let list = JSON.parse(localStorage.getItem('requests')||'[]');
+  freeLaneDiv.innerHTML=''; 
+  fastLaneDiv.innerHTML='';
+  pendingLaneDiv.innerHTML='';
+
+  list.forEach((r,index)=>{
+    if(r.status==='removed') return;
+
+    let div = document.createElement('div');
+    div.className='request';
+    div.innerHTML=`<strong>${r.song}</strong> – ${r.artist}<br><small>${r.name} • ${r.lane.toUpperCase()} • ${r.payment} • ${r.status}</small>`;
+
+    // Pending requests show in pendingLane
+    if(r.status==='pending'){
+      div.className='request pending';
+      let approveBtn = document.createElement('button');
+      approveBtn.className='approve';
+      approveBtn.innerText='Approve';
+      approveBtn.onclick = ()=>{
+        list[index].status='approved';
+        localStorage.setItem('requests',JSON.stringify(list));
+        renderLanes();
+      }
+
+      let removeBtn = document.createElement('button');
+      removeBtn.className='remove';
+      removeBtn.innerText='Remove';
+      removeBtn.onclick = ()=>{
+        list[index].status='removed';
+        localStorage.setItem('requests',JSON.stringify(list));
+        renderLanes();
+      }
+
+      div.appendChild(approveBtn);
+      div.appendChild(removeBtn);
+      pendingLaneDiv.appendChild(div);
+    }
+    // Approved requests show in their lane
+    else if(r.status==='approved'){
+      if(r.lane==='fast') div.className='request approve';
+      if(r.lane==='fast') fastLaneDiv.appendChild(div);
+      else freeLaneDiv.appendChild(div);
+    }
+  });
+}
+
+/* Auto-refresh every 3s for multi-device usage */
+setInterval(()=>{if(panel.style.display==='block') renderLanes();},3000);
+</script>
+
+</body>
+</html>
