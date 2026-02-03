@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Song Request</title>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #111, #000);
+  font-family: Montserrat, sans-serif;
+  color: #eaeaea;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+  min-height: 100vh;
+}
+
+.container {
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.status { font-size: 0.75rem; letter-spacing: 3px; margin-bottom: 0.6rem; color: #00ff9c; }
+
+.note { font-size: 0.75rem; color: #777; line-height: 1.4; margin-bottom: 1.2rem; }
+
+h1 { font-size: 1.7rem; margin-bottom: 1rem; }
+
+/* Tier Buttons */
+.tier-select { display: flex; gap: 0.8rem; margin-bottom: 1.2rem; }
+.tier-btn { flex: 1; padding: 18px 10px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; cursor: pointer; opacity: 0.5; transition: all 0.25s ease; }
+.tier-btn strong { display: block; font-size: 0.9rem; letter-spacing: 1px; }
+.tier-btn span { font-size: 0.7rem; color: #bbb; }
+.tier-btn.active { opacity: 1; border-color: #ff4d4d; box-shadow: 0 0 0 1px rgba(255,77,77,0.4); }
+
+/* Form & buttons */
+input, button { width: 100%; padding: 14px; box-sizing: border-box; border-radius: 10px; font-size: 1rem; }
+input { margin-bottom: 1rem; background: #0e0e0e; border: 1px solid #222; color: #fff; }
+button { border: none; cursor: pointer; }
+.submit-btn { background: linear-gradient(135deg, #ff0066, #ff4d4d); color: #fff; }
+.paypal-btn { background: #111; border: 1px solid #333; color: #fff; margin-top: 0.7rem; }
+.cash-btn { background: #111; border: 1px solid #333; color: #fff; margin-top: 0.5rem; }
+
+/* Hidden */
+.hidden { display: none; }
+
+.tip-note { font-size: 0.85rem; color: #aaa; margin: 0.8rem 0; }
+
+/* Live requests board */
+.board { margin-top: 1.6rem; text-align: left; }
+.board h2 { font-size: 0.8rem; letter-spacing: 2px; color: #aaa; margin-bottom: 0.5rem; }
+.request { background: #0e0e0e; border: 1px solid #222; border-radius: 8px; padding: 10px 12px; margin-bottom: 0.5rem; font-size: 0.85rem; }
+.request span { display: block; font-size: 0.65rem; margin-top: 3px; color: #aaa; }
+
+/* Admin panel */
+.admin-panel { margin-top: 2rem; background: #111; border: 1px solid #333; border-radius: 10px; padding: 10px; display: none; text-align: left; }
+.admin-panel h2 { color: #ff4d4d; font-size: 1rem; margin-bottom: 0.6rem; }
+.admin-request { display: flex; justify-content: space-between; align-items: center; background: #0e0e0e; padding: 6px 10px; border-radius: 6px; margin-bottom: 0.5rem; font-size: 0.85rem; }
+.admin-request button { margin-left: 6px; padding: 4px 6px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="status">OPEN</div>
+
+  <div class="note">
+    Requests are reviewed live by the DJ.<br>
+    Fast Pass requires payment or DJ approval.
+  </div>
+
+  <!-- Tier Selector -->
+  <div class="tier-select">
+    <div class="tier-btn" data-tier="free">
+      <strong>FREE</strong>
+      <span>Reviewed when it fits</span>
+    </div>
+    <div class="tier-btn" data-tier="fastpass">
+      <strong>FAST PASS</strong>
+      <span>Priority review</span>
+    </div>
+  </div>
+
+  <!-- Song Form -->
+  <form id="songForm" class="hidden">
+    <h1>Request a Track</h1>
+    <input name="song" placeholder="Song name" required />
+    <input name="artist" placeholder="Artist" required />
+    <input name="name" placeholder="Your name (optional)" />
+    <input type="hidden" name="tier" id="tierInput" />
+    <button class="submit-btn" type="submit">Send Request</button>
+  </form>
+
+  <!-- Fast Pass Payment Options -->
+  <div id="fastPassPay" class="hidden">
+    <a href="https://paypal.me/aryaux" target="_blank">
+      <button class="paypal-btn">Pay Fast Pass</button>
+    </a>
+    <button class="cash-btn">Tip via Cash</button>
+    <div class="tip-note">
+      Once payment is completed, DJ will approve your request manually.
+    </div>
+  </div>
+
+  <!-- Thank you -->
+  <div id="thankYou" class="hidden">
+    <h1>Request Sent</h1>
+    <div class="tip-note">Thanks for your request.<br>If it fits the vibe, it’ll be played shortly.</div>
+  </div>
+
+  <!-- Live Requests Board -->
+  <div class="board">
+    <h2>LIVE REQUESTS</h2>
+    <div id="requests"></div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="admin-panel" id="adminPanel">
+    <h2>Pending Fast Pass Requests</h2>
+    <div id="pendingList"></div>
+  </div>
+
+</div>
+
+<script>
+emailjs.init('zZ9hyStHZbajM0m2U');
+
+const form = document.getElementById('songForm');
+const thankYou = document.getElementById('thankYou');
+const requestsEl = document.getElementById('requests');
+const tierButtons = document.querySelectorAll('.tier-btn');
+const tierInput = document.getElementById('tierInput');
+const fastPassPay = document.getElementById('fastPassPay');
+const cashBtn = fastPassPay.querySelector('.cash-btn');
+const pendingList = document.getElementById('pendingList');
+const adminPanel = document.getElementById('adminPanel');
+
+let selectedTier = null;
+const requests = [];
+const pendingFastPass = [];
+
+/* =========================
+   ADMIN PASSWORD TOGGLE
+   ========================= */
+const ADMIN_PASSWORD = "djapprove"; // Change to your secret
+let adminVisible = false;
+document.addEventListener("keydown", e => {
+  // Press D+J to show admin panel (or modify as needed)
+  if(e.key === "a") { // simple toggle for now
+    const pwd = prompt("Enter admin password:");
+    if(pwd === ADMIN_PASSWORD){
+      adminPanel.style.display = adminVisible ? "none" : "block";
+      adminVisible = !adminVisible;
+      renderPending();
+    }
+  }
+});
+
+/* =========================
+   Tier Selection
+   ========================= */
+tierButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    tierButtons.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTier = btn.dataset.tier;
+    tierInput.value = selectedTier;
+
+    if(selectedTier === "free"){
+      form.classList.remove('hidden');
+      fastPassPay.classList.add('hidden');
+    } else {
+      form.classList.add('hidden');
+      fastPassPay.classList.remove('hidden');
+    }
+  });
+});
+
+/* =========================
+   Render Live Requests
+   ========================= */
+function renderRequests(){
+  requestsEl.innerHTML = "";
+  requests.slice().reverse().forEach(r=>{
+    const div = document.createElement("div");
+    div.className = "request";
+    div.innerHTML = `<strong>${r.song}</strong> — ${r.artist}
+      <span>${r.tier === "fastpass" ? "FAST PASS" : "FREE"} • ${r.time}</span>`;
+    requestsEl.appendChild(div);
+  });
+}
+
+/* =========================
+   Render Pending Fast Pass
+   ========================= */
+function renderPending(){
+  pendingList.innerHTML = "";
+  pendingFastPass.forEach((r,i)=>{
+    const div = document.createElement("div");
+    div.className = "admin-request";
+    div.innerHTML = `
+      <span>${r.song} — ${r.artist} (${r.paymentType})</span>
+      <div>
+        <button onclick="approveFastPass(${i})">Approve</button>
+        <button onclick="rejectFastPass(${i})">Reject</button>
+      </div>`;
+    pendingList.appendChild(div);
+  });
+}
+
+/* =========================
+   Approve / Reject
+   ========================= */
+function approveFastPass(i){
+  const approved = pendingFastPass.splice(i,1)[0];
+  approved.time="just now";
+  requests.push(approved);
+  renderRequests();
+  renderPending();
+}
+function rejectFastPass(i){
+  pendingFastPass.splice(i,1);
+  renderPending();
+}
+
+/* =========================
+   Fast Pass Cash Tip
+   ========================= */
+cashBtn.addEventListener('click', ()=>{
+  const song = prompt("Enter Song Name");
+  const artist = prompt("Enter Artist Name");
+  if(!song || !artist) return;
+  pendingFastPass.push({song, artist, tier:"fastpass", paymentType:"cash", time:"pending"});
+  alert("Fast Pass request is pending DJ approval");
+  renderPending();
+});
+
+/* =========================
+   Form Submission
+   ========================= */
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  if(!selectedTier){ alert("Select Free or Fast Pass"); return; }
+
+  const song = form.song.value.trim();
+  const artist = form.artist.value.trim();
+  const tier = selectedTier;
+  if(!song || !artist) return;
+
+  if(tier==="free"){
+    requests.push({song, artist, tier, time:"just now"});
+    renderRequests();
+  } else {
+    pendingFastPass.push({song, artist, tier, paymentType:"paypal", time:"pending"});
+    alert("Fast Pass request is pending DJ approval");
+    renderPending();
+  }
+
+  emailjs.sendForm('service_cxyssu6','template_p4a4m3t',form)
+  .then(()=>{
+    form.classList.add('hidden');
+    thankYou.classList.remove('hidden');
+  });
+});
+</script>
+</body>
+</html>

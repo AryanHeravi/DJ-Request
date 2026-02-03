@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+
+<style>
+:root {
+  --bg:#0a0a0a;
+  --glass:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.12);
+  --text:#eaeaea;
+  --muted:#888;
+  --gold:#d4af37;
+  --green:#00d18f;
+  --red:#ff4d4d;
+}
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  background:
+    radial-gradient(circle at top, #141414, #000);
+  font-family: Inter, system-ui, sans-serif;
+  color:var(--text);
+  padding:24px;
+}
+
+.hidden { display:none; }
+
+h1 {
+  font-weight:600;
+  letter-spacing:0.6px;
+  margin-bottom:20px;
+}
+
+.glass {
+  background:var(--glass);
+  backdrop-filter: blur(16px);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:18px;
+}
+
+.login {
+  max-width:380px;
+  margin:20vh auto;
+}
+
+input {
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#0e0e0e;
+  color:white;
+  font-size:15px;
+  margin-bottom:14px;
+}
+
+button {
+  padding:12px 16px;
+  border-radius:12px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.enter {
+  width:100%;
+  background:linear-gradient(135deg,#00ffd0,#00cfa8);
+  color:black;
+}
+
+.columns {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.column h2 {
+  font-weight:500;
+  font-size:15px;
+  letter-spacing:1px;
+  color:var(--muted);
+  margin-bottom:12px;
+}
+
+.request {
+  background:#151515;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:12px;
+}
+
+.request.fast {
+  border-left:4px solid var(--gold);
+}
+
+.request.approved.fast {
+  background:linear-gradient(
+    270deg,
+    #d4af37,
+    #ffec9e,
+    #d4af37
+  );
+  background-size:300% 300%;
+  animation:goldPulse 3s ease infinite;
+  color:black;
+}
+
+@keyframes goldPulse {
+  0% {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100% {background-position:0% 50%;}
+}
+
+.meta {
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.actions {
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+}
+
+.approve {
+  background:var(--green);
+  color:black;
+}
+
+.remove {
+  background:transparent;
+  color:var(--red);
+  border:1px solid rgba(255,77,77,0.4);
+}
+
+.logout {
+  position:fixed;
+  bottom:18px;
+  right:18px;
+  background:#111;
+  border:1px solid var(--border);
+  color:white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login glass">
+  <h1>Admin Access</h1>
+  <input id="password" type="password" placeholder="Password">
+  <button class="enter" onclick="login()">Enter Panel</button>
+</div>
+
+<!-- PANEL -->
+<div id="panel" class="hidden">
+  <h1>🎛 Control Room</h1>
+
+  <div class="columns">
+    <div class="glass">
+      <h2>PENDING</h2>
+      <div id="pending"></div>
+    </div>
+
+    <div class="glass">
+      <h2>APPROVED / PLAYING</h2>
+      <div id="approved"></div>
+    </div>
+  </div>
+
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<script>
+const ADMIN_PASSWORD = "1234"; // CHANGE THIS
+
+function login() {
+  const pass = document.getElementById('password').value;
+  if (pass === ADMIN_PASSWORD) {
+    sessionStorage.setItem('admin', 'true');
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('panel').classList.remove('hidden');
+    render();
+  } else {
+    alert('Incorrect password');
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('admin');
+  location.reload();
+}
+
+if (sessionStorage.getItem('admin')) {
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('panel').classList.remove('hidden');
+  render();
+}
+
+function render() {
+  const pendingEl = document.getElementById('pending');
+  const approvedEl = document.getElementById('approved');
+  pendingEl.innerHTML = '';
+  approvedEl.innerHTML = '';
+
+  const list = JSON.parse(localStorage.getItem('requests') || '[]');
+
+  list.forEach((r,i) => {
+    if (r.status === 'removed') return;
+
+    const div = document.createElement('div');
+    div.className =
+      `request ${r.lane === 'fast' ? 'fast' : ''} ${r.status === 'approved' ? 'approved fast' : ''}`;
+
+    div.innerHTML = `
+      <strong>${r.song}</strong> – ${r.artist}
+      <div class="meta">
+        ${r.name} • ${r.lane.toUpperCase()} • ${r.payment}
+      </div>
+      <div class="actions">
+        ${r.status === 'pending'
+          ? `<button class="approve" onclick="approve(${i})">Approve</button>`
+          : ''}
+        <button class="remove" onclick="removeReq(${i})">Played</button>
+      </div>
+    `;
+
+    (r.status === 'pending' ? pendingEl : approvedEl).appendChild(div);
+  });
+}
+
+function approve(i) {
+  const list = JSON.parse(localStorage.getItem('requests'));
+  list[i].status = 'approved';
+  localStorage.setItem('requests', JSON.stringify(list));
+  render();
+}
+
+function removeReq(i) {
+  const list = JSON.parse(localStorage.getItem('requests'));
+  list[i].status = 'removed';
+  localStorage.setItem('requests', JSON.stringify(list));
+  render();
+}
+</script>
+
+</body>
+</html>

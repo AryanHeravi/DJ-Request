@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel - Song Requests</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Montserrat, sans-serif;
+  background: #111;
+  color: #eaeaea;
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
+}
+.container {
+  width: 90%;
+  max-width: 600px;
+  text-align: center;
+}
+h1 { margin-bottom: 1rem; }
+input[type="password"] {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  width: 70%;
+  background: #0e0e0e;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin: 0 4px 8px 0;
+  color: #fff;
+}
+.login-btn { background: linear-gradient(135deg, #ff0066, #ff4d4d); }
+.approve-btn { background: #00ff9c; color: #000; }
+.reject-btn { background: #ff4d4d; color: #000; }
+.request-card {
+  background: #0e0e0e;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  text-align: left;
+}
+.request-card span { display: block; font-size: 0.7rem; color: #aaa; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Admin Panel</h1>
+
+  <!-- Login -->
+  <div id="loginDiv">
+    <input type="password" id="adminPass" placeholder="Enter Admin Password" />
+    <button class="login-btn" id="loginBtn">Login</button>
+  </div>
+
+  <!-- Pending Requests -->
+  <div id="panelDiv" class="hidden">
+    <h2>Pending Fast Pass Requests</h2>
+    <div id="pendingRequests"></div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = "djapprove"; // <-- change this
+const loginDiv = document.getElementById("loginDiv");
+const panelDiv = document.getElementById("panelDiv");
+const loginBtn = document.getElementById("loginBtn");
+const adminPassInput = document.getElementById("adminPass");
+const pendingRequestsEl = document.getElementById("pendingRequests");
+
+let pendingFastPass = JSON.parse(localStorage.getItem("pendingFastPass") || "[]");
+let approvedRequests = JSON.parse(localStorage.getItem("approvedRequests") || "[]");
+
+/* Render pending requests */
+function renderPending() {
+  pendingRequestsEl.innerHTML = "";
+  pendingFastPass.forEach((r, i) => {
+    const div = document.createElement("div");
+    div.className = "request-card";
+    div.innerHTML = `
+      <strong>${r.song}</strong> — ${r.artist}
+      <span>${r.name} • ${r.paymentType.toUpperCase()} • ${r.tier}</span>
+    `;
+
+    const approveBtn = document.createElement("button");
+    approveBtn.className = "approve-btn";
+    approveBtn.textContent = "Approve";
+    approveBtn.addEventListener('click', () => approveRequest(i));
+
+    const rejectBtn = document.createElement("button");
+    rejectBtn.className = "reject-btn";
+    rejectBtn.textContent = "Reject";
+    rejectBtn.addEventListener('click', () => rejectRequest(i));
+
+    div.appendChild(approveBtn);
+    div.appendChild(rejectBtn);
+
+    pendingRequestsEl.appendChild(div);
+  });
+
+  if (pendingFastPass.length === 0) {
+    pendingRequestsEl.innerHTML = "<p>No pending requests.</p>";
+  }
+}
+
+/* Approve request */
+function approveRequest(index) {
+  const r = pendingFastPass[index];
+  r.time = "approved";
+  approvedRequests.push(r);
+  pendingFastPass.splice(index,1);
+  updateLocalStorage();
+  renderPending();
+}
+
+/* Reject request */
+function rejectRequest(index) {
+  pendingFastPass.splice(index,1);
+  updateLocalStorage();
+  renderPending();
+}
+
+/* Update localStorage */
+function updateLocalStorage() {
+  localStorage.setItem("pendingFastPass", JSON.stringify(pendingFastPass));
+  localStorage.setItem("approvedRequests", JSON.stringify(approvedRequests));
+}
+
+/* Login */
+loginBtn.addEventListener('click', () => {
+  const val = adminPassInput.value.trim();
+  if(val === PASSWORD){
+    loginDiv.classList.add('hidden');
+    panelDiv.classList.remove('hidden');
+    renderPending();
+  } else {
+    alert("Incorrect password!");
+  }
+});
+</script>
+</body>
+</html>

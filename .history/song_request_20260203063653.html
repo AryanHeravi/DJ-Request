@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Song Request</title>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #111, #000);
+  font-family: Montserrat, sans-serif;
+  color: #eaeaea;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.status {
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  margin-bottom: 0.4rem;
+  color: #00ff9c;
+}
+
+.note {
+  font-size: 0.75rem;
+  color: #777;
+  line-height: 1.4;
+  margin-bottom: 1.2rem;
+}
+
+h1 {
+  font-size: 1.9rem;
+  margin-bottom: 1.2rem;
+}
+
+input,
+button {
+  width: 100%;
+  padding: 14px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+input {
+  margin-bottom: 1rem;
+  background: #0e0e0e;
+  border: 1px solid #222;
+  color: #fff;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #ff0066, #ff4d4d);
+  color: #fff;
+}
+
+.review-btn,
+.paypal-btn {
+  background: #111;
+  border: 1px solid #333;
+  color: #fff;
+  margin-top: 0.7rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.tip-note {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin: 0.8rem 0;
+}
+
+/* =========================
+   LIVE REQUESTS BOARD
+   ========================= */
+.board {
+  margin-top: 1.8rem;
+  text-align: left;
+}
+
+.board h2 {
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  color: #aaa;
+  margin-bottom: 0.6rem;
+}
+
+.request {
+  background: #0e0e0e;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.request span {
+  display: block;
+  color: #aaa;
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="status">OPEN</div>
+
+  <div class="note">
+    Requests are reviewed live by the DJ.<br>
+    Submission does not guarantee playback.
+  </div>
+
+  <form id="songForm">
+    <h1>Request a Track</h1>
+
+    <input name="song" placeholder="Song name" required />
+    <input name="artist" placeholder="Artist" required />
+    <input name="name" placeholder="Your name (optional)" />
+
+    <button class="submit-btn" type="submit">
+      Send Request
+    </button>
+  </form>
+
+  <div id="thankYou" class="hidden">
+    <h1>Request Sent</h1>
+
+    <div class="tip-note">
+      Thanks for submitting a song request.<br>
+      If it fits the vibe, it’ll be played shortly.<br><br>
+      💸 Tip jar is beside the DJ booth — always appreciated.
+    </div>
+
+    <a href="https://reviewthis.biz/gr989" target="_blank">
+      <button class="review-btn">Leave a Google Review</button>
+    </a>
+
+    <a href="https://paypal.me/aryaux" target="_blank">
+      <button class="paypal-btn">Tip via PayPal</button>
+    </a>
+  </div>
+
+  <!-- =========================
+       LIVE REQUESTS BOARD
+       ========================= -->
+  <div class="board">
+    <h2>LIVE REQUESTS</h2>
+    <div id="requests"></div>
+  </div>
+
+</div>
+
+<script>
+/* =========================
+   EMAILJS INIT
+   ========================= */
+emailjs.init('zZ9hyStHZbajM0m2U');
+
+const form = document.getElementById('songForm');
+const thankYou = document.getElementById('thankYou');
+const requestsEl = document.getElementById('requests');
+
+/* =========================
+   LOCAL REQUEST STORE
+   (TEMP — backend later)
+   ========================= */
+const requests = [];
+
+/* =========================
+   RENDER REQUESTS
+   ========================= */
+function renderRequests() {
+  requestsEl.innerHTML = "";
+
+  requests.slice().reverse().forEach(req => {
+    const div = document.createElement("div");
+    div.className = "request";
+    div.innerHTML = `
+      <strong>${req.song}</strong> — ${req.artist}
+      <span>${req.time}</span>
+    `;
+    requestsEl.appendChild(div);
+  });
+}
+
+/* =========================
+   FORM SUBMISSION
+   ========================= */
+form.addEventListener('submit', e => {
+  e.preventDefault();
+
+  const song = form.song.value.trim();
+  const artist = form.artist.value.trim();
+
+  if (!song || !artist) return;
+
+  // Add to live board immediately
+  requests.push({
+    song,
+    artist,
+    time: "just now"
+  });
+
+  renderRequests();
+
+  // Send email
+  emailjs.sendForm(
+    'service_cxyssu6',
+    'template_p4a4m3t',
+    form
+  ).then(() => {
+    form.classList.add('hidden');
+    thankYou.classList.remove('hidden');
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Song Requests</title>
+
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #111, #000);
+  font-family: Montserrat, sans-serif;
+  color: #eaeaea;
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+.container { width: 95%; max-width: 480px; }
+
+/* ===== BUTTONS ===== */
+.choice-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.choice-btn {
+  flex: 1;
+  padding: 18px;
+  border-radius: 14px;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+.free-btn {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.fast-btn {
+  background: rgba(255,215,0,0.25);
+  color: gold;
+  border: 1px solid gold;
+}
+
+/* ===== FORM ===== */
+form {
+  background: #0e0e0e;
+  border: 1px solid #222;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 25px;
+}
+input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #000;
+  color: #fff;
+}
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg,#ff0066,#ff4d4d);
+  color: #fff;
+}
+
+/* ===== SECTIONS ===== */
+.section-title {
+  text-align: center;
+  font-size: .75rem;
+  letter-spacing: 3px;
+  margin: 20px 0 10px;
+  opacity: .8;
+}
+
+/* FAST PASS */
+.fastpass-section {
+  border: 1px solid gold;
+  border-radius: 14px;
+  padding: 12px;
+  background: linear-gradient(145deg,#2a2100,#000);
+}
+.fastpass-card {
+  border: 1px solid gold;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: linear-gradient(145deg,#3b2f00,#000);
+  animation: pulse 1.5s infinite;
+}
+.fastpass-card strong { color: gold; }
+.fastpass-card span { font-size: .75rem; color: #f5d76e; }
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 8px gold; }
+  50% { box-shadow: 0 0 18px gold; }
+  100% { box-shadow: 0 0 8px gold; }
+}
+
+/* FREE */
+.free-section {
+  background: #0e0e0e;
+  border: 1px solid #222;
+  border-radius: 12px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.free-card {
+  padding: 10px;
+  border-bottom: 1px solid #222;
+  opacity: .85;
+}
+.free-card span { font-size: .7rem; color: #888; }
+
+/* ADMIN */
+.admin-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 8px;
+  font-size: .7rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #111;
+  color: #fff;
+  opacity: .6;
+}
+.hidden { display: none; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- REQUEST TYPE -->
+  <div class="choice-buttons">
+    <button class="choice-btn free-btn" onclick="selectType('free')">FREE REQUEST</button>
+    <button class="choice-btn fast-btn" onclick="selectType('fast')">⚡ FAST PASS</button>
+  </div>
+
+  <!-- FORM -->
+  <form id="requestForm" class="hidden">
+    <input id="song" placeholder="Song name" required />
+    <input id="artist" placeholder="Artist" required />
+    <input id="name" placeholder="Your name (optional)" />
+    <button class="submit-btn">Submit</button>
+  </form>
+
+  <!-- LIVE BOARD -->
+  <div class="section-title">⚡ FAST PASS</div>
+  <div id="fastLane" class="fastpass-section"></div>
+
+  <div class="section-title">🎵 FREE REQUESTS</div>
+  <div id="freeLane" class="free-section"></div>
+
+  <a href="admin.html" target="_blank">
+    <button class="admin-btn">Admin Panel</button>
+  </a>
+
+</div>
+
+<script>
+let currentType = null;
+const form = document.getElementById("requestForm");
+
+function selectType(type) {
+  currentType = type;
+  form.classList.remove("hidden");
+}
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+
+  const data = {
+    song: song.value,
+    artist: artist.value,
+    name: name.value,
+    timestamp: Date.now()
+  };
+
+  if (currentType === "free") {
+    const free = JSON.parse(localStorage.getItem("freeRequests") || "[]");
+    free.push(data);
+    localStorage.setItem("freeRequests", JSON.stringify(free));
+  } else {
+    data.tier = "fast";
+    data.paymentType = "manual";
+    const pending = JSON.parse(localStorage.getItem("pendingFastPass") || "[]");
+    pending.push(data);
+    localStorage.setItem("pendingFastPass", JSON.stringify(pending));
+  }
+
+  form.reset();
+  form.classList.add("hidden");
+  render();
+});
+
+function render() {
+  const fast = JSON.parse(localStorage.getItem("approvedRequests") || "[]");
+  const free = JSON.parse(localStorage.getItem("freeRequests") || "[]");
+
+  fastLane.innerHTML = fast.length
+    ? fast.map(r=>`<div class="fastpass-card"><strong>${r.song}</strong> — ${r.artist}<span>${r.name||"Guest"} • FAST PASS</span></div>`).join("")
+    : `<p style="text-align:center;opacity:.6;font-size:.75rem">No Fast Pass requests</p>`;
+
+  freeLane.innerHTML = free.length
+    ? free.map(r=>`<div class="free-card"><strong>${r.song}</strong> — ${r.artist}<span>${r.name||"Guest"}</span></div>`).join("")
+    : `<p style="text-align:center;opacity:.6;font-size:.75rem">No free requests</p>`;
+}
+
+render();
+setInterval(render, 2000);
+</script>
+</body>
+</html>

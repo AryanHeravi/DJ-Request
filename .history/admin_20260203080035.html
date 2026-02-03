@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+
+<style>
+body {
+  background:#0e0e0e;
+  color:white;
+  font-family:Arial;
+  padding:20px;
+}
+
+.hidden { display:none; }
+
+.request {
+  background:#222;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:6px;
+}
+
+.fast { border-left:5px solid gold; }
+
+button {
+  padding:6px 10px;
+  margin-right:10px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.approve { background:#1db954; }
+.remove { background:#b00020; color:white; }
+</style>
+</head>
+
+<body>
+
+<div id="login">
+  <h2>Admin Login</h2>
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Enter</button>
+</div>
+
+<div id="panel" class="hidden">
+  <h1>🎛 Admin Panel</h1>
+  <div id="requests"></div>
+</div>
+
+<script>
+const ADMIN_PASSWORD = "1234"; // 🔑 CHANGE THIS
+
+function login() {
+  const pass = document.getElementById('password').value;
+  if (pass === ADMIN_PASSWORD) {
+    sessionStorage.setItem('admin', 'true');
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('panel').classList.remove('hidden');
+    render();
+  } else {
+    alert('Wrong password');
+  }
+}
+
+if (sessionStorage.getItem('admin')) {
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('panel').classList.remove('hidden');
+  render();
+}
+
+function render() {
+  const container = document.getElementById('requests');
+  container.innerHTML = '';
+  const list = JSON.parse(localStorage.getItem('requests') || '[]');
+
+  list.forEach((r,i) => {
+    if (r.status === 'removed') return;
+
+    const div = document.createElement('div');
+    div.className = 'request ' + (r.lane === 'fast' ? 'fast' : '');
+    div.innerHTML = `
+      <strong>${r.song}</strong> – ${r.artist}<br>
+      ${r.name} | ${r.lane.toUpperCase()} | ${r.payment}<br><br>
+      ${r.status === 'pending' ? `<button class="approve" onclick="approve(${i})">Approve</button>` : ''}
+      <button class="remove" onclick="removeReq(${i})">Remove (Played)</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function approve(i) {
+  const list = JSON.parse(localStorage.getItem('requests'));
+  list[i].status = 'approved';
+  localStorage.setItem('requests', JSON.stringify(list));
+  render();
+}
+
+function removeReq(i) {
+  const list = JSON.parse(localStorage.getItem('requests'));
+  list[i].status = 'removed';
+  localStorage.setItem('requests', JSON.stringify(list));
+  render();
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Song Request Admin Panel</title>
+<style>
+body {
+  margin: 0;
+  font-family: Montserrat, sans-serif;
+  background: #111;
+  color: #eaeaea;
+  display: flex;
+  justify-content: center;
+  padding-top: 40px;
+}
+.container {
+  width: 90%;
+  max-width: 800px;
+}
+h1 { font-size: 1.8rem; margin-bottom: 1rem; text-align: center; }
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #0e0e0e;
+  color: #fff;
+}
+button {
+  padding: 10px 14px;
+  margin: 4px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+.approve-btn { background: #00ff9c; color: #000; }
+.reject-btn { background: #ff4d4d; color: #fff; }
+.section { margin-bottom: 2rem; }
+.request-card {
+  background: #0e0e0e;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.request-card span { display: block; font-size: 0.8rem; color: #aaa; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Song Request Admin Panel</h1>
+
+  <!-- Login -->
+  <div id="loginSection">
+    <input type="password" id="adminPassword" placeholder="Enter admin password" />
+    <button id="loginBtn">Login</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="panel" class="hidden">
+    <h2>Pending Fast Pass Requests</h2>
+    <div id="pendingRequests"></div>
+    <h2>Approved Requests</h2>
+    <div id="approvedRequests"></div>
+  </div>
+</div>
+
+<script>
+// ---- CONFIG ----
+const ADMIN_PASSWORD = "djadmin123"; // change this to your password
+
+// ---- DATA STORAGE ----
+let pendingFastPass = JSON.parse(localStorage.getItem("pendingFastPass")) || [];
+let approvedRequests = JSON.parse(localStorage.getItem("approvedRequests")) || [];
+
+// ---- DOM ELEMENTS ----
+const loginSection = document.getElementById("loginSection");
+const loginBtn = document.getElementById("loginBtn");
+const adminPasswordInput = document.getElementById("adminPassword");
+const panel = document.getElementById("panel");
+const pendingRequestsEl = document.getElementById("pendingRequests");
+const approvedRequestsEl = document.getElementById("approvedRequests");
+
+// ---- LOGIN ----
+loginBtn.addEventListener("click", () => {
+  if (adminPasswordInput.value === ADMIN_PASSWORD) {
+    loginSection.classList.add("hidden");
+    panel.classList.remove("hidden");
+    renderRequests();
+  } else {
+    alert("Incorrect password");
+  }
+});
+
+// ---- RENDER REQUESTS ----
+function renderRequests() {
+  // Pending
+  pendingRequestsEl.innerHTML = "";
+  if (pendingFastPass.length === 0) pendingRequestsEl.innerHTML = "<p>No pending requests.</p>";
+
+  pendingFastPass.forEach((r, i) => {
+    const div = document.createElement("div");
+    div.className = "request-card";
+    div.innerHTML = `<strong>${r.song}</strong> — ${r.artist}
+      <span>Name: ${r.name || "Anonymous"}</span>
+      <span>Payment: ${r.paymentType}</span>
+      <span>Status: ${r.time}</span>
+      <button class="approve-btn" onclick="approveRequest(${i})">Approve</button>
+      <button class="reject-btn" onclick="rejectRequest(${i})">Reject</button>`;
+    pendingRequestsEl.appendChild(div);
+  });
+
+  // Approved
+  approvedRequestsEl.innerHTML = "";
+  if (approvedRequests.length === 0) approvedRequestsEl.innerHTML = "<p>No approved requests yet.</p>";
+
+  approvedRequests.slice().reverse().forEach(r => {
+    const div = document.createElement("div");
+    div.className = "request-card";
+    div.innerHTML = `<strong>${r.song}</strong> — ${r.artist}
+      <span>Name: ${r.name || "Anonymous"}</span>
+      <span>Payment: ${r.paymentType}</span>
+      <span>Approved</span>`;
+    approvedRequestsEl.appendChild(div);
+  });
+}
+
+// ---- APPROVE / REJECT ----
+window.approveRequest = function(index) {
+  const req = pendingFastPass.splice(index, 1)[0];
+  req.time = "approved";
+  approvedRequests.push(req);
+  saveData();
+  renderRequests();
+};
+
+window.rejectRequest = function(index) {
+  pendingFastPass.splice(index, 1);
+  saveData();
+  renderRequests();
+};
+
+// ---- SAVE TO LOCAL STORAGE ----
+function saveData() {
+  localStorage.setItem("pendingFastPass", JSON.stringify(pendingFastPass));
+  localStorage.setItem("approvedRequests", JSON.stringify(approvedRequests));
+}
+
+// ---- TEST DATA (optional, remove in production) ----
+// pendingFastPass.push({song:"Song A", artist:"Artist A", name:"User1", paymentType:"cash", time:"pending"});
+// pendingFastPass.push({song:"Song B", artist:"Artist B", name:"User2", paymentType:"paypal", time:"pending"});
+// saveData();
+</script>
+</body>
+</html>

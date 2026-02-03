@@ -171,7 +171,7 @@ input::placeholder { color:#666; }
 </head>
 
 <body>
-<h1>GRANVILLE WAREHOUSE</h1>
+
 <h1>🎶 Song Requests</h1>
 
 <div class="toggle">
@@ -211,14 +211,12 @@ input::placeholder { color:#666; }
 <a href="admin.html" class="admin-link">Admin</a>
 
 <script>
+/* Toggle between forms */
 const freeBtn = document.getElementById('freeBtn');
 const fastBtn = document.getElementById('fastBtn');
 const freeForm = document.getElementById('freeForm');
 const fastForm = document.getElementById('fastForm');
-const freeLane = document.getElementById('freeLane');
-const fastLane = document.getElementById('fastLane');
 
-/* Toggle forms */
 freeBtn.addEventListener('click', ()=>{
   freeBtn.classList.add('active'); fastBtn.classList.remove('active');
   freeForm.classList.add('active'); fastForm.classList.remove('active');
@@ -228,49 +226,35 @@ fastBtn.addEventListener('click', ()=>{
   fastForm.classList.add('active'); freeForm.classList.remove('active');
 });
 
-/* Render lanes from localStorage */
-function renderLanes(){
-  let list = JSON.parse(localStorage.getItem('requests')||'[]');
-  freeLane.innerHTML=''; fastLane.innerHTML='';
-  list.forEach(r=>{
-    if(r.status==='removed') return;
-    let div=document.createElement('div');
-    div.className='request';
-    if(r.lane==='fast' && r.status==='approved') div.className='request fast-approved';
-    div.innerHTML=`<strong>${r.song}</strong> – ${r.artist}<br><small>${r.name} • ${r.lane.toUpperCase()} • ${r.payment}</small>`;
-    if(r.lane==='fast') fastLane.appendChild(div);
-    else freeLane.appendChild(div);
-  });
-}
-
-/* Submit request */
+/* Submit simulation (localStorage for now, cloud next) */
 function submitRequest(type){
   let song, artist, name, lane, payment;
   if(type==='free'){
     song=document.getElementById('freeSong').value;
     artist=document.getElementById('freeArtist').value;
-    name=document.getElementById('freeName').value||'Anonymous';
+    name=document.getElementById('freeName').value || 'Anonymous';
     lane='free'; payment='none';
-  } else if(type==='cash' || type==='paypal'){
+  } else if(type==='cash'){
     song=document.getElementById('fastSong').value;
     artist=document.getElementById('fastArtist').value;
-    name=document.getElementById('fastName').value||'Anonymous';
-    lane='fast'; payment=(type==='cash')?'cash':'paypal';
+    name=document.getElementById('fastName').value || 'Anonymous';
+    lane='fast'; payment='cash';
+  } else if(type==='paypal'){
+    song=document.getElementById('fastSong').value;
+    artist=document.getElementById('fastArtist').value;
+    name=document.getElementById('fastName').value || 'Anonymous';
+    lane='fast'; payment='paypal';
   }
-  if(!song||!artist) return alert('Enter song and artist');
+  if(!song || !artist) return alert('Enter song and artist');
 
   let list=JSON.parse(localStorage.getItem('requests')||'[]');
   list.push({song,artist,name,lane,payment,status:'pending',timestamp:Date.now()});
   localStorage.setItem('requests',JSON.stringify(list));
-  renderLanes();
   alert('Request submitted! Admin will approve shortly.');
   // reset inputs
   if(type==='free'){document.getElementById('freeSong').value=''; document.getElementById('freeArtist').value=''; document.getElementById('freeName').value='';}
   else{document.getElementById('fastSong').value=''; document.getElementById('fastArtist').value=''; document.getElementById('fastName').value='';}
 }
-
-/* Initial render */
-renderLanes();
 </script>
 
 </body>

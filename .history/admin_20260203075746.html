@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+<style>
+body {
+  background:#0e0e0e;
+  color:white;
+  font-family:Arial;
+  padding:20px;
+}
+
+h1 { text-align:center; }
+
+.request {
+  background:#222;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:6px;
+}
+
+.fast {
+  border-left:6px solid gold;
+}
+
+button {
+  margin-right:10px;
+  padding:6px 10px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.approve { background:#1db954; }
+.remove { background:#b00020; color:white; }
+</style>
+</head>
+
+<body>
+
+<h1>🔐 Admin Panel</h1>
+
+<div id="requests"></div>
+
+<script>
+function render() {
+  const container = document.getElementById('requests');
+  container.innerHTML = '';
+  const list = JSON.parse(localStorage.getItem('requests') || '[]');
+
+  list.forEach((r,i) => {
+    const div = document.createElement('div');
+    div.className = 'request ' + (r.lane === 'fast' ? 'fast' : '');
+    div.innerHTML = `
+      <strong>${r.song}</strong> – ${r.artist}<br>
+      From: ${r.name}<br>
+      Lane: ${r.lane.toUpperCase()} (${r.payment})
+      <br><br>
+      ${!r.approved ? `<button class="approve" onclick="approve(${i})">Approve</button>` : ''}
+      <button class="remove" onclick="removeReq(${i})">Remove (Played)</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function approve(i) {
+  const list = JSON.parse(localStorage.getItem('requests'));
+  list[i].approved = true;
+  localStorage.setItem('requests', JSON.stringify(list));
+  render();
+}
+
+function removeReq(i) {
+  const list = JSON.parse(localStorage.getItem('requests'));
+  list.splice(i,1);
+  localStorage.setItem('requests', JSON.stringify(list));
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Song Requests</title>
+
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #111, #000);
+  font-family: Montserrat, sans-serif;
+  color: #eaeaea;
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+.container {
+  width: 95%;
+  max-width: 480px;
+}
+
+/* SECTION TITLES */
+.section-title {
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  margin: 20px 0 10px;
+  opacity: 0.8;
+}
+
+/* FAST PASS */
+.fastpass-section {
+  border: 1px solid gold;
+  border-radius: 14px;
+  padding: 12px;
+  background: linear-gradient(145deg, #2a2100, #000);
+  box-shadow: 0 0 14px gold;
+}
+.fastpass-card {
+  border: 1px solid gold;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: linear-gradient(145deg, #3b2f00, #000);
+  animation: pulse 1.5s infinite;
+}
+.fastpass-card strong { color: gold; }
+.fastpass-card span {
+  display: block;
+  font-size: 0.75rem;
+  color: #f5d76e;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 8px gold; }
+  50% { box-shadow: 0 0 18px gold; }
+  100% { box-shadow: 0 0 8px gold; }
+}
+
+/* FREE */
+.free-section {
+  margin-top: 20px;
+  padding: 10px;
+  background: #0e0e0e;
+  border: 1px solid #222;
+  border-radius: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.free-card {
+  padding: 10px;
+  border-bottom: 1px solid #222;
+  opacity: 0.85;
+}
+.free-card:last-child { border-bottom: none; }
+.free-card span {
+  display: block;
+  font-size: 0.7rem;
+  color: #888;
+}
+
+/* ADMIN BUTTON */
+.admin-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 8px;
+  font-size: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #111;
+  color: #fff;
+  opacity: 0.6;
+}
+.admin-btn:hover { opacity: 1; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="section-title">⚡ FAST PASS</div>
+  <div id="fastLane" class="fastpass-section"></div>
+
+  <div class="section-title">🎵 FREE REQUESTS</div>
+  <div id="freeLane" class="free-section"></div>
+
+  <a href="admin.html" target="_blank">
+    <button class="admin-btn">Admin Panel</button>
+  </a>
+
+</div>
+
+<script>
+const fastLane = document.getElementById("fastLane");
+const freeLane = document.getElementById("freeLane");
+
+function render() {
+  const fast = JSON.parse(localStorage.getItem("approvedRequests") || "[]");
+  const free = JSON.parse(localStorage.getItem("freeRequests") || "[]");
+
+  fastLane.innerHTML = "";
+  freeLane.innerHTML = "";
+
+  if (!fast.length) {
+    fastLane.innerHTML = `<p style="text-align:center;opacity:.6;font-size:.75rem">No Fast Pass requests</p>`;
+  } else {
+    fast.forEach(r => {
+      const d = document.createElement("div");
+      d.className = "fastpass-card";
+      d.innerHTML = `<strong>${r.song}</strong> — ${r.artist}<span>${r.name || "Guest"} • FAST PASS</span>`;
+      fastLane.appendChild(d);
+    });
+  }
+
+  if (!free.length) {
+    freeLane.innerHTML = `<p style="text-align:center;opacity:.6;font-size:.75rem">No free requests</p>`;
+  } else {
+    free.forEach(r => {
+      const d = document.createElement("div");
+      d.className = "free-card";
+      d.innerHTML = `<strong>${r.song}</strong> — ${r.artist}<span>${r.name || "Guest"}</span>`;
+      freeLane.appendChild(d);
+    });
+  }
+}
+
+render();
+setInterval(render, 2000);
+</script>
+</body>
+</html>

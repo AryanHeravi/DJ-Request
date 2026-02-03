@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Song Requests</title>
+<style>
+body {
+  background:#0f0f0f;
+  color:#fff;
+  font-family: Arial, sans-serif;
+  padding:20px;
+}
+
+h1 { text-align:center; }
+
+.toggle {
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.toggle button {
+  padding:10px 18px;
+  border:none;
+  cursor:pointer;
+  border-radius:6px;
+  background:#333;
+  color:white;
+}
+
+.toggle button.active {
+  background:#d4af37;
+  color:black;
+}
+
+.form {
+  max-width:400px;
+  margin:0 auto 20px;
+  display:none;
+}
+
+.form.active { display:block; }
+
+input {
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:6px;
+  border:none;
+}
+
+.submit-btn {
+  width:100%;
+  padding:12px;
+  background:#1db954;
+  border:none;
+  border-radius:6px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.fast-buttons {
+  display:flex;
+  gap:10px;
+}
+
+.fast-buttons button, .fast-buttons a {
+  flex:1;
+  text-align:center;
+  padding:12px;
+  border-radius:6px;
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  color:white;
+}
+
+.paypal {
+  background:#0070ba;
+}
+
+.cash {
+  background:#555;
+}
+
+.lanes {
+  display:flex;
+  gap:20px;
+  margin-top:30px;
+}
+
+.lane {
+  flex:1;
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:10px;
+}
+
+.request {
+  padding:10px;
+  margin-bottom:10px;
+  background:#2a2a2a;
+  border-radius:6px;
+}
+
+.fast-approved {
+  background:linear-gradient(270deg,#d4af37,#ffd700,#d4af37);
+  background-size:400% 400%;
+  animation:pulse 3s ease infinite;
+  color:black;
+  font-weight:bold;
+}
+
+@keyframes pulse {
+  0% { background-position:0% 50%; }
+  50% { background-position:100% 50%; }
+  100% { background-position:0% 50%; }
+}
+
+.admin-link {
+  position:fixed;
+  bottom:15px;
+  right:15px;
+  background:#444;
+  padding:10px 14px;
+  border-radius:20px;
+  text-decoration:none;
+  color:white;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎵 Song Requests</h1>
+
+<div class="toggle">
+  <button id="freeBtn" class="active">Free Lane</button>
+  <button id="fastBtn">Fast Pass</button>
+</div>
+
+<!-- FREE FORM -->
+<div id="freeForm" class="form active">
+  <input id="freeSong" placeholder="Song name" />
+  <input id="freeArtist" placeholder="Artist name" />
+  <input id="freeName" placeholder="Your name" />
+  <button class="submit-btn" onclick="submitRequest('free')">Submit Free Request</button>
+</div>
+
+<!-- FAST FORM -->
+<div id="fastForm" class="form">
+  <input id="fastSong" placeholder="Song name" />
+  <input id="fastArtist" placeholder="Artist name" />
+  <input id="fastName" placeholder="Your name" />
+
+  <div class="fast-buttons">
+    <a class="paypal" href="https://www.paypal.me/YOURPAYPALLINK" target="_blank"
+       onclick="submitRequest('paypal')">PayPal</a>
+    <button class="cash" onclick="submitRequest('cash')">Cash</button>
+  </div>
+</div>
+
+<div class="lanes">
+  <div class="lane">
+    <h3>🚶 Free Lane</h3>
+    <div id="freeLane"></div>
+  </div>
+
+  <div class="lane">
+    <h3>⚡ Fast Pass</h3>
+    <div id="fastLane"></div>
+  </div>
+</div>
+
+<a class="admin-link" href="admin.html">Admin</a>
+
+<script>
+const freeBtn = document.getElementById('freeBtn');
+const fastBtn = document.getElementById('fastBtn');
+const freeForm = document.getElementById('freeForm');
+const fastForm = document.getElementById('fastForm');
+
+freeBtn.onclick = () => {
+  freeBtn.classList.add('active');
+  fastBtn.classList.remove('active');
+  freeForm.classList.add('active');
+  fastForm.classList.remove('active');
+};
+
+fastBtn.onclick = () => {
+  fastBtn.classList.add('active');
+  freeBtn.classList.remove('active');
+  fastForm.classList.add('active');
+  freeForm.classList.remove('active');
+};
+
+function submitRequest(type) {
+  const data = {
+    song: document.getElementById(type === 'free' ? 'freeSong' : 'fastSong').value,
+    artist: document.getElementById(type === 'free' ? 'freeArtist' : 'fastArtist').value,
+    name: document.getElementById(type === 'free' ? 'freeName' : 'fastName').value,
+    lane: type === 'free' ? 'free' : 'fast',
+    payment: type,
+    approved:false
+  };
+
+  if (!data.song || !data.artist || !data.name) return alert("Fill everything");
+
+  const list = JSON.parse(localStorage.getItem('requests') || '[]');
+  list.push(data);
+  localStorage.setItem('requests', JSON.stringify(list));
+  alert("Request sent!");
+}
+</script>
+
+</body>
+</html>
