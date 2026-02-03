@@ -8,7 +8,7 @@
 <style>
 :root{
   --bg:#0b0b0d;
-  --panel:rgba(30,30,35,0.75);
+  --panel:rgba(30,30,35,0.85);
   --border:rgba(255,255,255,0.08);
   --text:#e5e5e5;
   --accent:#00ffd0;
@@ -45,9 +45,11 @@ input{padding:12px;border-radius:12px;border:1px solid var(--border);background:
 .request{padding:10px 12px;border-radius:12px;background:rgba(20,20,25,0.85);margin-bottom:10px;font-size:14px;transition:0.3s;}
 .request.approved-fast{animation: goldPulse 3s ease infinite;background:linear-gradient(270deg,var(--gold),#ffec9e,var(--gold));background-size:300% 300%;color:black;}
 @keyframes goldPulse{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+#closedNote{display:none;text-align:center;color:#aaa;font-size:0.9rem;margin-top:20px;}
 @media(max-width:700px){.lanes{grid-template-columns:1fr;}button{font-size:14px;padding:12px;}}
 </style>
 </head>
+
 <body>
 
 <h1>🎵 Song Request</h1>
@@ -82,6 +84,12 @@ input{padding:12px;border-radius:12px;border:1px solid var(--border);background:
       <h3>FAST PASS</h3>
       <div id="fastLane"></div>
     </div>
+  </div>
+
+  <!-- Closed note -->
+  <div id="closedNote">
+    The Granville Warehouse Song Request web app is only available during your working hours:<br>
+    Thursday–Monday, 8 PM → 2 AM Vancouver time.
   </div>
 
   <!-- Admin button -->
@@ -119,7 +127,11 @@ const paymentInput = document.getElementById('payment');
 const paymentOptions = document.getElementById('paymentOptions');
 const paypalBtn = document.getElementById('paypalBtn');
 const cashBtn = document.getElementById('cashBtn');
+const freeLane = document.getElementById('freeLane');
+const fastLane = document.getElementById('fastLane');
+const closedNote = document.getElementById('closedNote');
 
+// Selection buttons
 freeBtn.onclick = ()=>{
   laneInput.value='free';
   paymentInput.value='free';
@@ -143,7 +155,7 @@ cashBtn.onclick = ()=>{
   paymentOptions.style.display='none';
 }
 
-/* Submit request to Firebase */
+// Submit request to Firebase
 requestForm.addEventListener('submit', e=>{
   e.preventDefault();
   const songData = {
@@ -155,37 +167,79 @@ requestForm.addEventListener('submit', e=>{
     status:'pending',
     timestamp:Date.now()
   };
-  const newRef = db.ref('requests').push();
-  newRef.set(songData).then(()=>{
+  db.ref('requests').push(songData).then(()=>{
     alert("Request submitted! Admin will approve it.");
     requestForm.reset();
     requestForm.style.display='none';
   });
 });
 
-/* Format timestamp */
+// Timestamp formatting
 function formatTime(ts){
   const d = new Date(ts);
   let h = d.getHours();
   let m = d.getMinutes();
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
+  const ampm = h>=12?'PM':'AM';
+  h = h%12||12;
   m = m<10?'0'+m:m;
   return `${h}:${m} ${ampm}`;
 }
 
-/* Render live lanes (approved only) */
-const freeLane = document.getElementById('freeLane');
-const fastLane = document.getElementById('fastLane');
+// Vancouver time check
+function getVancouverTime() {
+  const now = new Date();
+  const tzOffset = -480; // Vancouver PST/PDT
+  return new Date(now.getTime() + (now.getTimezoneOffset() + tzOffset)*60000);
+}
 
+// Check if app is open
+function isOpenNow() {
+  const now = getVancouverTime();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const min = now.getMinutes();
+  const windows = [
+    [4,20,5,2],[5,20,6,2],[6,20,0,2],[0,20,1,2],[1,20,2,2]
+  ];
+  let open=false;
+  for(let w of windows){
+    const [dStart,hStart,dEnd,hEnd]=w;
+    if ((day===dStart && hour>=hStart)||(day===dEnd && hour<hEnd)||
+        (dStart>dEnd && (day>dStart || day<dEnd))) {
+      open=true;
+      break;
+    }
+  }
+  return {open, now};
+}
+
+// Update UI
+function updateUI() {
+  const {open} = isOpenNow();
+  if(open){
+    requestForm.style.display='none';
+    paymentOptions.style.display='none';
+    freeBtn.style.display='block';
+    fastBtn.style.display='block';
+    closedNote.style.display='none';
+  } else {
+    requestForm.style.display='none';
+    paymentOptions.style.display='none';
+    freeBtn.style.display='none';
+    fastBtn.style.display='none';
+    closedNote.style.display='block';
+  }
+}
+
+// Render live lanes (only approved)
 function renderLanes(){
   db.ref('requests').on('value', snapshot=>{
     freeLane.innerHTML='';
     fastLane.innerHTML='';
     snapshot.forEach(child=>{
-      const r = child.val();
+      const r=child.val();
       if(r.status!=='approved') return;
-      const div = document.createElement('div');
+      const div=document.createElement('div');
       div.className='request';
       if(r.lane==='fast') div.className='request approved-fast';
       div.innerHTML=`<strong>${r.song}</strong> – ${r.artist}<br><small>${r.name||''} | ${formatTime(r.timestamp)}</small>`;
@@ -196,14 +250,18 @@ function renderLanes(){
 }
 renderLanes();
 
-/* Auto-clear requests after 2 AM */
-function clearRequestsAfter2AM(){
-  const now = new Date();
-  if(now.getHours() >= 2){
+// Auto-clear requests at 2 AM Vancouver
+function clearRequestsIf2AM() {
+  const {now} = isOpenNow();
+  if(now.getHours()===2 && now.getMinutes()===0){
     db.ref('requests').remove();
+    console.log("All requests cleared at 2 AM Vancouver time");
   }
 }
-setInterval(clearRequestsAfter2AM,60000); // every minute
+
+// Intervals
+setInterval(updateUI,1000);
+setInterval(clearRequestsIf2AM,60000);
 </script>
 </body>
 </html>

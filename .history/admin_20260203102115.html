@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Song Requests</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0d;
+  --panel:rgba(30,30,35,0.85);
+  --border:rgba(255,255,255,0.08);
+  --text:#e5e5e5;
+  --accent:#00ffd0;
+  --gold:#d4af37;
+  --highlight:#ff4d4d;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Montserrat',sans-serif;
+  background:linear-gradient(180deg,#0b0b0d,#0a0a0a);
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+h1{text-align:center;margin-bottom:20px;font-weight:600;letter-spacing:1px;}
+.container{width:100%;max-width:600px;display:flex;flex-direction:column;gap:16px;}
+button{padding:12px;border:none;border-radius:12px;font-weight:600;font-size:15px;cursor:pointer;transition:0.3s;backdrop-filter:blur(6px);}
+button:hover{transform:scale(1.03);}
+.request{padding:10px 12px;border-radius:12px;background:rgba(20,20,25,0.85);margin-bottom:10px;font-size:14px;display:flex;justify-content:space-between;align-items:center;transition:0.3s;}
+.request.approved-fast{animation: goldPulse 3s ease infinite;background:linear-gradient(270deg,var(--gold),#ffec9e,var(--gold));background-size:300% 300%;color:black;}
+@keyframes goldPulse{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+form{display:flex;flex-direction:column;gap:12px;background:var(--panel);padding:20px;border-radius:16px;border:1px solid var(--border);}
+input{padding:12px;border-radius:12px;border:1px solid var(--border);background:#111;color:white;font-size:15px;}
+.lane-title{color:var(--accent);font-weight:600;letter-spacing:1px;margin-top:10px;}
+.lane{display:flex;flex-direction:column;gap:10px;}
+#countdown{margin-bottom:12px;color:#aaa;font-size:14px;text-align:center;}
+@media(max-width:700px){.container{width:100%;padding:10px;}}
+</style>
+</head>
+<body>
+
+<h1>🎛 Admin Panel</h1>
+<div class="container">
+
+  <!-- Countdown until next open -->
+  <div id="countdown"></div>
+
+  <!-- Password Login -->
+  <form id="loginForm">
+    <input type="password" id="adminPass" placeholder="Enter Admin Password" required>
+    <button type="submit" style="background:var(--highlight); color:white;">Login</button>
+  </form>
+
+  <!-- Admin Panel -->
+  <div id="panel" style="display:none; flex-direction:column; gap:12px; width:100%;">
+    <div class="lane">
+      <h2 class="lane-title">Pending Requests</h2>
+      <div id="pendingRequests"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  storageBucket: "aryauxsongrequest.firebasestorage.app",
+  messagingSenderId: "376455919089",
+  appId: "1:376455919089:web:4962df21f4145b61c30050",
+  measurementId: "G-F8MTQQE489"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+</script>
+
+<script>
+const loginForm = document.getElementById('loginForm');
+const adminPass = document.getElementById('adminPass');
+const panel = document.getElementById('panel');
+const pendingRequestsDiv = document.getElementById('pendingRequests');
+const countdownDiv = document.getElementById('countdown');
+
+const PASSWORD = "1234"; // admin password
+
+loginForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  if(adminPass.value === PASSWORD){
+    loginForm.style.display='none';
+    panel.style.display='flex';
+    initAdminPanel();
+  } else {
+    alert("Incorrect password!");
+  }
+});
+
+// Helper: Vancouver time
+function getVancouverTime() {
+  const now = new Date();
+  const tzOffset = -480; // PST/PDT
+  return new Date(now.getTime() + (now.getTimezoneOffset() + tzOffset)*60000);
+}
+
+// Check if now is inside work windows
+function isOpenNow() {
+  const now = getVancouverTime();
+  const day = now.getDay(); // 0=Sun, 1=Mon, ... 6=Sat
+  const hour = now.getHours();
+  const min = now.getMinutes();
+  const windows = [
+    [4,20,5,2],[5,20,6,2],[6,20,0,2],[0,20,1,2],[1,20,2,2]
+  ];
+  let open=false;
+  let nextOpen=null;
+
+  for(let w of windows){
+    const [dStart,hStart,dEnd,hEnd]=w;
+    if ((day===dStart && hour>=hStart)||(day===dEnd && hour<hEnd)||
+        (dStart>dEnd && (day>dStart || day<dEnd))) {
+      open=true;
+    } else if(!nextOpen || ((dStart*24+hStart) < (nextOpen.getDay()*24+nextOpen.getHours()))){
+      nextOpen = new Date(now);
+      // set to next window start 8 PM
+      const diffDays = (dStart + 7 - day)%7;
+      nextOpen.setDate(now.getDate()+diffDays);
+      nextOpen.setHours(hStart,0,0,0);
+    }
+  }
+  return {open, now, nextOpen};
+}
+
+// Countdown until next open
+function updateCountdown() {
+  const {open, nextOpen} = isOpenNow();
+  if(open){
+    countdownDiv.textContent = "Currently OPEN";
+  } else if(nextOpen){
+    const diff = nextOpen - new Date();
+    const h = Math.floor(diff/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const s = Math.floor((diff%60000)/1000);
+    countdownDiv.textContent = `Next open in ${h}h ${m}m ${s}s`;
+  }
+}
+
+// Format timestamp
+function formatTime(ts){
+  const d = new Date(ts);
+  let h = d.getHours();
+  let m = d.getMinutes();
+  const ampm = h>=12?'PM':'AM';
+  h=h%12||12;
+  m=m<10?'0'+m:m;
+  return `${h}:${m} ${ampm}`;
+}
+
+// Initialize admin panel
+function initAdminPanel(){
+  db.ref('requests').on('value', snapshot=>{
+    pendingRequestsDiv.innerHTML='';
+    snapshot.forEach(child=>{
+      const r = child.val();
+      if(r.status==='approved') return;
+      const div=document.createElement('div');
+      div.className='request';
+      div.innerHTML=`<div><strong>${r.song}</strong> – ${r.artist}<br><small>${r.name||''} | ${formatTime(r.timestamp)}</small></div>`;
+
+      const approveBtn = document.createElement('button');
+      approveBtn.textContent='Approve';
+      approveBtn.style.background='#00ffd0';
+      approveBtn.style.color='#000';
+      approveBtn.onclick = ()=>child.ref.update({status:'approved'});
+
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent='Remove';
+      removeBtn.style.background='#ff4d4d';
+      removeBtn.onclick = ()=>child.ref.remove();
+
+      div.appendChild(approveBtn);
+      div.appendChild(removeBtn);
+      pendingRequestsDiv.appendChild(div);
+    });
+  });
+}
+
+// Auto-clear requests at 2 AM Vancouver
+function clearRequestsIf2AM() {
+  const {now} = isOpenNow();
+  if(now.getHours()===2 && now.getMinutes()===0){
+    db.ref('requests').remove();
+    console.log("All requests cleared at 2 AM Vancouver time");
+  }
+}
+
+// Intervals
+setInterval(updateCountdown,1000);
+setInterval(clearRequestsIf2AM,60000);
+</script>
+</body>
+</html>
