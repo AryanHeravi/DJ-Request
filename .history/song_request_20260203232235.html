@@ -88,7 +88,6 @@ h1{
   display:none;
   flex-direction:column;
   gap:12px;
-  margin-top:10px;
 }
 
 #paypalBtn{
@@ -128,7 +127,6 @@ form{
   padding:20px;
   border-radius:16px;
   box-shadow:0 4px 20px rgba(0,0,0,0.6);
-  margin-top:10px;
 }
 
 input{
@@ -174,7 +172,7 @@ input{
   box-shadow:0 2px 8px rgba(0,0,0,0.3);
 }
 
-.request.approved-priority{
+.request.approved-fast{
   animation:goldPulse 3s ease infinite;
   background:linear-gradient(270deg,var(--gold),#ffec9e,var(--gold));
   background-size:300% 300%;
@@ -234,10 +232,10 @@ input{
   <!-- Lane selection -->
   <div class="lane-select">
     <div id="freeCard" class="lane-card">Free Request</div>
-    <div id="priorityCard" class="lane-card">Priority</div>
+    <div id="fastCard" class="lane-card">Fast Pass</div>
   </div>
 
-  <!-- Payment options for Priority -->
+  <!-- Payment options -->
   <div id="paymentOptions">
     <button id="paypalBtn">Pay with PayPal</button>
     <button id="cashBtn">Pay with Cash</button>
@@ -260,8 +258,8 @@ input{
       <div id="freeLane"></div>
     </div>
     <div class="lane">
-      <h3>PRIORITY</h3>
-      <div id="priorityLane"></div>
+      <h3>FAST PASS</h3>
+      <div id="fastLane"></div>
     </div>
   </div>
 
@@ -292,7 +290,7 @@ const db = firebase.database();
 
 <script>
 const freeCard = document.getElementById('freeCard');
-const priorityCard = document.getElementById('priorityCard');
+const fastCard = document.getElementById('fastCard');
 const paymentOptions = document.getElementById('paymentOptions');
 const requestForm = document.getElementById('requestForm');
 const laneInput = document.getElementById('lane');
@@ -302,57 +300,69 @@ const cashBtn = document.getElementById('cashBtn');
 
 let paypalSelected = false;
 
-// Toggle lane open/close
+function clearSelection(){
+  freeCard.classList.remove('selected');
+  fastCard.classList.remove('selected');
+}
+
+function showForm(){
+  requestForm.classList.remove('hide');
+  requestForm.classList.add('show');
+}
+
+function hideForm(){
+  requestForm.classList.remove('show');
+  requestForm.classList.add('hide');
+  setTimeout(()=>{requestForm.style.display='none';},350);
+}
+
+function showPayment(){
+  paymentOptions.classList.remove('hide');
+  paymentOptions.classList.add('show');
+  paymentOptions.style.display='flex';
+}
+
+function hidePayment(){
+  paymentOptions.classList.remove('show');
+  paymentOptions.classList.add('hide');
+  setTimeout(()=>{paymentOptions.style.display='none';},350);
+}
+
+/* Lane selection */
 freeCard.onclick = () => {
-  const isOpen = requestForm.style.display === 'flex' && laneInput.value === 'free';
-  if(isOpen){
-    requestForm.style.display = 'none';
-    freeCard.classList.remove('selected');
-  } else {
-    laneInput.value = 'free';
-    paymentInput.value = 'free';
-    paypalSelected = false;
-    requestForm.style.display = 'flex';
-    paymentOptions.style.display = 'none';
-    freeCard.classList.add('selected');
-    priorityCard.classList.remove('selected');
-  }
+  clearSelection();
+  freeCard.classList.add('selected');
+  laneInput.value = 'free';
+  paymentInput.value = 'free';
+  paypalSelected = false;
+  hidePayment();
+  showForm();
 };
 
-priorityCard.onclick = () => {
-  const isOpen = paymentOptions.style.display === 'flex' || (requestForm.style.display === 'flex' && laneInput.value === 'priority');
-  if(isOpen){
-    paymentOptions.style.display = 'none';
-    requestForm.style.display = 'none';
-    priorityCard.classList.remove('selected');
-  } else {
-    laneInput.value = '';
-    paymentInput.value = '';
-    paymentOptions.style.display = 'flex';
-    requestForm.style.display = 'none';
-    priorityCard.classList.add('selected');
-    freeCard.classList.remove('selected');
-  }
+fastCard.onclick = () => {
+  clearSelection();
+  fastCard.classList.add('selected');
+  hideForm();
+  showPayment();
 };
 
-// Priority payment selection
 paypalBtn.onclick = () => {
-  laneInput.value = 'priority';
+  laneInput.value = 'fast';
   paymentInput.value = 'paypal';
   paypalSelected = true;
-  paymentOptions.style.display = 'none';
-  requestForm.style.display = 'flex';
+  hidePayment();
+  showForm();
 };
 
 cashBtn.onclick = () => {
-  laneInput.value = 'priority';
+  laneInput.value = 'fast';
   paymentInput.value = 'cash';
   paypalSelected = false;
-  paymentOptions.style.display = 'none';
-  requestForm.style.display = 'flex';
+  hidePayment();
+  showForm();
 };
 
-// Submit
+/* Submit */
 requestForm.addEventListener('submit', e => {
   e.preventDefault();
 
@@ -368,9 +378,7 @@ requestForm.addEventListener('submit', e => {
 
   db.ref('requests').push(data).then(() => {
     requestForm.reset();
-    requestForm.style.display = 'none';
-    freeCard.classList.remove('selected');
-    priorityCard.classList.remove('selected');
+    hideForm();
 
     if (paypalSelected) {
       window.location.href = "https://paypal.me/aryaux";
@@ -380,7 +388,7 @@ requestForm.addEventListener('submit', e => {
   });
 });
 
-// Render approved lanes
+/* Render approved lanes */
 function formatTime(ts){
   const d=new Date(ts);
   let h=d.getHours(),m=d.getMinutes();
@@ -390,15 +398,15 @@ function formatTime(ts){
 }
 
 db.ref('requests').on('value', snap=>{
-  document.getElementById('freeLane').innerHTML='';
-  document.getElementById('priorityLane').innerHTML='';
+  freeLane.innerHTML='';
+  fastLane.innerHTML='';
   snap.forEach(c=>{
     const r=c.val();
     if(r.status!=='approved') return;
     const div=document.createElement('div');
-    div.className='request'+(r.lane==='priority'?' approved-priority':'');
+    div.className='request'+(r.lane==='fast'?' approved-fast':'');
     div.innerHTML=`<strong>${r.song}</strong> – ${r.artist}<br><small>${r.name||''} | ${formatTime(r.timestamp)}</small>`;
-    (r.lane==='priority'?document.getElementById('priorityLane'):document.getElementById('freeLane')).appendChild(div);
+    (r.lane==='fast'?fastLane:freeLane).appendChild(div);
   });
 });
 </script>

@@ -17,7 +17,7 @@
   --gold:#d4af37;
   --danger:#ff4d4d;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;}
 
 body{
   margin:0;
@@ -36,7 +36,6 @@ body{
   display:flex;
   flex-direction:column;
   gap:20px;
-  padding-bottom:80px; /* space for back button */
 }
 
 h1{text-align:center;letter-spacing:1px}
@@ -89,6 +88,7 @@ h1{text-align:center;letter-spacing:1px}
   cursor:pointer;
   font-weight:600;
 }
+.controls button:hover{opacity:0.85}
 
 .lane{
   background:var(--panel);
@@ -99,6 +99,7 @@ h1{text-align:center;letter-spacing:1px}
 .lane h3{
   color:var(--accent);
   margin-bottom:12px;
+  letter-spacing:1px;
 }
 
 .request{
@@ -118,10 +119,15 @@ h1{text-align:center;letter-spacing:1px}
   color:black;
 }
 
+.request span{
+  font-size:14px;
+}
+
 .buttons{
   display:flex;
   gap:6px;
 }
+
 .buttons button{
   border:none;
   border-radius:10px;
@@ -146,27 +152,6 @@ h1{text-align:center;letter-spacing:1px}
 .cash{background:#2ecc71;color:black}
 .free{background:#555;color:white}
 
-/* BACK BUTTON */
-.back-btn{
-  position:fixed;
-  bottom:18px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:8px 14px;
-  font-size:12px;
-  letter-spacing:0.08em;
-  border-radius:999px;
-  background:rgba(255,255,255,0.08);
-  border:1px solid var(--border);
-  color:white;
-  text-decoration:none;
-  backdrop-filter:blur(10px);
-  transition:0.25s;
-}
-.back-btn:hover{
-  background:rgba(255,255,255,0.16);
-}
-
 @keyframes goldPulse{
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
@@ -180,11 +165,13 @@ h1{text-align:center;letter-spacing:1px}
 <div class="container">
   <h1>🎧 DJ Admin Panel</h1>
 
+  <!-- LOGIN -->
   <div id="loginPanel">
     <input type="password" id="password" placeholder="Admin Password">
     <button id="loginBtn">Login</button>
   </div>
 
+  <!-- REQUESTS -->
   <div id="requestsPanel">
 
     <div class="controls">
@@ -206,8 +193,6 @@ h1{text-align:center;letter-spacing:1px}
   </div>
 </div>
 
-<a href="song_request.html" class="back-btn">← BACK TO REQUESTS</a>
-
 <!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -220,51 +205,80 @@ firebase.initializeApp({
   projectId: "aryauxsongrequest",
 });
 const db = firebase.database();
+</script>
 
+<script>
+/* PASSWORD */
 const ADMIN_PASSWORD = "1234";
 
-loginBtn.onclick = () => {
-  if(password.value === ADMIN_PASSWORD){
-    loginPanel.style.display = "none";
-    requestsPanel.style.display = "flex";
+document.getElementById("loginBtn").onclick = () => {
+  if(document.getElementById("password").value === ADMIN_PASSWORD){
+    document.getElementById("loginPanel").style.display = "none";
+    document.getElementById("requestsPanel").style.display = "flex";
     loadRequests();
-  } else alert("Wrong password");
+  } else {
+    alert("Wrong password");
+  }
 };
 
+/* LOAD REQUESTS */
 function loadRequests(){
-  db.ref("requests").on("value", snap=>{
-    freeLane.innerHTML="";
-    priorityLane.innerHTML="";
-    snap.forEach(c=>{
-      const r=c.val();
-      if(r.status==="approved") return;
+  db.ref("requests").on("value", snap => {
+    const data = snap.val() || {};
+    freeLane.innerHTML = "";
+    priorityLane.innerHTML = "";
+
+    Object.entries(data).forEach(([id,r])=>{
+      if(r.status === "approved") return;
+
+      const card = document.createElement("div");
+      card.className = "request";
+      if(r.lane === "priority") card.classList.add("priority");
 
       let badge = `<span class="badge free">FREE</span>`;
-      if(r.payment==="paypal") badge=`<span class="badge paypal">PAID · PayPal</span>`;
-      if(r.payment==="cash") badge=`<span class="badge cash">PAID · Cash</span>`;
+      if(r.payment === "paypal") badge = `<span class="badge paypal">PAID · PayPal</span>`;
+      if(r.payment === "cash") badge = `<span class="badge cash">PAID · Cash</span>`;
 
-      const div=document.createElement("div");
-      div.className="request"+(r.lane==="priority"?" priority":"");
-      div.innerHTML=`
-        <span><strong>${r.song}</strong> – ${r.artist}<br>${badge}</span>
+      card.innerHTML = `
+        <span>
+          <strong>${r.song}</strong> – ${r.artist}<br>
+          <small>${r.name || ""}</small><br>
+          ${badge}
+        </span>
         <div class="buttons">
-          <button class="approve" onclick="approve('${c.key}')">Approve</button>
-          <button class="remove" onclick="removeReq('${c.key}')">Deny</button>
+          <button class="approve" onclick="approve('${id}')">Approve</button>
+          <button class="remove" onclick="removeReq('${id}')">Deny</button>
         </div>
       `;
-      (r.lane==="priority"?priorityLane:freeLane).appendChild(div);
+
+      if(r.lane === "priority") priorityLane.appendChild(card);
+      else freeLane.appendChild(card);
     });
   });
 }
 
-function approve(id){db.ref(`requests/${id}/status`).set("approved")}
-function removeReq(id){db.ref(`requests/${id}`).remove()}
-function clearLane(lane){
-  db.ref("requests").once("value",s=>{
-    s.forEach(c=>{if(c.val().lane===lane)c.ref.remove()})
-  })
+/* ACTIONS */
+function approve(id){
+  db.ref(`requests/${id}/status`).set("approved");
 }
-function clearAll(){if(confirm("Clear all requests?"))db.ref("requests").remove()}
+
+function removeReq(id){
+  db.ref(`requests/${id}`).remove();
+}
+
+function clearLane(lane){
+  db.ref("requests").once("value", snap=>{
+    snap.forEach(c=>{
+      if(c.val().lane === lane) c.ref.remove();
+    });
+  });
+}
+
+function clearAll(){
+  if(confirm("Clear ALL requests?")){
+    db.ref("requests").remove();
+  }
+}
 </script>
 
 </body>

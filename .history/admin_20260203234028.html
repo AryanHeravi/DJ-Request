@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0b0b0d;
+  --panel:rgba(30,30,35,0.88);
+  --border:rgba(255,255,255,0.08);
+  --text:#e5e5e5;
+  --accent:#00ffd0;
+  --gold:#d4af37;
+  --danger:#ff4d4d;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Montserrat',sans-serif;
+  background:linear-gradient(180deg,#050505,#0b0b0d);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  min-height:100vh;
+}
+
+.container{
+  width:100%;
+  max-width:600px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+h1{text-align:center;font-weight:600;}
+
+/* Panels */
+.panel{
+  background:var(--panel);
+  border-radius:16px;
+  border:1px solid var(--border);
+  padding:16px;
+}
+
+/* Login */
+#loginPanel{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+input{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#111;
+  color:white;
+}
+
+button{
+  padding:10px 14px;
+  border-radius:12px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.loginBtn{
+  background:linear-gradient(135deg,#ff4d4d,#ff1a66);
+  color:white;
+}
+
+/* Requests */
+#requestsPanel{display:none;flex-direction:column;gap:20px;}
+
+.laneSection h3{
+  color:var(--accent);
+  margin-bottom:10px;
+}
+
+.request{
+  background:#111;
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:14px;
+}
+
+.priority{
+  background:linear-gradient(270deg,var(--gold),#fff1b8,var(--gold));
+  background-size:300% 300%;
+  animation: goldPulse 3s infinite;
+  color:black;
+}
+
+.requestButtons button{
+  margin-left:6px;
+  font-size:12px;
+}
+
+.approveBtn{background:var(--accent);color:black;}
+.removeBtn{background:var(--danger);color:white;}
+
+.clearBtns{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.clearBtns button{
+  background:#222;
+  color:white;
+  border:1px solid var(--border);
+}
+
+@keyframes goldPulse{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🎵 Admin Panel</h1>
+
+  <!-- LOGIN -->
+  <div id="loginPanel" class="panel">
+    <input type="password" id="adminPassword" placeholder="Admin Password">
+    <button class="loginBtn" id="loginBtn">Login</button>
+  </div>
+
+  <!-- REQUESTS -->
+  <div id="requestsPanel">
+
+    <div class="panel laneSection">
+      <h3>Free Requests</h3>
+      <div id="freeRequests"></div>
+      <div class="clearBtns">
+        <button onclick="clearLane('free')">Clear Free</button>
+      </div>
+    </div>
+
+    <div class="panel laneSection">
+      <h3>Priority Requests</h3>
+      <div id="priorityRequests"></div>
+      <div class="clearBtns">
+        <button onclick="clearLane('priority')">Clear Priority</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <button onclick="clearAll()" style="background:#ff4d4d;color:white;">
+        🚨 Clear ALL Requests
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest"
+});
+const db = firebase.database();
+</script>
+
+<script>
+const ADMIN_PASSWORD = "1234";
+let loggedIn = false;
+
+document.getElementById('loginBtn').onclick = ()=>{
+  if(document.getElementById('adminPassword').value === ADMIN_PASSWORD){
+    loggedIn = true;
+    document.getElementById('loginPanel').style.display='none';
+    document.getElementById('requestsPanel').style.display='flex';
+    renderRequests();
+    setInterval(renderRequests,2000);
+  }else{
+    alert("Incorrect password");
+  }
+};
+
+function renderRequests(){
+  if(!loggedIn) return;
+
+  db.ref('requests').once('value',snap=>{
+    const data = snap.val() || {};
+    freeRequests.innerHTML='';
+    priorityRequests.innerHTML='';
+
+    Object.entries(data).forEach(([key,r])=>{
+      if(r.status === 'approved') return;
+
+      const div = document.createElement('div');
+      div.className = 'request' + (r.lane === 'priority' ? ' priority' : '');
+
+      div.innerHTML = `
+        <span>
+          <strong>${r.song}</strong> – ${r.artist}<br>
+          <small>${r.name||''}</small>
+        </span>
+        <div class="requestButtons"></div>
+      `;
+
+      const btns = div.querySelector('.requestButtons');
+
+      const approve = document.createElement('button');
+      approve.textContent='Approve';
+      approve.className='approveBtn';
+      approve.onclick=()=>db.ref('requests/'+key+'/status').set('approved');
+
+      const remove = document.createElement('button');
+      remove.textContent='Remove';
+      remove.className='removeBtn';
+      remove.onclick=()=>db.ref('requests/'+key).remove();
+
+      btns.append(approve,remove);
+
+      (r.lane === 'priority' ? priorityRequests : freeRequests).appendChild(div);
+    });
+  });
+}
+
+function clearLane(lane){
+  if(!confirm(`Clear all ${lane} requests?`)) return;
+  db.ref('requests').once('value',snap=>{
+    snap.forEach(child=>{
+      if(child.val().lane === lane){
+        child.ref.remove();
+      }
+    });
+  });
+}
+
+function clearAll(){
+  if(confirm("🚨 DELETE ALL REQUESTS?")){
+    db.ref('requests').remove();
+  }
+}
+</script>
+
+</body>
+</html>
