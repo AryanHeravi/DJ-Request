@@ -75,6 +75,10 @@ h1{
   background:rgba(30,30,35,0.95);
 }
 
+.lane-card.selected::after{
+  box-shadow: 0 0 15px rgba(0,255,208,0.3);
+}
+
 .lane-card:hover{
   transform:scale(1.03);
 }
@@ -193,41 +197,24 @@ input{
   cursor:pointer;
 }
 
-/* Thank you card */
-#thankyouCard{
-  position:fixed;
-  inset:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  backdrop-filter:blur(0px);
-  background:rgba(0,0,0,0);
-  opacity:0;
-  pointer-events:none;
-  transition:0.3s;
-  z-index:100;
+/* Slide animations */
+@keyframes slideIn {
+  0% { opacity:0; transform:translateY(20px);}
+  100% { opacity:1; transform:translateY(0);}
 }
-#thankyouCard.show{
-  backdrop-filter:blur(6px);
-  background:rgba(0,0,0,0.4);
-  opacity:1;
-  pointer-events:auto;
+
+@keyframes slideOut {
+  0% { opacity:1; transform:translateY(0);}
+  100% { opacity:0; transform:translateY(20px);}
 }
-#thankyouCard .card{
-  background:rgba(30,30,35,0.95);
-  padding:24px;
-  border-radius:20px;
-  text-align:center;
-  border:1px solid rgba(255,255,255,0.08);
-  max-width:320px;
-  color:white;
-  font-weight:600;
-  font-size:15px;
-  animation:fadeIn 0.3s ease forwards;
+
+.show{
+  display:flex !important;
+  animation: slideIn 0.35s ease forwards;
 }
-@keyframes fadeIn{
-  from{opacity:0; transform:scale(0.95);}
-  to{opacity:1; transform:scale(1);}
+
+.hide{
+  animation: slideOut 0.35s ease forwards;
 }
 
 /* Responsive */
@@ -285,11 +272,6 @@ input{
 
 </div>
 
-<!-- Thank you card -->
-<div id="thankyouCard">
-  <div class="card" id="thankyouMessage"></div>
-</div>
-
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -317,9 +299,6 @@ const laneInput = document.getElementById('lane');
 const paymentInput = document.getElementById('payment');
 const paypalBtn = document.getElementById('paypalBtn');
 const cashBtn = document.getElementById('cashBtn');
-
-const thankyouCard = document.getElementById('thankyouCard');
-const thankyouMessage = document.getElementById('thankyouMessage');
 
 let paypalSelected = false;
 
@@ -393,17 +372,10 @@ requestForm.addEventListener('submit', e => {
     freeCard.classList.remove('selected');
     priorityCard.classList.remove('selected');
 
-    // Show thank you card
-    if(laneInput.value==='free'){
-      thankyouMessage.innerText = "Thank you for your request.\nThe DJ will decide the best time to play your song!";
-    } else {
-      thankyouMessage.innerText = "Thank you for choosing the Priority request and tipping.\nGive the DJ 10 minutes to play your song!";
-    }
-    thankyouCard.classList.add('show');
-    setTimeout(()=>{thankyouCard.classList.remove('show')},4000);
-
     if (paypalSelected) {
       window.location.href = "https://paypal.me/aryaux";
+    } else {
+      alert("Request sent! Please pay cash at the DJ booth.");
     }
   });
 });
@@ -425,8 +397,7 @@ db.ref('requests').on('value', snap=>{
     if(r.status!=='approved') return;
     const div=document.createElement('div');
     div.className='request'+(r.lane==='priority'?' approved-priority':'');
-    let paymentLabel = r.payment==='paypal'?'Paid with PayPal': r.payment==='cash'?'Paid with Cash':'Free';
-    div.innerHTML=`<strong>${r.song}</strong> – ${r.artist}<br><small>${r.name||''} | ${paymentLabel} | ${formatTime(r.timestamp)}</small>`;
+    div.innerHTML=`<strong>${r.song}</strong> – ${r.artist}<br><small>${r.name||''} | ${formatTime(r.timestamp)}</small>`;
     (r.lane==='priority'?document.getElementById('priorityLane'):document.getElementById('freeLane')).appendChild(div);
   });
 });

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Song Request</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#060608;
+  --panel:rgba(30,30,35,0.85);
+  --border:rgba(255,255,255,0.08);
+  --text:#e5e5e5;
+  --accent:#00ffd0;
+  --danger:#ff4d4d;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:'Montserrat',sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,0.05), transparent 55%),
+    linear-gradient(180deg,#050507,#0c0c10);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  min-height:100vh;
+}
+
+.container{
+  width:100%;
+  max-width:480px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+/* SECTION BUTTON */
+.section-btn{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  font-weight:600;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  transition:0.25s;
+}
+.section-btn:hover{background:rgba(255,255,255,0.08)}
+
+.chevron{
+  transition:0.3s ease;
+  font-size:18px;
+}
+.section-btn.closed .chevron{
+  transform:rotate(-90deg);
+}
+
+/* CONTENT */
+.section-content{
+  display:none;
+  flex-direction:column;
+  gap:12px;
+  background:var(--panel);
+  padding:18px;
+  border-radius:16px;
+  border:1px solid var(--border);
+}
+
+/* INPUTS */
+input{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#111;
+  color:white;
+  font-size:15px;
+}
+
+button.submit{
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--danger),#ff1a66);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* PAYMENT */
+.payment{
+  display:flex;
+  gap:10px;
+}
+.payment button{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-weight:600;
+  cursor:pointer;
+}
+.paypal{background:#003087;color:white}
+.cash{background:#2ecc71;color:black}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- FREE REQUEST -->
+  <div class="section-btn closed" onclick="toggleSection('free')">
+    Free Request
+    <span class="chevron">⌄</span>
+  </div>
+  <form id="freeSection" class="section-content">
+    <input name="song" placeholder="Song name" required>
+    <input name="artist" placeholder="Artist name" required>
+    <input name="name" placeholder="Your name (optional)">
+    <button class="submit">Submit Free Request</button>
+  </form>
+
+  <!-- PRIORITY -->
+  <div class="section-btn closed" onclick="toggleSection('priority')">
+    Priority Request
+    <span class="chevron">⌄</span>
+  </div>
+  <div id="prioritySection" class="section-content">
+    <div class="payment">
+      <button class="paypal" onclick="startPriority('paypal')">PayPal</button>
+      <button class="cash" onclick="startPriority('cash')">Cash</button>
+    </div>
+    <form id="priorityForm" style="display:none;flex-direction:column;gap:12px">
+      <input name="song" placeholder="Song name" required>
+      <input name="artist" placeholder="Artist name" required>
+      <input name="name" placeholder="Your name (optional)">
+      <button class="submit">Submit Priority</button>
+    </form>
+  </div>
+
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain:"aryauxsongrequest.firebaseapp.com",
+  databaseURL:"https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId:"aryauxsongrequest"
+});
+const db=firebase.database();
+
+/* TOGGLE */
+function toggleSection(id){
+  document.querySelectorAll('.section-content').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.section-btn').forEach(b=>b.classList.add('closed'));
+
+  const content = id === 'free' ? freeSection : prioritySection;
+  const btn = event.currentTarget;
+
+  if(content.style.display === 'flex'){
+    content.style.display='none';
+    btn.classList.add('closed');
+  }else{
+    content.style.display='flex';
+    btn.classList.remove('closed');
+  }
+}
+
+/* FREE SUBMIT */
+freeSection.onsubmit=e=>{
+  e.preventDefault();
+  db.ref('requests').push({
+    song:e.target.song.value,
+    artist:e.target.artist.value,
+    name:e.target.name.value,
+    lane:'free',
+    payment:'free',
+    status:'pending',
+    timestamp:Date.now()
+  });
+  e.target.reset();
+  alert("Free request sent!");
+};
+
+/* PRIORITY */
+let payType='';
+function startPriority(type){
+  payType=type;
+  priorityForm.style.display='flex';
+}
+
+priorityForm.onsubmit=e=>{
+  e.preventDefault();
+  db.ref('requests').push({
+    song:e.target.song.value,
+    artist:e.target.artist.value,
+    name:e.target.name.value,
+    lane:'priority',
+    payment:payType,
+    status:'pending',
+    timestamp:Date.now()
+  }).then(()=>{
+    if(payType==='paypal') window.location.href="https://paypal.me/aryaux";
+    else alert("Please pay cash at the DJ booth.");
+  });
+};
+</script>
+
+</body>
+</html>

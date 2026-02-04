@@ -400,7 +400,7 @@ requestForm.addEventListener('submit', e => {
       thankyouMessage.innerText = "Thank you for choosing the Priority request and tipping.\nGive the DJ 10 minutes to play your song!";
     }
     thankyouCard.classList.add('show');
-    setTimeout(()=>{thankyouCard.classList.remove('show')},4000);
+    setTimeout(()=>{thankyouCard.classList.remove('show')},2000);
 
     if (paypalSelected) {
       window.location.href = "https://paypal.me/aryaux";

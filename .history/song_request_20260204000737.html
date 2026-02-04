@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Song Request</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#060608;
+  --panel:rgba(30,30,35,0.85);
+  --border:rgba(255,255,255,0.08);
+  --text:#e5e5e5;
+  --accent:#00ffd0;
+  --danger:#ff4d4d;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:'Montserrat',sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,0.05), transparent 55%),
+    linear-gradient(180deg,#050507,#0c0c10);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  min-height:100vh;
+}
+
+.container{
+  width:100%;
+  max-width:480px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+/* SECTION BUTTONS */
+.section-btn{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.25s;
+}
+.section-btn:hover{background:rgba(255,255,255,0.08)}
+
+/* CONTENT */
+.section-content{
+  display:none;
+  flex-direction:column;
+  gap:12px;
+  background:var(--panel);
+  padding:18px;
+  border-radius:16px;
+  border:1px solid var(--border);
+}
+
+/* INPUTS */
+input{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#111;
+  color:white;
+  font-size:15px;
+}
+
+button.submit{
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--danger),#ff1a66);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* PAYMENT BUTTONS */
+.payment{
+  display:flex;
+  gap:10px;
+}
+.payment button{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-weight:600;
+  cursor:pointer;
+}
+.paypal{background:#003087;color:white}
+.cash{background:#2ecc71;color:black}
+
+/* THANK YOU CARD */
+#thankyouCard{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  backdrop-filter:blur(0px);
+  background:rgba(0,0,0,0);
+  opacity:0;
+  pointer-events:none;
+  transition:0.3s;
+  z-index:100;
+}
+#thankyouCard.show{
+  backdrop-filter:blur(6px);
+  background:rgba(0,0,0,0.4);
+  opacity:1;
+  pointer-events:auto;
+}
+#thankyouCard .card{
+  background:rgba(30,30,35,0.95);
+  padding:24px;
+  border-radius:20px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,0.08);
+  max-width:320px;
+  color:white;
+  font-weight:600;
+  font-size:15px;
+  animation:fadeIn 0.3s ease forwards;
+}
+@keyframes fadeIn{
+  from{opacity:0; transform:scale(0.95);}
+  to{opacity:1; transform:scale(1);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- FREE REQUEST -->
+  <div class="section-btn" onclick="toggleSection('free')">
+    Free Request
+  </div>
+  <form id="freeSection" class="section-content">
+    <input name="song" placeholder="Song name" required>
+    <input name="artist" placeholder="Artist name" required>
+    <input name="name" placeholder="Your name (optional)">
+    <button class="submit">Submit Free Request</button>
+  </form>
+
+  <!-- PRIORITY REQUEST -->
+  <div class="section-btn" onclick="toggleSection('priority')">
+    Priority Request
+  </div>
+  <div id="prioritySection" class="section-content">
+    <div class="payment">
+      <button class="paypal" onclick="startPriority('paypal')">PayPal</button>
+      <button class="cash" onclick="startPriority('cash')">Cash</button>
+    </div>
+    <form id="priorityForm" style="display:none;flex-direction:column;gap:12px">
+      <input name="song" placeholder="Song name" required>
+      <input name="artist" placeholder="Artist name" required>
+      <input name="name" placeholder="Your name (optional)">
+      <button class="submit">Submit Priority</button>
+    </form>
+  </div>
+
+</div>
+
+<!-- THANK YOU CARD -->
+<div id="thankyouCard">
+  <div class="card" id="thankyouMessage"></div>
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain:"aryauxsongrequest.firebaseapp.com",
+  databaseURL:"https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId:"aryauxsongrequest"
+});
+const db=firebase.database();
+
+/* TOGGLE SECTIONS */
+function toggleSection(id){
+  const content = id==='free'?freeSection:prioritySection;
+  content.style.display = content.style.display==='flex'?'none':'flex';
+}
+
+/* FREE REQUEST SUBMIT */
+freeSection.onsubmit=e=>{
+  e.preventDefault();
+  db.ref('requests').push({
+    song:e.target.song.value,
+    artist:e.target.artist.value,
+    name:e.target.name.value,
+    lane:'free',
+    payment:'free',
+    status:'pending',
+    timestamp:Date.now()
+  }).then(()=>{
+    showThankYou('free');
+    e.target.reset();
+    freeSection.style.display='none';
+  });
+};
+
+/* PRIORITY */
+let payType='';
+function startPriority(type){
+  payType=type;
+  priorityForm.style.display='flex';
+}
+
+priorityForm.onsubmit=e=>{
+  e.preventDefault();
+  db.ref('requests').push({
+    song:e.target.song.value,
+    artist:e.target.artist.value,
+    name:e.target.name.value,
+    lane:'priority',
+    payment:payType,
+    status:'pending',
+    timestamp:Date.now()
+  }).then(()=>{
+    priorityForm.style.display='none';
+    showThankYou('priority');
+    if(payType==='paypal') window.location.href="https://paypal.me/aryaux";
+  });
+};
+
+/* SHOW THANK YOU CARD */
+function showThankYou(type){
+  const card = document.getElementById('thankyouCard');
+  const msg = document.getElementById('thankyouMessage');
+  if(type==='free') msg.innerText="Thank you for your request.\nThe DJ will decide the best time to play your song!";
+  else msg.innerText="Thank you for choosing the Priority request and tipping.\nGive the DJ 10 minutes to play your song!";
+  
+  card.classList.add('show');
+
+  setTimeout(()=>{
+    card.classList.remove('show');
+  },2000);
+}
+</script>
+
+</body>
+</html>
