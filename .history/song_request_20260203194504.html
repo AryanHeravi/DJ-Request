@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Song Request</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-
 <style>
 :root{
   --bg:#0b0b0d;
@@ -17,9 +15,7 @@
   --gold:#d4af37;
   --highlight:#ff4d4d;
 }
-
 *{box-sizing:border-box;}
-
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
@@ -31,70 +27,43 @@ body{
   min-height:100vh;
   padding:20px;
 }
+h1{text-align:center;margin-bottom:20px;font-weight:600;letter-spacing:1px;}
+.container{width:100%;max-width:480px;display:flex;flex-direction:column;gap:16px;}
 
-h1{
-  text-align:center;
-  margin-bottom:20px;
-  font-weight:600;
-  letter-spacing:1px;
-}
-
-.container{
+.image-btn{
   width:100%;
-  max-width:480px;
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-}
-
-/* Lane image buttons */
-.lane-select{
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-  align-items:center;
-}
-
-.lane-btn{
-  width:100%;
-  max-width:360px;
-  border-radius:20px;
+  max-width:260px;
+  margin:0 auto;
   cursor:pointer;
-  transition:0.25s ease;
+  transition:0.3s;
 }
+.image-btn:hover{transform:scale(1.03);}
 
-.lane-btn:hover{
-  transform:scale(1.04);
-  filter:brightness(1.1);
-}
-
-/* Payment buttons */
-#paymentOptions{
-  display:none;
-  flex-direction:column;
-  gap:12px;
-}
-
-#paypalBtn{
-  background:linear-gradient(135deg,#0070ba,#00a1ff);
-  color:white;
-}
-
-#cashBtn{
-  background:linear-gradient(135deg,#28a745,#85e085);
-  color:black;
-}
-
-button{
+#paymentOptions button{
   padding:14px;
   border:none;
   border-radius:14px;
   font-weight:600;
   font-size:16px;
   cursor:pointer;
+  transition:0.3s;
+  color:white;
+  backdrop-filter:blur(6px);
+}
+#paypalBtn{background:linear-gradient(135deg,#0070ba,#00a1ff);}
+#cashBtn{background:linear-gradient(135deg,#28a745,#85e085); color:black;}
+
+.submit-btn{
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  font-weight:600;
+  font-size:16px;
+  cursor:pointer;
+  background:linear-gradient(135deg,var(--highlight),#ff1a66);
+  color:white;
 }
 
-/* Form */
 form{
   display:none;
   flex-direction:column;
@@ -104,7 +73,6 @@ form{
   border-radius:16px;
   border:1px solid var(--border);
 }
-
 input{
   padding:12px;
   border-radius:12px;
@@ -113,34 +81,26 @@ input{
   color:white;
   font-size:15px;
 }
+#paymentOptions{display:none;flex-direction:column;gap:10px;}
 
-.submit-btn{
-  background:linear-gradient(135deg,var(--highlight),#ff1a66);
-  color:white;
-}
-
-/* Lanes */
 .lanes{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:20px;
   margin-top:20px;
 }
-
 .lane{
   background:var(--panel);
   padding:16px;
   border-radius:16px;
   border:1px solid var(--border);
 }
-
 .lane h3{
   margin-bottom:12px;
   color:var(--accent);
   font-weight:600;
   letter-spacing:1px;
 }
-
 .request{
   padding:10px 12px;
   border-radius:12px;
@@ -148,20 +108,17 @@ input{
   margin-bottom:10px;
   font-size:14px;
 }
-
 .request.approved-fast{
-  animation:goldPulse 3s ease infinite;
+  animation: goldPulse 3s ease infinite;
   background:linear-gradient(270deg,var(--gold),#ffec9e,var(--gold));
   background-size:300% 300%;
   color:black;
 }
-
 @keyframes goldPulse{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
 }
-
 @media(max-width:700px){
   .lanes{grid-template-columns:1fr;}
 }
@@ -170,24 +127,20 @@ input{
 
 <body>
 
-<h1>GRANVILLE WAREHOUSE</h1>
-<h1>🎵 SONG REQUEST 🎵</h1>
-
+<h1>🎵 Song Request</h1>
 <div class="container">
 
-  <!-- Lane selection -->
-  <div class="lane-select">
-    <img src="/photos/Group 1 (6).png" id="freeBtn" class="lane-btn" alt="Free Lane">
-    <img src="/photos/Group 2 (5).png" id="fastBtn" class="lane-btn" alt="Fast Pass">
-  </div>
+  <!-- IMAGE BUTTONS -->
+  <img src="/photos/Group 1 (6).png" id="freeBtn" class="image-btn" alt="Free Request">
+  <img src="/photos/Group 2 (5).png" id="fastBtn" class="image-btn" alt="Fast Pass">
 
   <!-- Payment options -->
   <div id="paymentOptions">
-    <button id="paypalBtn">Pay with PayPal</button>
-    <button id="cashBtn">Pay with Cash</button>
+    <button id="paypalBtn">PayPal</button>
+    <button id="cashBtn">Cash</button>
   </div>
 
-  <!-- Request form -->
+  <!-- Request Form -->
   <form id="requestForm">
     <input name="song" placeholder="Song name" required>
     <input name="artist" placeholder="Artist name" required>
@@ -197,7 +150,7 @@ input{
     <button type="submit" class="submit-btn">Submit Request</button>
   </form>
 
-  <!-- Live lanes -->
+  <!-- Live Lanes -->
   <div class="lanes">
     <div class="lane">
       <h3>FREE LANE</h3>
@@ -209,19 +162,17 @@ input{
     </div>
   </div>
 
-  <!-- Admin -->
+  <!-- Admin button -->
   <a href="admin.html">
-    <button style="margin-top:20px;background:rgba(255,255,255,0.1);color:white;">
+    <button style="background:rgba(255,255,255,0.1); color:#fff; font-size:14px; margin-top:20px; border:1px solid rgba(255,255,255,0.1); border-radius:12px;">
       Admin Panel
     </button>
   </a>
-
 </div>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
@@ -232,57 +183,45 @@ firebase.initializeApp({
   messagingSenderId: "376455919089",
   appId: "1:376455919089:web:4962df21f4145b61c30050"
 });
-
 const db = firebase.database();
 </script>
 
 <script>
 const freeBtn = document.getElementById('freeBtn');
 const fastBtn = document.getElementById('fastBtn');
-const paymentOptions = document.getElementById('paymentOptions');
 const requestForm = document.getElementById('requestForm');
 const laneInput = document.getElementById('lane');
 const paymentInput = document.getElementById('payment');
+const paymentOptions = document.getElementById('paymentOptions');
 const paypalBtn = document.getElementById('paypalBtn');
 const cashBtn = document.getElementById('cashBtn');
 
-let paypalSelected = false;
+freeBtn.onclick = ()=>{
+  laneInput.value='free';
+  paymentInput.value='free';
+  paymentOptions.style.display='none';
+  requestForm.style.display='flex';
+}
+fastBtn.onclick = ()=>{
+  requestForm.style.display='none';
+  paymentOptions.style.display='flex';
+}
+paypalBtn.onclick = ()=>{
+  laneInput.value='fast';
+  paymentInput.value='paypal';
+  requestForm.style.display='flex';
+  paymentOptions.style.display='none';
+}
+cashBtn.onclick = ()=>{
+  laneInput.value='fast';
+  paymentInput.value='cash';
+  requestForm.style.display='flex';
+  paymentOptions.style.display='none';
+}
 
-/* Lane selection */
-freeBtn.onclick = () => {
-  laneInput.value = 'free';
-  paymentInput.value = 'free';
-  paypalSelected = false;
-  paymentOptions.style.display = 'none';
-  requestForm.style.display = 'flex';
-};
-
-fastBtn.onclick = () => {
-  requestForm.style.display = 'none';
-  paymentOptions.style.display = 'flex';
-};
-
-paypalBtn.onclick = () => {
-  laneInput.value = 'fast';
-  paymentInput.value = 'paypal';
-  paypalSelected = true;
-  paymentOptions.style.display = 'none';
-  requestForm.style.display = 'flex';
-};
-
-cashBtn.onclick = () => {
-  laneInput.value = 'fast';
-  paymentInput.value = 'cash';
-  paypalSelected = false;
-  paymentOptions.style.display = 'none';
-  requestForm.style.display = 'flex';
-};
-
-/* Submit */
-requestForm.addEventListener('submit', e => {
+requestForm.addEventListener('submit', e=>{
   e.preventDefault();
-
-  const data = {
+  const songData = {
     song:e.target.song.value,
     artist:e.target.artist.value,
     name:e.target.name.value,
@@ -291,38 +230,46 @@ requestForm.addEventListener('submit', e => {
     status:'pending',
     timestamp:Date.now()
   };
-
-  db.ref('requests').push(data).then(() => {
+  db.ref('requests').push(songData).then(()=>{
+    alert("Request submitted! Admin will approve it.");
     requestForm.reset();
-    requestForm.style.display = 'none';
-
-    if (paypalSelected) {
-      window.location.href = "https://paypal.me/aryaux";
-    } else {
-      alert("Request sent! Please pay cash at the DJ booth.");
-    }
+    requestForm.style.display='none';
   });
 });
 
-/* Render approved lanes */
 function formatTime(ts){
-  const d=new Date(ts);
-  let h=d.getHours(),m=d.getMinutes();
-  const a=h>=12?'PM':'AM';
-  h=h%12||12; m=m<10?'0'+m:m;
-  return `${h}:${m} ${a}`;
+  const d = new Date(ts);
+  let h = d.getHours();
+  let m = d.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  m = m < 10 ? '0'+m : m;
+  return `${h}:${m} ${ampm}`;
 }
 
-db.ref('requests').on('value', snap=>{
+const freeLane = document.getElementById('freeLane');
+const fastLane = document.getElementById('fastLane');
+
+db.ref('requests').on('value', snapshot=>{
   freeLane.innerHTML='';
   fastLane.innerHTML='';
-  snap.forEach(c=>{
-    const r=c.val();
-    if(r.status!=='approved') return;
-    const div=document.createElement('div');
-    div.className='request'+(r.lane==='fast'?' approved-fast':'');
-    div.innerHTML=`<strong>${r.song}</strong> – ${r.artist}<br><small>${r.name||''} | ${formatTime(r.timestamp)}</small>`;
-    (r.lane==='fast'?fastLane:freeLane).appendChild(div);
+  snapshot.forEach(child=>{
+    const r = child.val();
+    if(r.status !== 'approved') return;
+
+    const div = document.createElement('div');
+    div.className = r.lane === 'fast'
+      ? 'request approved-fast'
+      : 'request';
+
+    div.innerHTML = `
+      <strong>${r.song}</strong> – ${r.artist}<br>
+      <small>${r.name || ''} | ${formatTime(r.timestamp)}</small>
+    `;
+
+    r.lane === 'fast'
+      ? fastLane.appendChild(div)
+      : freeLane.appendChild(div);
   });
 });
 </script>
