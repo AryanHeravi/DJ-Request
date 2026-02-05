@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DJ Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0d;
+  --panel:rgba(25,25,30,0.9);
+  --border:rgba(255,255,255,0.08);
+  --text:#e5e5e5;
+  --accent:#00ffd0;
+  --gold:#d4af37;
+  --danger:#ff4d4d;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Montserrat',sans-serif;}
+body{background:linear-gradient(180deg,#0b0b0d,#0a0a0a);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:20px;}
+.container{width:100%;max-width:650px;display:flex;flex-direction:column;gap:20px;padding-bottom:80px;}
+h1{text-align:center;letter-spacing:1px;}
+#loginPanel, #requestsPanel{background:var(--panel);padding:20px;border-radius:16px;border:1px solid var(--border);display:flex;flex-direction:column;gap:12px;}
+#loginPanel input{padding:12px;border-radius:12px;border:1px solid var(--border);background:#111;color:white;}
+#loginPanel button{padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#ff4d4d,#ff1a66);color:white;font-weight:600;cursor:pointer;}
+#requestsPanel{display:none;flex-direction:column;gap:20px;}
+.controls{display:flex;gap:10px;}
+.controls button{flex:1;padding:12px;border:none;border-radius:12px;background:#222;color:white;cursor:pointer;font-weight:600;}
+.lane{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;}
+.lane h3{color:var(--accent);margin-bottom:12px;}
+.request{background:#141418;border-radius:12px;padding:10px 12px;margin-bottom:10px;display:flex;justify-content:space-between;gap:10px;}
+.request.priority{animation:goldPulse 3s ease infinite;background:linear-gradient(270deg,var(--gold),#fff1a8,var(--gold));background-size:300% 300%;color:black;}
+.buttons{display:flex;gap:6px;}
+.buttons button{border:none;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;}
+.approve{background:#00ffd0;color:black}
+.remove{background:#ff4d4d;color:white}
+.badge{display:inline-block;margin-top:6px;padding:4px 8px;font-size:11px;font-weight:600;border-radius:999px;}
+.paypal{background:#003087;color:white}
+.cash{background:#2ecc71;color:black}
+.free{background:#555;color:white}
+.back-btn{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:8px 14px;font-size:12px;letter-spacing:0.08em;border-radius:999px;background:rgba(255,255,255,0.08);border:1px solid var(--border);color:white;text-decoration:none;backdrop-filter:blur(10px);transition:0.25s;}
+.back-btn:hover{background:rgba(255,255,255,0.16);}
+#djNotifyBtn{margin-top:12px;padding:10px;border-radius:12px;background:linear-gradient(135deg,#00ffd0,#00a1ff);color:black;font-weight:600;cursor:pointer;border:none;}
+@keyframes goldPulse{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎧 DJ Admin Panel</h1>
+
+  <div id="loginPanel">
+    <input type="password" id="password" placeholder="Admin Password">
+    <button id="loginBtn">Login</button>
+    <button id="djNotifyBtn">Enable DJ Notifications</button>
+  </div>
+
+  <div id="requestsPanel">
+    <div class="controls">
+      <button onclick="clearLane('free')">Clear Free</button>
+      <button onclick="clearLane('priority')">Clear Priority</button>
+      <button onclick="clearAll()">Clear ALL</button>
+    </div>
+
+    <div class="lane">
+      <h3>Free Requests</h3>
+      <div id="freeLane"></div>
+    </div>
+
+    <div class="lane">
+      <h3>Priority Requests</h3>
+      <div id="priorityLane"></div>
+    </div>
+  </div>
+</div>
+
+<a href="song_request.html" class="back-btn">← BACK TO REQUESTS</a>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
+<script>
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  appId: "1:376455919089:web:4962df21f4145b61c30050" // REQUIRED for messaging
+};
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+const messaging = firebase.messaging();
+
+const ADMIN_PASSWORD = "1234";
+
+const loginBtn = document.getElementById('loginBtn');
+const password = document.getElementById('password');
+const loginPanel = document.getElementById('loginPanel');
+const requestsPanel = document.getElementById('requestsPanel');
+const djNotifyBtn = document.getElementById('djNotifyBtn');
+
+loginBtn.addEventListener('click', () => {
+  if(password.value === ADMIN_PASSWORD){
+    loginPanel.style.display = 'none';
+    requestsPanel.style.display = 'flex';
+    loadRequests();
+  } else {
+    alert("Wrong password");
+  }
+});
+
+// DJ Notifications
+djNotifyBtn.addEventListener('click', async () => {
+  try {
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted'){
+      alert('Notifications permission denied');
+      return;
+    }
+
+    const token = await messaging.getToken({
+      vapidKey: 'BCFE9v1f2d6k640OF8ZGhFXRG4AhEE3D8xmGMahLWhR7EfOhiWIIll1TO4EUXN1zoCtSSBSN1rRO3E_GuGU04bg'
+    });
+
+    if(token){
+      alert('DJ Notification enabled!');
+      console.log('FCM Token:', token);
+      db.ref('djTokens').set({token: token});
+    } else {
+      console.error('No token returned');
+    }
+  } catch(err){
+    console.error('Error fetching token:', err);
+  }
+});
+
+// Load requests
+function loadRequests(){
+  db.ref("requests").on("value", snap=>{
+    freeLane.innerHTML = "";
+    priorityLane.innerHTML = "";
+    snap.forEach(c=>{
+      const r = c.val();
+      if(r.status==="approved") return;
+
+      let badge = `<span class="badge free">FREE</span>`;
+      if(r.payment==="paypal") badge=`<span class="badge paypal">PAID · PayPal</span>`;
+      if(r.payment==="cash") badge=`<span class="badge cash">PAID · Cash</span>`;
+
+      const div = document.createElement("div");
+      div.className = "request" + (r.lane==="priority"?" priority":"");
+      div.innerHTML = `
+        <span><strong>${r.song}</strong> – ${r.artist}<br>${badge}</span>
+        <div class="buttons">
+          <button class="approve" onclick="approve('${c.key}')">Approve</button>
+          <button class="remove" onclick="removeReq('${c.key}')">Deny</button>
+        </div>
+      `;
+      (r.lane==="priority"?priorityLane:freeLane).appendChild(div);
+    });
+  });
+}
+
+function approve(id){db.ref(`requests/${id}/status`).set("approved")}
+function removeReq(id){db.ref(`requests/${id}`).remove()}
+function clearLane(lane){db.ref("requests").once("value",s=>{s.forEach(c=>{if(c.val().lane===lane)c.ref.remove()})})}
+function clearAll(){if(confirm("Clear all requests?"))db.ref("requests").remove()}
+</script>
+
+</body>
+</html>

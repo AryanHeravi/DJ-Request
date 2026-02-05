@@ -3,142 +3,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>DJ Admin Panel</title>
+<title>Admin Panel</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
   --bg:#0b0b0d;
-  --panel:rgba(25,25,35,0.85);
+  --panel:rgba(25,25,30,0.9);
   --border:rgba(255,255,255,0.08);
   --text:#e5e5e5;
   --accent:#00ffd0;
   --gold:#d4af37;
-  --danger:#6b1f1f;
-  --neon:#e09c09;
+  --danger:#ff4d4d;
 }
-
-*{box-sizing:border-box;}
+*{box-sizing:border-box}
 
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
-  background: radial-gradient(circle at top left, rgba(0,255,208,0.05), transparent 70%), linear-gradient(180deg,#0b0b0d,#0a0a0a);
+  background:linear-gradient(180deg,#0b0b0d,#0a0a0a);
   color:var(--text);
+  min-height:100vh;
   display:flex;
   justify-content:center;
   padding:20px;
-  min-height:100vh;
 }
 
 .container{
   width:100%;
-  max-width:700px;
+  max-width:650px;
   display:flex;
   flex-direction:column;
-  gap:25px;
-  padding-bottom:100px; /* space for back button */
-  animation:fadeIn 0.6s ease forwards;
+  gap:20px;
+  padding-bottom:80px; /* space for back button */
 }
 
-h1{
-  text-align:center;
-  letter-spacing:1px;
-  font-weight:600;
-  text-shadow:0 0 6px var(--neon);
-}
+h1{text-align:center;letter-spacing:1px}
 
 /* LOGIN */
 #loginPanel{
   background:var(--panel);
-  padding:25px;
-  border-radius:20px;
+  padding:20px;
+  border-radius:16px;
   border:1px solid var(--border);
   display:flex;
   flex-direction:column;
-  gap:15px;
-  box-shadow:0 0 20px rgba(0,255,208,0.3);
+  gap:12px;
 }
-
 #loginPanel input{
-  padding:15px;
-  border-radius:15px;
+  padding:12px;
+  border-radius:12px;
   border:1px solid var(--border);
   background:#111;
   color:white;
-  font-size:16px;
 }
-
 #loginPanel button{
-  padding:16px;
+  padding:14px;
   border:none;
-  border-radius:16px;
-  background:linear-gradient(135deg,#000000,#2b2b2b);
+  border-radius:12px;
+  background:linear-gradient(135deg,#ff4d4d,#ff1a66);
   color:white;
-  font-weight:700;
-  font-size:16px;
+  font-weight:600;
   cursor:pointer;
-  box-shadow:0 0 12px rgba(255,0,255,0.4);
-  transition:0.2s;
-}
-#loginPanel button:hover{
-  transform:scale(1.03);
-  box-shadow:0 0 20px rgba(51, 35, 51, 0.6);
 }
 
-/* REQUESTS PANEL */
+/* REQUESTS */
 #requestsPanel{
   display:none;
   flex-direction:column;
-  gap:25px;
+  gap:20px;
 }
 
 .controls{
   display:flex;
-  gap:12px;
+  gap:10px;
 }
 .controls button{
   flex:1;
-  padding:14px;
+  padding:12px;
   border:none;
-  border-radius:15px;
+  border-radius:12px;
   background:#222;
   color:white;
   cursor:pointer;
   font-weight:600;
-  font-size:14px;
-  transition:0.2s;
-}
-.controls button:hover{
-  background:linear-gradient(135deg,#00ffd0,#00a1ff);
 }
 
-/* LANES */
 .lane{
   background:var(--panel);
   border:1px solid var(--border);
-  border-radius:20px;
-  padding:18px;
-  box-shadow:0 0 15px rgba(0,255,208,0.2);
+  border-radius:16px;
+  padding:16px;
 }
 .lane h3{
   color:var(--accent);
-  margin-bottom:14px;
-  text-shadow:0 0 4px var(--accent);
+  margin-bottom:12px;
 }
 
 .request{
-  background:rgba(20,20,30,0.85);
-  border-radius:14px;
-  padding:12px 16px;
-  margin-bottom:12px;
+  background:#141418;
+  border-radius:12px;
+  padding:10px 12px;
+  margin-bottom:10px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
   gap:10px;
-  box-shadow:0 0 8px rgba(0,255,208,0.3);
-  font-size:14px;
 }
 
 .request.priority{
@@ -150,70 +120,84 @@ h1{
 
 .buttons{
   display:flex;
-  gap:8px;
+  gap:6px;
 }
 .buttons button{
   border:none;
-  border-radius:12px;
+  border-radius:10px;
   padding:6px 10px;
   font-size:12px;
   font-weight:600;
   cursor:pointer;
-  transition:0.2s;
 }
-.approve{background:#00ffd0;color:black;}
-.remove{background:#b37f11;color:white;}
+.approve{background:#00ffd0;color:black}
+.remove{background:#ff4d4d;color:white}
 
-/* BADGES */
+/* PAYMENT BADGES */
 .badge{
   display:inline-block;
   margin-top:6px;
-  padding:4px 10px;
+  padding:4px 8px;
   font-size:11px;
   font-weight:600;
   border-radius:999px;
 }
-.paypal{background:#003087;color:white;}
-.cash{background:#2ecc71;color:black;}
-.free{background:#555;color:white;}
+.paypal{background:#003087;color:white}
+.cash{background:#2ecc71;color:black}
+.free{background:#555;color:white}
+
+/* ENABLE DJ NOTIFICATION */
+#djNotifyPanel{
+  background:var(--panel);
+  padding:12px;
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  display: none; /* hidden by default, shown after login */
+}
+#enableDJBtn{
+  padding:10px 14px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#00ffd0,#00a1ff);
+  color:black;
+  font-weight:600;
+  cursor:pointer;
+}
+#djTokenDisplay{
+  font-size:12px;
+  color:var(--accent);
+  word-break: break-word;
+  text-align:center;
+}
 
 /* BACK BUTTON */
 .back-btn{
   position:fixed;
-  bottom:20px;
+  bottom:18px;
   left:50%;
   transform:translateX(-50%);
-  padding:10px 18px;
-  font-size:13px;
+  padding:8px 14px;
+  font-size:12px;
   letter-spacing:0.08em;
   border-radius:999px;
   background:rgba(255,255,255,0.08);
   border:1px solid var(--border);
   color:white;
-  cursor:pointer;
-  backdrop-filter:blur(12px);
+  text-decoration:none;
+  backdrop-filter:blur(10px);
   transition:0.25s;
-  z-index:100;
 }
 .back-btn:hover{
   background:rgba(255,255,255,0.16);
 }
 
-/* ANIMATIONS */
 @keyframes goldPulse{
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
-}
-@keyframes fadeIn{
-  0%{opacity:0; transform:translateY(15px);}
-  100%{opacity:1; transform:translateY(0);}
-}
-
-/* RESPONSIVE */
-@media(max-width:750px){
-  .lane{padding:14px;}
-  .controls{flex-direction:column;}
 }
 </style>
 </head>
@@ -223,14 +207,13 @@ h1{
 <div class="container">
   <h1>🎧 DJ Admin Panel</h1>
 
-  <!-- LOGIN -->
   <div id="loginPanel">
     <input type="password" id="password" placeholder="Admin Password">
     <button id="loginBtn">Login</button>
   </div>
 
-  <!-- REQUESTS -->
   <div id="requestsPanel">
+
     <div class="controls">
       <button onclick="clearLane('free')">Clear Free</button>
       <button onclick="clearLane('priority')">Clear Priority</button>
@@ -246,15 +229,22 @@ h1{
       <h3>Priority Requests</h3>
       <div id="priorityLane"></div>
     </div>
+
+    <!-- DJ Notifications -->
+    <div id="djNotifyPanel">
+      <button id="enableDJBtn">Enable DJ Notifications</button>
+      <div id="djTokenDisplay"></div>
+    </div>
+
   </div>
 </div>
 
-<!-- BACK BUTTON -->
-<button class="back-btn" onclick="window.location.href='song_request.html'">← BACK TO REQUESTS</button>
+<a href="song_request.html" class="back-btn">← BACK TO REQUESTS</a>
 
 <!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <script>
 firebase.initializeApp({
@@ -262,26 +252,50 @@ firebase.initializeApp({
   authDomain: "aryauxsongrequest.firebaseapp.com",
   databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
   projectId: "aryauxsongrequest",
-  storageBucket: "aryauxsongrequest.appspot.com",
-  messagingSenderId: "376455919089",
-  appId: "1:376455919089:web:4962df21f4145b61c30050"
 });
 
 const db = firebase.database();
+const messaging = firebase.messaging();
+
 const ADMIN_PASSWORD = "1234";
 
-// LOGIN
-loginBtn.addEventListener('click',()=>{
-  if(password.value===ADMIN_PASSWORD){
-    loginPanel.style.display="none";
-    requestsPanel.style.display="flex";
-    loadRequests();
-  } else alert("Wrong password");
-});
+const loginPanel = document.getElementById('loginPanel');
+const requestsPanel = document.getElementById('requestsPanel');
+const loginBtn = document.getElementById('loginBtn');
+const passwordInput = document.getElementById('password');
+const enableDJBtn = document.getElementById('enableDJBtn');
+const djNotifyPanel = document.getElementById('djNotifyPanel');
+const djTokenDisplay = document.getElementById('djTokenDisplay');
 
-// LOAD REQUESTS
+loginBtn.onclick = () => {
+  if(passwordInput.value === ADMIN_PASSWORD){
+    loginPanel.style.display = 'none';
+    requestsPanel.style.display = 'flex';
+    djNotifyPanel.style.display = 'flex'; // show notification button after login
+    loadRequests();
+  } else {
+    alert("Wrong password");
+  }
+};
+
+// Enable DJ Notifications button
+enableDJBtn.onclick = async () => {
+  try {
+    await Notification.requestPermission();
+    const token = await messaging.getToken({
+      vapidKey: 'BCFE9v1f2d6k640OF8ZGhFXRG4AhEE3D8xmGMahLWhR7EfOhiWIIll1TO4EUXN1zoCtSSBSN1rRO3E_GuGU04bg'
+    });
+    djTokenDisplay.textContent = token ? "DJ Token: " + token : "No token available";
+  } catch(e){
+    djTokenDisplay.textContent = "Error fetching token: " + e;
+  }
+};
+
+// REQUESTS FUNCTIONS
 function loadRequests(){
   db.ref("requests").on("value", snap=>{
+    const freeLane = document.getElementById('freeLane');
+    const priorityLane = document.getElementById('priorityLane');
     freeLane.innerHTML="";
     priorityLane.innerHTML="";
     snap.forEach(c=>{
@@ -306,7 +320,6 @@ function loadRequests(){
   });
 }
 
-// ACTIONS
 function approve(id){db.ref(`requests/${id}/status`).set("approved")}
 function removeReq(id){db.ref(`requests/${id}`).remove()}
 function clearLane(lane){

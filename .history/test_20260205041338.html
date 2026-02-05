@@ -1,0 +1,28 @@
+<div id="loginPanel">
+  <input type="password" id="password" placeholder="Admin Password">
+  <button id="loginBtn">Login</button>
+</div>
+
+<div id="requestsPanel" style="display:none;">
+  <h2>Admin Panel Loaded!</h2>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const loginBtn = document.getElementById('loginBtn');
+  const passwordInput = document.getElementById('password');
+  const loginPanel = document.getElementById('loginPanel');
+  const requestsPanel = document.getElementById('requestsPanel');
+  const ADMIN_PASSWORD = "1234";
+
+  loginBtn.addEventListener('click', () => {
+    if(passwordInput.value === ADMIN_PASSWORD){
+      loginPanel.style.display = 'none';
+      requestsPanel.style.display = 'block';
+      alert("Login successful!"); // test
+    } else {
+      alert("Wrong password");
+    }
+  });
+});
+</script>
