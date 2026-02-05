@@ -17,7 +17,7 @@
   --gold:#d4af37;
   --danger:#ff4d4d;
 }
-*{box-sizing:border-box;}
+*{box-sizing:border-box}
 
 body{
   margin:0;
@@ -203,6 +203,10 @@ h1{text-align:center;letter-spacing:1px}
       <div id="priorityLane"></div>
     </div>
 
+    <!-- DJ Notification -->
+    <button id="enableDjNotif" style="margin-top:15px; padding:12px; border:none; border-radius:12px; background:#00ffd0; color:black; font-weight:600;">Enable DJ Notifications</button>
+    <div id="tokenStatus" style="margin-top:10px; font-size:12px; color:yellow;"></div>
+
   </div>
 </div>
 
@@ -211,17 +215,32 @@ h1{text-align:center;letter-spacing:1px}
 <!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <script>
+// Firebase Init
 firebase.initializeApp({
   apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
   authDomain: "aryauxsongrequest.firebaseapp.com",
   databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
   projectId: "aryauxsongrequest",
+  messagingSenderId: "376455919089",
 });
-const db = firebase.database();
 
+const db = firebase.database();
+const messaging = firebase.messaging();
+
+const VAPID_KEY = "BCFE9v1f2d6k640OF8ZGhFXRG4AhEE3D8xmGMahLWhR7EfOhiWIIll1TO4EUXN1zoCtSSBSN1rRO3E_GuGU04bg";
 const ADMIN_PASSWORD = "1234";
+
+const loginBtn = document.getElementById("loginBtn");
+const password = document.getElementById("password");
+const loginPanel = document.getElementById("loginPanel");
+const requestsPanel = document.getElementById("requestsPanel");
+const freeLane = document.getElementById("freeLane");
+const priorityLane = document.getElementById("priorityLane");
+const enableDjNotif = document.getElementById("enableDjNotif");
+const tokenStatus = document.getElementById("tokenStatus");
 
 loginBtn.onclick = () => {
   if(password.value === ADMIN_PASSWORD){
@@ -231,6 +250,7 @@ loginBtn.onclick = () => {
   } else alert("Wrong password");
 };
 
+// Load requests
 function loadRequests(){
   db.ref("requests").on("value", snap=>{
     freeLane.innerHTML="";
@@ -257,6 +277,7 @@ function loadRequests(){
   });
 }
 
+// CRUD
 function approve(id){db.ref(`requests/${id}/status`).set("approved")}
 function removeReq(id){db.ref(`requests/${id}`).remove()}
 function clearLane(lane){
@@ -265,6 +286,27 @@ function clearLane(lane){
   })
 }
 function clearAll(){if(confirm("Clear all requests?"))db.ref("requests").remove()}
+
+// DJ Notifications
+enableDjNotif.onclick = async () => {
+  tokenStatus.textContent = "Requesting permission...";
+  try {
+    await Notification.requestPermission();
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    messaging.useServiceWorker(registration);
+    const token = await messaging.getToken({vapidKey: VAPID_KEY});
+    tokenStatus.textContent = "DJ Token fetched!";
+    console.log("DJ FCM Token:", token);
+  } catch(e){
+    tokenStatus.textContent = "Error fetching token: " + e;
+    console.error("FCM token error", e);
+  }
+};
+
+// Handle incoming messages (optional)
+messaging.onMessage(payload => {
+  alert("New song request!");
+});
 </script>
 
 </body>

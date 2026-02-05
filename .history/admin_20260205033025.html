@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* ... keep all your previous CSS ... */
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎧 DJ Admin Panel</h1>
+
+  <div id="loginPanel">
+    <input type="password" id="password" placeholder="Admin Password">
+    <button id="loginBtn">Login</button>
+  </div>
+
+  <div id="requestsPanel" style="display:none;">
+
+    <div class="controls">
+      <button onclick="clearLane('free')">Clear Free</button>
+      <button onclick="clearLane('priority')">Clear Priority</button>
+      <button onclick="clearAll()">Clear ALL</button>
+    </div>
+
+    <div class="lane">
+      <h3>Free Requests</h3>
+      <div id="freeLane"></div>
+    </div>
+
+    <div class="lane">
+      <h3>Priority Requests</h3>
+      <div id="priorityLane"></div>
+    </div>
+
+    <!-- DJ Notification -->
+    <button id="enableDjNotif" style="margin-top:15px; padding:12px; border:none; border-radius:12px; background:#00ffd0; color:black; font-weight:600;">Enable DJ Notifications</button>
+    <div id="tokenStatus" style="margin-top:10px; font-size:12px; color:yellow;"></div>
+
+  </div>
+</div>
+
+<a href="song_request.html" class="back-btn">← BACK TO REQUESTS</a>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
+<script>
+// Wait for DOM to load
+window.onload = () => {
+  const db = firebase.database();
+  const messaging = firebase.messaging();
+
+  firebase.initializeApp({
+    apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+    authDomain: "aryauxsongrequest.firebaseapp.com",
+    databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+    projectId: "aryauxsongrequest",
+    messagingSenderId: "376455919089",
+  });
+
+  const VAPID_KEY = "BCFE9v1f2d6k640OF8ZGhFXRG4AhEE3D8xmGMahLWhR7EfOhiWIIll1TO4EUXN1zoCtSSBSN1rRO3E_GuGU04bg";
+  const ADMIN_PASSWORD = "1234";
+
+  const loginBtn = document.getElementById("loginBtn");
+  const password = document.getElementById("password");
+  const loginPanel = document.getElementById("loginPanel");
+  const requestsPanel = document.getElementById("requestsPanel");
+  const freeLane = document.getElementById("freeLane");
+  const priorityLane = document.getElementById("priorityLane");
+  const enableDjNotif = document.getElementById("enableDjNotif");
+  const tokenStatus = document.getElementById("tokenStatus");
+
+  // LOGIN
+  loginBtn.onclick = () => {
+    if(password.value === ADMIN_PASSWORD){
+      loginPanel.style.display = "none";
+      requestsPanel.style.display = "flex";
+      loadRequests();
+    } else alert("Wrong password");
+  };
+
+  // LOAD REQUESTS
+  function loadRequests(){
+    db.ref("requests").on("value", snap=>{
+      freeLane.innerHTML="";
+      priorityLane.innerHTML="";
+      snap.forEach(c=>{
+        const r=c.val();
+        if(r.status==="approved") return;
+
+        let badge = `<span class="badge free">FREE</span>`;
+        if(r.payment==="paypal") badge=`<span class="badge paypal">PAID · PayPal</span>`;
+        if(r.payment==="cash") badge=`<span class="badge cash">PAID · Cash</span>`;
+
+        const div=document.createElement("div");
+        div.className="request"+(r.lane==="priority"?" priority":"");
+        div.innerHTML=`
+          <span><strong>${r.song}</strong> – ${r.artist}<br>${badge}</span>
+          <div class="buttons">
+            <button class="approve" onclick="approve('${c.key}')">Approve</button>
+            <button class="remove" onclick="removeReq('${c.key}')">Deny</button>
+          </div>
+        `;
+        (r.lane==="priority"?priorityLane:freeLane).appendChild(div);
+      });
+    });
+  }
+
+  function approve(id){db.ref(`requests/${id}/status`).set("approved")}
+  function removeReq(id){db.ref(`requests/${id}`).remove()}
+  function clearLane(lane){
+    db.ref("requests").once("value",s=>{
+      s.forEach(c=>{if(c.val().lane===lane)c.ref.remove()})
+    })
+  }
+  function clearAll(){if(confirm("Clear all requests?"))db.ref("requests").remove()}
+
+  // DJ Notifications
+  enableDjNotif.onclick = async () => {
+    tokenStatus.textContent = "Requesting permission...";
+    try {
+      await Notification.requestPermission();
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      messaging.useServiceWorker(registration);
+      const token = await messaging.getToken({vapidKey: VAPID_KEY});
+      tokenStatus.textContent = "DJ Token fetched!";
+      console.log("DJ FCM Token:", token);
+    } catch(e){
+      tokenStatus.textContent = "Error fetching token: " + e;
+      console.error("FCM token error", e);
+    }
+  };
+
+  // Optional: handle incoming messages
+  messaging.onMessage(payload => {
+    alert("New song request!");
+  });
+};
+</script>
+</body>
+</html>
