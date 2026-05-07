@@ -38,10 +38,10 @@ body::before {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   /* Using your uploaded concert image */
-  background-image: url('/photos/stux-live-concert-388160_1920.jpg');
+  background-image: url('stux-live-concert-388160_1920.jpg');
   background-size: cover;
   background-position: center;
-  filter: blur(3px) brightness(0.4); /* 20% blur + dimmed for text readability */
+  filter: blur(8px) brightness(0.4); /* 20% blur + dimmed for text readability */
   transform: scale(1.1); /* Prevents white edges caused by blur */
   z-index: -1;
 }
@@ -206,13 +206,12 @@ body::before {
 
     <div class="logo-container">
       <div class="logo-glow"></div>
-      <img src="/photos/wg-1logo.png" class="main-logo" alt="Granville Warehouse Logo">
+      <img src="wg-1logo.png" class="main-logo" alt="Granville Warehouse Logo">
     </div>
 
-    <!-- Change your btn-stack to this -->
     <div class="btn-stack">
       <button class="btn btn-primary" onclick="location.href='song_request.html'">Request a Song</button>
-      <button class="btn btn-secondary" onclick="location.href='queue.html'">View Live Queue</button>
+      <button class="btn btn-secondary" onclick="location.href='song_request.html#queue'">View Live Queue</button>
     </div>
   </div>
 

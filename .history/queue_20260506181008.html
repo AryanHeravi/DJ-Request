@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ORYX.OS | Live Queue</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-dark: #050507;
+  --neon-purple: #7a5cff;
+  --neon-cyan: #00f0ff;
+  --glass: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('stux-live-concert-388160_1920.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(10px) brightness(0.3);
+  z-index: -1;
+}
+
+.container { width: 90%; max-width: 400px; padding-top: 40px; }
+
+.branding { text-align: center; margin-bottom: 30px; }
+.branding h2 { font-weight: 800; letter-spacing: 4px; font-size: 24px; }
+.branding p { font-size: 10px; color: var(--neon-purple); letter-spacing: 2px; }
+
+.queue-panel {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.queue-header h3 { font-size: 14px; letter-spacing: 1px; color: var(--neon-cyan); }
+
+.song-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.song-info { display: flex; flex-direction: column; gap: 4px; }
+.song-name { font-weight: 600; font-size: 14px; }
+.artist-name { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+.vip-tag {
+  background: rgba(122, 92, 255, 0.2);
+  border: 1px solid var(--neon-purple);
+  color: var(--neon-purple);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.home-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.home-btn:hover { background: rgba(255,255,255,0.1); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="branding">
+    <h2>ORYX.OS™</h2>
+    <p>POWERED BY ARYAUX</p>
+  </div>
+
+  <div class="queue-panel">
+    <div class="queue-header">
+      <h3>LIVE QUEUE</h3>
+      <span id="qCount" style="font-size: 12px; opacity: 0.6;">0 Songs</span>
+    </div>
+
+    <div id="queueList">
+      <!-- Firebase injects here -->
+    </div>
+  </div>
+
+  <button class="home-btn" onclick="location.href='index.html'">← HOME</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  storageBucket: "aryauxsongrequest.firebasestorage.app",
+  messagingSenderId: "376455919089",
+  appId: "1:376455919089:web:4962df21f4145b61c30050"
+});
+
+const db = firebase.database();
+
+db.ref('requests').on('value', snap => {
+  const list = document.getElementById('queueList');
+  const countDisp = document.getElementById('qCount');
+  list.innerHTML = '';
+  let count = 0;
+
+  snap.forEach(c => {
+    const r = c.val();
+    if (r.status !== 'approved') return; // Only show approved songs
+    count++;
+    
+    const div = document.createElement('div');
+    div.className = 'song-item';
+    div.innerHTML = `
+      <div class="song-info">
+        <span class="song-name">${r.song}</span>
+        <span class="artist-name">${r.artist}</span>
+      </div>
+      ${r.lane === 'priority' ? '<span class="vip-tag">VIP</span>' : ''}
+    `;
+    list.appendChild(div);
+  });
+
+  countDisp.innerText = `${count} ${count === 1 ? 'Song' : 'Songs'}`;
+  if(count === 0) list.innerHTML = '<div style="padding:20px; text-align:center; opacity:0.3;">Queue is currently empty.</div>';
+});
+</script>
+</body>
+</html>

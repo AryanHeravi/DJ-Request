@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ORYX.OS | DJ Master Admin</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+  --bg-dark: #050507;
+  --panel-bg: #0c0c12;
+  --neon-cyan: #00f0ff;
+  --neon-purple: #7a5cff;
+  --neon-pink: #ff2fd1;
+  --neon-gold: #ffd166;
+  --border: rgba(255, 255, 255, 0.08);
+  --text-dim: rgba(255, 255, 255, 0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: white;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* SIDEBAR NAVIGATION */
+.sidebar {
+  width: 260px;
+  background: var(--panel-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  flex-shrink: 0;
+}
+
+.brand-area { margin-bottom: 40px; }
+.brand-area h2 { font-size: 18px; letter-spacing: 4px; font-weight: 800; }
+.brand-area p { font-size: 8px; color: var(--neon-cyan); letter-spacing: 1px; text-transform: uppercase; }
+
+.nav-group { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+
+.nav-link {
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 12px 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.nav-link:hover { background: rgba(255,255,255,0.03); color: white; }
+.nav-link.active { background: rgba(0, 240, 255, 0.05); color: var(--neon-cyan); }
+
+.nav-bottom { border-top: 1px solid var(--border); padding-top: 20px; margin-top: auto; }
+
+/* MAIN CONTENT */
+.main-dashboard { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+.view-section { display: none; padding: 40px; height: 100%; overflow-y: auto; }
+.view-section.active { display: block; }
+
+/* ANALYTICS GRID */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.chart-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 25px;
+  min-height: 350px;
+}
+
+.chart-title {
+  font-size: 10px; letter-spacing: 2px; color: var(--neon-cyan);
+  margin-bottom: 20px; text-transform: uppercase; font-weight: 800;
+}
+
+/* LOCATIONS & REQUEST CARDS */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+.stat-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 20px; border-radius: 16px; }
+.stat-card .value { font-size: 28px; font-weight: 800; }
+
+.province-group { margin-bottom: 40px; }
+.province-header { font-size: 10px; color: var(--neon-purple); letter-spacing: 3px; border-left: 3px solid var(--neon-purple); padding-left: 10px; margin-bottom: 15px; }
+
+.location-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; }
+.location-card { background: var(--panel-bg); border: 1px solid var(--border); padding: 20px; border-radius: 16px; transition: 0.3s; cursor: pointer; }
+.location-card:hover { border-color: var(--neon-cyan); background: rgba(0,240,255,0.02); }
+
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 10px; background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+
+.ranking-item { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+
+/* AUTH OVERLAY */
+#loginPanel { position: fixed; inset: 0; background: var(--bg-dark); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+#loginPanel input { padding: 16px; border-radius: 12px; background: #0c0c14; border: 1px solid var(--border); color: white; margin-bottom: 12px; width: 300px; }
+#loginPanel button { padding: 16px; width: 300px; border-radius: 12px; font-weight: 800; background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); border: none; color: white; cursor: pointer; }
+</style>
+</head>
+
+<body>
+
+<div id="loginPanel">
+  <h2 style="letter-spacing: 4px;">ORYX.OS ADMIN</h2>
+  <p style="font-size: 10px; margin-bottom: 20px;">SECURE ACCESS REQUIRED</p>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn">AUTHENTICATE</button>
+</div>
+
+<nav class="sidebar">
+  <div class="brand-area"><h2>ORYX.OS™</h2><p>Powered by Aryaux</p></div>
+  <div class="nav-group">
+    <div class="nav-link active" onclick="showView('overview', this)"><span>🏠</span> OVERVIEW</div>
+    <div class="nav-link" onclick="showView('requests', this)"><span>📥</span> REQUESTS</div>
+    <div class="nav-link" onclick="showView('queue', this)"><span>📊</span> LIVE QUEUE</div>
+    <div class="nav-link" onclick="showView('locations', this)"><span>📍</span> LOCATIONS</div>
+    <div class="nav-link" onclick="showView('analytics', this)"><span>📈</span> ANALYTICS</div>
+    <div class="nav-link" onclick="showView('settings', this)"><span>⚙️</span> SETTINGS</div>
+    <div class="nav-bottom"><a href="index.html" class="nav-link" style="color: var(--neon-pink);"><span>⬅️</span> EXIT TO HOME</a></div>
+  </div>
+</nav>
+
+<main class="main-dashboard">
+  
+  <section id="overview" class="view-section active">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+      <h1>Network Overview</h1>
+      <div id="clock" style="color: var(--neon-cyan); font-weight: 800;">00:00:00</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><h4>System Total</h4><div class="value" id="statTotal">0</div></div>
+      <div class="stat-card"><h4>Network Revenue</h4><div class="value" id="statRev">$0.00</div></div>
+      <div class="stat-card"><h4>Venues Online</h4><div class="value">17/17</div></div>
+    </div>
+  </section>
+
+  <section id="analytics" class="view-section">
+    <h1>Network Intelligence</h1>
+    <div class="analytics-grid">
+      <div class="chart-container"><div class="chart-title">Traffic Trend</div><canvas id="trafficChart"></canvas></div>
+      <div class="chart-container"><div class="chart-title">Top Requested</div><div id="topSongsList"></div></div>
+      <div class="chart-container"><div class="chart-title">Genre Pulse</div><canvas id="genreChart"></canvas></div>
+      <div class="chart-container"><div class="chart-title">Region Performance</div><canvas id="regionChart"></canvas></div>
+    </div>
+  </section>
+
+  <section id="locations" class="view-section">
+    <h1>Venue Network</h1>
+    <div id="locationNetwork" style="margin-top: 20px;"></div>
+  </section>
+
+  <section id="requests" class="view-section">
+    <h1>Pending Requests</h1>
+    <div id="requestContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+      <div class="stat-card"><h4>Priority</h4><div id="priorityLane"></div></div>
+      <div class="stat-card"><h4>Standard</h4><div id="freeLane"></div></div>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  storageBucket: "aryauxsongrequest.appspot.com",
+  messagingSenderId: "376455919089",
+  appId: "1:376455919089:web:4962df21f4145b61c30050"
+});
+
+const db = firebase.database();
+const auth = firebase.auth();
+
+const venues = [
+  { name: "El Furniture", city: "Calgary", region: "Alberta" }, { name: "El Furniture", city: "Edmonton", region: "Alberta" },
+  { name: "El Furniture", city: "Granville", region: "British Columbia" }, { name: "The Dime", city: "Commercial", region: "British Columbia" },
+  { name: "El Furniture", city: "Victoria", region: "British Columbia" }, { name: "El Furniture", city: "Whistler", region: "British Columbia" },
+  { name: "El Furniture", city: "Bloor", region: "Ontario" }, { name: "El Furniture", city: "London", region: "Ontario" },
+  { name: "El Furniture", city: "Ottawa", region: "Ontario" }, { name: "El Furniture", city: "Yonge", region: "Ontario" },
+  { name: "El Furniture", city: "Queen", region: "Ontario" }, { name: "L'Entrepot", city: "Montreal", region: "Quebec" },
+  { name: "Le Bureau De Poste", city: "Quebec City", region: "Quebec" }, { name: "Le Bureau De Poste", city: "Trois-Rivieres", region: "Quebec" },
+  { name: "Le Warehouse", city: "Montreal", region: "Quebec" }, { name: "El Furniture", city: "St.-Laurent", region: "Quebec" },
+  { name: "El Furniture", city: "Thomas", region: "Washington" }
+];
+
+function showView(viewId, element) {
+  document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  element.classList.add('active');
+  if(viewId === 'analytics') setTimeout(initAnalytics, 200);
+}
+
+auth.onAuthStateChanged(user => {
+  if(user) { document.getElementById('loginPanel').style.display="none"; loadData(); renderLocations(); }
+});
+
+document.getElementById('loginBtn').addEventListener('click', () => {
+  auth.signInWithEmailAndPassword(email.value, password.value).catch(() => alert("Denied"));
+});
+
+function loadData() {
+  db.ref("requests").on("value", snap => {
+    let total = 0; let rev = 0;
+    const free = document.getElementById('freeLane');
+    const priority = document.getElementById('priorityLane');
+    free.innerHTML = ""; priority.innerHTML = "";
+    
+    snap.forEach(c => {
+      const r = c.val(); total++;
+      if(r.lane === 'priority') rev += 5;
+      if(r.status === 'pending') {
+        const div = document.createElement('div');
+        div.style.cssText = "background:rgba(255,255,255,0.05); padding:10px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between;";
+        div.innerHTML = `<span>${r.song}</span><button onclick="db.ref('requests/${c.key}/status').set('approved')" style="background:var(--neon-cyan); border:none; border-radius:4px; padding:4px 8px; font-weight:800; cursor:pointer;">PLAY</button>`;
+        (r.lane === 'priority' ? priority : free).appendChild(div);
+      }
+    });
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statRev').innerText = `$${rev.toFixed(2)}`;
+  });
+}
+
+function renderLocations() {
+  const container = document.getElementById('locationNetwork');
+  const grouped = venues.reduce((acc, v) => { acc[v.region] = acc[v.region] || []; acc[v.region].push(v); return acc; }, {});
+  container.innerHTML = Object.keys(grouped).map(region => `
+    <div class="province-group">
+      <div class="province-header">${region.toUpperCase()}</div>
+      <div class="location-grid">
+        ${grouped[region].map(loc => `<div class="location-card"><h3>${loc.name}</h3><p>${loc.city}</p></div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function initAnalytics() {
+  new Chart(document.getElementById('trafficChart'), { type: 'line', data: { labels: ['8PM', '10PM', '12AM', '2AM'], datasets: [{ data: [20, 80, 150, 60], borderColor: '#00f0ff', tension: 0.4 }] }, options: { plugins: { legend: { display: false } } } });
+  new Chart(document.getElementById('genreChart'), { type: 'doughnut', data: { labels: ['House', 'R&B', 'Rock'], datasets: [{ data: [50, 30, 20], backgroundColor: ['#00f0ff', '#7a5cff', '#ffd166'] }] } });
+  document.getElementById('topSongsList').innerHTML = `<div class="ranking-item"><span>01. One Dance</span><span>42 Req</span></div><div class="ranking-item"><span>02. No Role Modelz</span><span>31 Req</span></div>`;
+}
+
+setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ORYX.OS | DJ Admin Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-dark: #050507;
+  --panel-bg: #0c0c12;
+  --neon-cyan: #00f0ff;
+  --neon-purple: #7a5cff;
+  --neon-pink: #ff2fd1;
+  --neon-gold: #ffd166;
+  --border: rgba(255, 255, 255, 0.08);
+  --text-dim: rgba(255, 255, 255, 0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: white;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* SIDEBAR NAVIGATION */
+.sidebar {
+  width: 240px;
+  background: var(--panel-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  flex-shrink: 0;
+}
+
+.brand-area { margin-bottom: 40px; }
+.brand-area h2 { font-size: 18px; letter-spacing: 4px; font-weight: 800; }
+.brand-area p { font-size: 8px; color: var(--neon-cyan); letter-spacing: 1px; text-transform: uppercase; }
+
+.nav-group { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+
+.nav-link {
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 12px 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.3s;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+.nav-link:hover { background: rgba(255,255,255,0.03); color: white; }
+.nav-link.active { background: rgba(0, 240, 255, 0.05); color: var(--neon-cyan); }
+
+/* BOTTOM UTILITY NAV */
+.nav-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin-top: auto;
+}
+
+/* MAIN CONTENT AREA */
+.main-dashboard {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.view-section {
+  display: none;
+  padding: 40px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.view-section.active { display: block; }
+
+/* OVERVIEW STYLES */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.stat-card h4 { font-size: 10px; color: var(--neon-gold); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+.stat-card .value { font-size: 28px; font-weight: 800; }
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 25px;
+}
+
+.now-playing-card {
+  background: linear-gradient(135deg, rgba(122, 92, 255, 0.1), rgba(0, 240, 255, 0.1));
+  border: 1px solid var(--neon-purple);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  height: fit-content;
+}
+
+.album-art { 
+  width: 160px; height: 160px; background: #1a1a25; border-radius: 15px; 
+  margin: 0 auto 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+/* REQUESTS TAB STYLES */
+.lane-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.lane {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 18px;
+}
+
+.lane-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.request-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.request-card.priority { border-color: var(--neon-gold); background: rgba(255, 209, 102, 0.05); }
+
+.btn-group { display: flex; gap: 8px; }
+.btn-approve { background: var(--neon-cyan); color: black; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; }
+.btn-deny { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+
+/* AUTH OVERLAY */
+#loginPanel {
+  position: fixed; inset: 0; background: var(--bg-dark);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
+}
+#loginPanel input { 
+  padding: 16px; border-radius: 12px; background: #0c0c14; border: 1px solid var(--border); 
+  color: white; margin-bottom: 12px; width: 300px; outline: none; 
+}
+#loginPanel button { 
+  padding: 16px; width: 300px; border-radius: 12px; font-weight: 800; cursor: pointer;
+  background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); border: none; color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loginPanel">
+  <div class="brand-area" style="text-align: center;">
+    <h2>ORYX.OS ADMIN</h2>
+    <p>SECURE ACCESS REQUIRED</p>
+  </div>
+  <input type="email" id="email" placeholder="Admin Email">
+  <input type="password" id="password" placeholder="Admin Password">
+  <button id="loginBtn">AUTHENTICATE</button>
+</div>
+
+<nav class="sidebar">
+  <div class="brand-area">
+    <h2>ORYX.OS™</h2>
+    <p>Powered by Aryaux</p>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-link active" onclick="showView('overview', this)"><span>🏠</span> OVERVIEW</div>
+    <div class="nav-link" onclick="showView('requests', this)"><span>📥</span> REQUESTS</div>
+    <div class="nav-link" onclick="showView('queue', this)"><span>📊</span> LIVE QUEUE</div>
+    <div class="nav-link" onclick="showView('analytics', this)"><span>📈</span> ANALYTICS</div>
+    <div class="nav-link" onclick="showView('settings', this)"><span>⚙️</span> SETTINGS</div>
+    
+    <div class="nav-bottom">
+      <a href="index.html" class="nav-link" style="color: var(--neon-pink);"><span>⬅️</span> EXIT TO HOME</a>
+    </div>
+  </div>
+</nav>
+
+<main class="main-dashboard">
+  
+  <section id="overview" class="view-section active">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+      <h1>System Overview</h1>
+      <div id="clock" style="color: var(--neon-cyan); font-weight: 600; letter-spacing: 1px;">00:00:00</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><h4>Requests Today</h4><div class="value" id="statTotal">0</div></div>
+      <div class="stat-card"><h4>Priority Revenue</h4><div class="value" id="statRev">$0.00</div></div>
+      <div class="stat-card"><h4>System Status</h4><div class="value" style="color: #2ecc71; font-size: 14px;">● ONLINE</div></div>
+    </div>
+
+    <div class="overview-grid">
+      <div class="lane">
+        <div class="lane-title">RECENT ACTIONS</div>
+        <div id="activityFeed" style="font-size: 12px; color: var(--text-dim);">Monitoring live requests...</div>
+      </div>
+      <div class="now-playing-card">
+        <h4 style="font-size: 10px; letter-spacing: 2px; margin-bottom: 20px;">NOW PLAYING</h4>
+        <div class="album-art"></div>
+        <h2 id="npTitle">No Track Active</h2>
+        <p id="npArtist" style="opacity: 0.5; margin-top: 5px;">Awaiting Selection</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="requests" class="view-section">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+      <h1>Pending Requests</h1>
+      <button onclick="clearAll()" style="background: rgba(255,0,0,0.1); color: #ff4d4d; border: 1px solid #ff4d4d; padding: 8px 15px; border-radius: 8px; font-size: 11px; cursor: pointer;">CLEAR ALL</button>
+    </div>
+
+    <div class="lane-container">
+      <div class="lane">
+        <div class="lane-title">PRIORITY LINE <span>$5.00</span></div>
+        <div id="priorityLane"></div>
+      </div>
+      <div class="lane">
+        <div class="lane-title">FREE LINE <span>STANDARD</span></div>
+        <div id="freeLane"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="queue" class="view-section"><h1>Live Queue Management</h1></section>
+  <section id="analytics" class="view-section"><h1>Data & Trends</h1></section>
+  <section id="settings" class="view-section"><h1>System Settings</h1></section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// INITIALIZATION
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  storageBucket: "aryauxsongrequest.appspot.com",
+  messagingSenderId: "376455919089",
+  appId: "1:376455919089:web:4962df21f4145b61c30050"
+});
+
+const db = firebase.database();
+const auth = firebase.auth();
+
+// VIEW NAVIGATION
+function showView(viewId, element) {
+  document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  element.classList.add('active');
+}
+
+// AUTH LOGIC
+document.getElementById('loginBtn').addEventListener('click', () => {
+  auth.signInWithEmailAndPassword(email.value, password.value).catch(() => alert("Access Denied"));
+});
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    document.getElementById('loginPanel').style.display="none";
+    loadData();
+  } else {
+    document.getElementById('loginPanel').style.display="flex";
+  }
+});
+
+// CORE DATA LOGIC
+function loadData(){
+  db.ref("requests").on("value", snap => {
+    const free = document.getElementById('freeLane');
+    const priority = document.getElementById('priorityLane');
+    
+    let total = 0; 
+    let rev = 0;
+    
+    free.innerHTML = ""; 
+    priority.innerHTML = "";
+    
+    snap.forEach(c => {
+      const r = c.val();
+      total++;
+      if(r.lane === 'priority') rev += 5.0;
+
+      if(r.status === "pending") {
+        const div = document.createElement("div");
+        div.className = "request-card" + (r.lane === "priority" ? " priority" : "");
+        div.innerHTML = `
+          <div>
+            <div style="font-weight:600; font-size:13px;">${r.song}</div>
+            <div style="font-size:11px; opacity:0.5;">${r.artist}</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn-approve" onclick="approve('${c.key}')">PLAY</button>
+            <button class="btn-deny" onclick="removeReq('${c.key}')">DEL</button>
+          </div>`;
+        (r.lane === "priority" ? priority : free).appendChild(div);
+      }
+    });
+
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statRev').innerText = `$${rev.toFixed(2)}`;
+  });
+}
+
+// ACTIONS
+function approve(id) {
+  db.ref(`requests/${id}`).once('value', snap => {
+    const r = snap.val();
+    document.getElementById('npTitle').innerText = r.song;
+    document.getElementById('npArtist').innerText = r.artist;
+    db.ref(`requests/${id}/status`).set("approved");
+  });
+}
+
+function removeReq(id) { db.ref(`requests/${id}`).remove(); }
+function clearAll() { if(confirm("Clear system requests?")) db.ref("requests").remove(); }
+
+// CLOCK
+setInterval(() => {
+  document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+}, 1000);
+</script>
+
+</body>
+</html>

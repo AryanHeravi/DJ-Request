@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORYX.OS | Landing</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-dark: #050507;
+  --neon-purple: #7a5cff;
+  --neon-cyan: #00f0ff;
+  --text-main: #ffffff;
+  --glass: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Deep atmospheric glow from your image */
+  background: 
+    radial-gradient(circle at 50% 100%, rgba(122, 92, 255, 0.2), transparent 50%),
+    linear-gradient(180deg, #050507 0%, #0c0c12 100%);
+}
+
+/* Branding Header */
+.branding {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeInDown 0.8s ease;
+}
+
+.branding h2 {
+  font-weight: 800;
+  letter-spacing: 6px;
+  font-size: 24px;
+}
+
+.branding p {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--neon-purple);
+  margin-top: 4px;
+}
+
+/* Main UI Card */
+.hero-card {
+  width: 90%;
+  max-width: 360px;
+  text-align: center;
+  z-index: 10;
+}
+
+.main-title {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+}
+
+.main-title span {
+  color: var(--neon-cyan);
+}
+
+/* QR Section */
+.qr-container {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  padding: 30px;
+  border-radius: 24px;
+  backdrop-filter: blur(10px);
+  margin-bottom: 40px;
+  position: relative;
+  display: inline-block;
+}
+
+.qr-frame {
+  width: 180px;
+  height: 180px;
+  background: white; /* Temporary placeholder for your QR image */
+  border-radius: 12px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.qr-frame img {
+  width: 100%;
+  height: auto;
+}
+
+/* Buttons */
+.btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn {
+  padding: 18px;
+  border-radius: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.3s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--neon-purple), #ff2fd1);
+  color: white;
+  box-shadow: 0 10px 20px rgba(122, 92, 255, 0.3);
+}
+
+.btn-secondary {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.2);
+}
+
+/* Bottom Footer Text */
+.footer-info {
+  margin-top: 40px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  gap: 15px;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+  <div class="branding">
+    <h2>ORYX.OS™</h2>
+    <p>POWERED BY ARYAUX</p>
+  </div>
+
+  <div class="hero-card">
+    <h1 class="main-title">SHAPE THE NIGHT.<br>REQUEST <span>YOUR</span> MUSIC.</h1>
+
+    <div class="qr-container">
+      <div class="qr-frame">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://aryauxsongrequest.web.app" alt="QR Code">
+      </div>
+    </div>
+
+    <div class="btn-stack">
+      <button class="btn btn-primary" onclick="navigateToRequest()">REQUEST A SONG</button>
+      <button class="btn btn-secondary" onclick="navigateToQueue()">VIEW LIVE QUEUE</button>
+    </div>
+  </div>
+
+  <div class="footer-info">
+    <span>🔒 SECURE</span>
+    <span>⚡ FAST</span>
+    <span>✨ SEAMLESS</span>
+  </div>
+
+  <script>
+    function navigateToRequest() {
+      // Small delay for button feel
+      setTimeout(() => {
+        window.location.href = "song_request.html";
+      }, 200);
+    }
+
+    function navigateToQueue() {
+       // Scroll to queue section or navigate
+       window.location.href = "song_request.html#queue";
+    }
+  </script>
+</body>
+</html>

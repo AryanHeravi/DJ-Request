@@ -6,7 +6,6 @@
 <title>ORYX.OS | DJ Master Admin</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root {
@@ -88,62 +87,6 @@ body {
 }
 
 .view-section.active { display: block; }
-
-/* ANALYTICS GRID - FIXED HEIGHTS TO PREVENT DROPPING */
-.analytics-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-auto-rows: 350px; /* Lock row heights */
-  gap: 25px;
-  margin-top: 20px;
-  padding-bottom: 40px;
-}
-
-.chart-container {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 25px;
-  height: 350px; /* Force consistent height */
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.chart-title {
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: var(--neon-cyan);
-  margin-bottom: 20px;
-  text-transform: uppercase;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-
-.ranking-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto; /* Internal scroll if song list is too long */
-  flex-grow: 1;
-}
-
-.ranking-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
-.rank-number {
-  font-weight: 800;
-  color: var(--neon-purple);
-  width: 25px;
-}
-
-.rank-info { flex-grow: 1; font-size: 12px; }
-.rank-count { font-weight: 800; font-size: 11px; color: var(--neon-gold); }
 
 /* OVERVIEW & LOCATION STYLES */
 .stats-row {
@@ -301,41 +244,8 @@ body {
     </div>
   </section>
 
-  <section id="analytics" class="view-section">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-      <div>
-        <h1>Network Intelligence</h1>
-        <p style="opacity: 0.5; font-size: 12px;">Real-time trends across 17 locations</p>
-      </div>
-      <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; font-size: 10px;">
-        LAST 24 HOURS
-      </div>
-    </div>
-
-    <div class="analytics-grid">
-      <div class="chart-container">
-        <div class="chart-title">Revenue & Traffic Trend</div>
-        <canvas id="trafficChart"></canvas>
-      </div>
-
-      <div class="chart-container">
-        <div class="chart-title">Top Requested</div>
-        <div class="ranking-list" id="topSongsList"></div>
-      </div>
-
-      <div class="chart-container">
-        <div class="chart-title">Genre Pulse (Across Network)</div>
-        <canvas id="genreChart"></canvas>
-      </div>
-
-      <div class="chart-container">
-        <div class="chart-title">Requests by Region</div>
-        <canvas id="regionChart"></canvas>
-      </div>
-    </div>
-  </section>
-
   <section id="queue" class="view-section"><h1>Live Queue</h1></section>
+  <section id="analytics" class="view-section"><h1>Data & Trends</h1></section>
   <section id="settings" class="view-section"><h1>Settings</h1></section>
 
 </main>
@@ -383,72 +293,6 @@ function showView(viewId, element) {
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   document.getElementById(viewId).classList.add('active');
   element.classList.add('active');
-
-  if(viewId === 'analytics') {
-    setTimeout(initAnalytics, 100); 
-  }
-}
-
-function initAnalytics() {
-  const ctxTraffic = document.getElementById('trafficChart').getContext('2d');
-  const ctxGenre = document.getElementById('genreChart').getContext('2d');
-  
-  new Chart(ctxTraffic, {
-    type: 'line',
-    data: {
-      labels: ['6PM', '8PM', '10PM', '12AM', '2AM'],
-      datasets: [{
-        label: 'Requests',
-        data: [12, 45, 120, 185, 90],
-        borderColor: '#00f0ff',
-        tension: 0.4,
-        fill: true,
-        backgroundColor: 'rgba(0, 240, 255, 0.05)'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#555' } } }
-    }
-  });
-
-  new Chart(ctxGenre, {
-    type: 'doughnut',
-    data: {
-      labels: ['House', 'R&B', 'Hip-Hop', 'Rock'],
-      datasets: [{
-        data: [40, 25, 20, 15],
-        backgroundColor: ['#00f0ff', '#7a5cff', '#ff2fd1', '#ffd166'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { position: 'right', labels: { color: '#fff', font: { size: 10 } } } }
-    }
-  });
-
-  const topSongs = [
-    { song: "No Role Modelz", artist: "J. Cole", count: 42 },
-    { song: "One Dance", artist: "Drake", count: 38 },
-    { song: "Pink + White", artist: "Frank Ocean", count: 31 },
-    { song: "Mo Bamba", artist: "Sheck Wes", count: 28 }
-  ];
-
-  const list = document.getElementById('topSongsList');
-  list.innerHTML = topSongs.map((s, i) => `
-    <div class="ranking-item">
-      <div class="rank-number">0${i+1}</div>
-      <div class="rank-info">
-        <div style="font-weight:700;">${s.song}</div>
-        <div style="font-size:10px; opacity:0.5;">${s.artist}</div>
-      </div>
-      <div class="rank-count">${s.count}</div>
-    </div>
-  `).join('');
 }
 
 auth.onAuthStateChanged(user => {
@@ -462,9 +306,7 @@ auth.onAuthStateChanged(user => {
 });
 
 document.getElementById('loginBtn').addEventListener('click', () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  auth.signInWithEmailAndPassword(email, password).catch(() => alert("Denied"));
+  auth.signInWithEmailAndPassword(email.value, password.value).catch(() => alert("Denied"));
 });
 
 function loadData(){
