@@ -14,6 +14,7 @@
   --neon-cyan: #00f0ff;
   --text-main: #ffffff;
   --glass: rgba(255, 255, 255, 0.03);
+  --glass-heavy: rgba(255, 255, 255, 0.08);
   --border: rgba(255, 255, 255, 0.1);
   --nav-bg: rgba(10, 10, 15, 0.95);
 }
@@ -29,14 +30,23 @@ body {
   position: relative; overflow-x: hidden; padding-bottom: 110px;
 }
 
+/* BLUR BACKGROUND */
 body::before {
   content: ""; position: fixed; inset: 0;
   background: radial-gradient(circle at top right, #1a1a2e, #050507);
   z-index: -2;
 }
 
-.container { width: 92%; max-width: 420px; padding-top: 30px; transition: filter 0.4s ease; }
+/* VINTAGE FILM GRAIN OVERLAY */
+body::after {
+  content: ""; position: fixed; inset: 0;
+  background: url('https://grainy-gradients.vercel.app/noise.svg');
+  opacity: 0.04; pointer-events: none; z-index: -1;
+}
 
+.container { width: 92%; max-width: 420px; padding-top: 30px; }
+
+/* HEADER */
 .header-brand { text-align: center; margin-bottom: 30px; }
 .header-brand h2 { 
   font-size: 24px; font-weight: 800; letter-spacing: 8px; 
@@ -45,6 +55,7 @@ body::before {
 }
 .header-brand p { font-size: 10px; color: var(--neon-purple); letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; font-weight: 700; }
 
+/* SEARCH & DROPDOWN */
 .search-wrapper { position: sticky; top: 20px; z-index: 1000; margin-bottom: 25px; }
 .search-box {
   background: rgba(20, 20, 25, 0.85); border: 1px solid var(--border);
@@ -60,27 +71,35 @@ body::before {
   box-shadow: 0 25px 50px rgba(0,0,0,0.9); z-index: 1001; backdrop-filter: blur(20px);
 }
 
+/* MANUAL ADD BUTTONS */
 .manual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 30px; }
 .manual-card {
   padding: 18px; border-radius: 18px; border: 1px solid var(--border);
-  background: var(--glass); text-align: center; cursor: pointer;
+  background: var(--glass); text-align: center; cursor: pointer; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.manual-card i { font-size: 22px; display: block; margin-bottom: 8px; }
+.manual-card:active { transform: scale(0.96); background: var(--glass-heavy); }
+.manual-card i { font-size: 22px; display: block; margin-bottom: 8px; filter: drop-shadow(0 0 8px var(--neon-cyan)); }
 .manual-card span { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
 .manual-card.prio { border-color: var(--neon-cyan); background: rgba(0, 240, 255, 0.05); }
 
+/* LISTS */
 .section-label { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; opacity: 0.5; margin: 0 0 15px 8px; text-transform: uppercase; }
 .song-card {
   background: var(--glass); border: 1px solid var(--border); border-radius: 20px;
   padding: 14px 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 12px; cursor: pointer;
+  transition: background 0.2s;
 }
+.song-card:active { background: var(--glass-heavy); }
+.dropdown-item { border: none; border-bottom: 1px solid rgba(255,255,255,0.05); border-radius: 0; margin-bottom: 0; background: transparent; }
+
 .song-art { width: 48px; height: 48px; border-radius: 12px; background: #1a1a24; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 .song-meta { flex-grow: 1; overflow: hidden; }
-.song-title { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.song-artist { font-size: 12px; opacity: 0.5; }
+.song-title { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.song-artist { font-size: 12px; opacity: 0.5; font-weight: 500; }
 
+/* MODALS */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
-.modal { background: #0c0c14; border: 1px solid var(--border); border-radius: 32px; width: 100%; max-width: 380px; padding: 35px; }
+.modal { background: #0c0c14; border: 1px solid var(--border); border-radius: 32px; width: 100%; max-width: 380px; padding: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
 .modal input, .modal textarea { 
   width: 100%; padding: 18px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); 
   color: white; border-radius: 16px; margin-bottom: 14px; outline: none; font-family: inherit; font-size: 14px;
@@ -88,25 +107,15 @@ body::before {
 .modal textarea { height: 80px; resize: none; }
 .submit-btn { width: 100%; padding: 20px; border-radius: 16px; border: none; background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); color: white; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
 
-.success-overlay {
-  position: fixed; inset: 0; background: rgba(5, 5, 7, 0.4); backdrop-filter: blur(40px);
-  display: none; flex-direction: column; justify-content: center; align-items: center;
-  z-index: 3000; text-align: center; padding: 40px;
-}
-.success-msg-box { max-width: 300px; }
-.success-icon { font-size: 50px; margin-bottom: 20px; display: block; filter: drop-shadow(0 0 10px var(--neon-cyan)); }
-.success-title { font-size: 20px; font-weight: 800; letter-spacing: 3px; margin-bottom: 15px; text-transform: uppercase; }
-.success-text { font-size: 14px; line-height: 1.6; opacity: 0.8; font-weight: 500; }
-.done-btn { margin-top: 40px; background: white; color: black; border: none; padding: 15px 40px; border-radius: 50px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; }
-
+/* NAV */
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 90px; background: var(--nav-bg); backdrop-filter: blur(35px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-bottom: 25px; z-index: 999; }
-.nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255,255,255,0.3); text-decoration: none; font-size: 11px; font-weight: 700; cursor: pointer; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255,255,255,0.3); text-decoration: none; font-size: 11px; font-weight: 700; }
 .nav-item.active { color: var(--neon-cyan); }
 </style>
 </head>
 <body>
 
-<div class="container" id="mainApp">
+<div class="container">
   <div class="header-brand">
     <h2>ORYX.OS</h2>
     <p>GRANVILLE WAREHOUSE</p>
@@ -121,24 +130,27 @@ body::before {
 
   <div class="section-label">Manual Add</div>
   <div class="manual-grid">
-    <div class="manual-card" onclick="openModal('', '', 'free')"><i>🎵</i><span>Free</span></div>
-    <div class="manual-card prio" onclick="openModal('', '', 'priority')"><i>⚡</i><span>Priority</span></div>
+    <div class="manual-card" onclick="openModal('', '', 'free')">
+      <i>🎵</i><span>Free</span>
+    </div>
+    <div class="manual-card prio" onclick="openModal('', '', 'priority')">
+      <i>⚡</i><span>Priority</span>
+    </div>
   </div>
 
-  <div class="section-label">Trending Now</div>
+  <div class="section-label">Charts • May 2026</div>
   <div id="mainChartList"></div>
 </div>
 
 <nav class="bottom-nav">
-  <div class="nav-item" onclick="window.location.href='index.html'"><span>🏠</span><span>Home</span></div>
-  <div class="nav-item active"><span>🎵</span><span>Request</span></div>
-  <div class="nav-item" onclick="window.location.href='queue.html'"><span>📊</span><span>Queue</span></div>
-  <div class="nav-item" onclick="window.location.href='admin.html'"><span>⚙️</span><span>Admin</span></div>
+  <a href="#" class="nav-item"><span>🏠</span><span>Home</span></a>
+  <a href="#" class="nav-item active"><span>🎵</span><span>Request</span></a>
+  <a href="#" class="nav-item"><span>📊</span><span>Queue</span></a>
 </nav>
 
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h3 id="modalTitle" style="margin-bottom: 25px; text-align: center; letter-spacing: 3px; font-weight: 800;">REQUEST</h3>
+    <h3 id="modalTitle" style="margin-bottom: 25px; text-align: center; letter-spacing: 3px; font-weight: 800; text-transform: uppercase;">REQUEST</h3>
     <form id="requestForm">
       <div id="formInputs">
         <input type="text" id="formSong" placeholder="Song Name" required>
@@ -150,26 +162,19 @@ body::before {
       </div>
       
       <div id="paymentStep" style="display:none; flex-direction: column; gap: 12px;">
+         <p style="text-align: center; font-size: 12px; margin-bottom: 10px; opacity: 0.7;">PRIORITY: SKIP THE QUEUE</p>
          <button type="button" class="submit-btn" style="background: #0070ba;" onclick="submitFinalRequest('paypal')">PayPal • $5</button>
          <button type="button" class="submit-btn" style="background: #2e2e2e;" onclick="submitFinalRequest('cash')">Pay at Booth • $5</button>
       </div>
-      <p onclick="closeModal()" style="text-align:center; font-size: 11px; margin-top: 25px; opacity: 0.4; cursor: pointer;">CANCEL</p>
+      <p onclick="closeModal()" style="text-align:center; font-size: 11px; margin-top: 25px; opacity: 0.4; cursor: pointer; letter-spacing: 1px;">CLOSE</p>
     </form>
-  </div>
-</div>
-
-<div class="success-overlay" id="successOverlay">
-  <div class="success-msg-box">
-    <span class="success-icon" id="sIcon">✨</span>
-    <h2 class="success-title" id="sTitle">SENT</h2>
-    <p class="success-text" id="sText"></p>
-    <button class="done-btn" onclick="resetApp()">Return to OS</button>
   </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
+// Firebase Config
 firebase.initializeApp({
   apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
   authDomain: "aryauxsongrequest.firebaseapp.com",
@@ -181,12 +186,16 @@ firebase.initializeApp({
 });
 
 const db = firebase.database();
+
+// LIVE DATA MAY 2026
 const TOP_100 = [
+  { title: "Drop Dead", artist: "Olivia Rodrigo" },
   { title: "Choosin' Texas", artist: "Ella Langley" },
   { title: "I Just Might", artist: "Bruno Mars" },
-  { title: "Drop Dead", artist: "Olivia Rodrigo" },
-  { title: "Ordinary", artist: "Alex Warren" },
   { title: "Man I Need", artist: "Olivia Dean" },
+  { title: "The Fate Of Ophelia", artist: "Taylor Swift" },
+  { title: "Dracula", artist: "Tame Impala & JENNIE" },
+  { title: "Ordinary", artist: "Alex Warren" },
   { title: "Daisies", artist: "Justin Bieber" }
 ];
 
@@ -198,7 +207,7 @@ function createSongCard(song, isDropdown = false) {
   const div = document.createElement('div');
   div.className = `song-card ${isDropdown ? 'dropdown-item' : ''}`;
   div.onclick = () => {
-    openModal(song.title, song.artist, 'free'); 
+    openModal(song.title, song.artist);
     dropdown.style.display = 'none';
     searchInput.value = '';
   };
@@ -206,6 +215,7 @@ function createSongCard(song, isDropdown = false) {
   return div;
 }
 
+// DROPDOWN SEARCH
 searchInput.oninput = (e) => {
   const val = e.target.value.toLowerCase();
   dropdown.innerHTML = '';
@@ -220,6 +230,7 @@ searchInput.oninput = (e) => {
 
 document.addEventListener('click', (e) => { if (!e.target.closest('.search-wrapper')) dropdown.style.display = 'none'; });
 
+// MODAL CONTROLS
 function openModal(s='', a='', type='free') {
   document.getElementById('overlay').style.display = 'flex';
   document.getElementById('formInputs').style.display = 'block';
@@ -232,10 +243,9 @@ function openModal(s='', a='', type='free') {
 
 function closeModal() { document.getElementById('overlay').style.display = 'none'; }
 
-document.getElementById('requestForm').onsubmit = function(e) {
+document.getElementById('requestForm').onsubmit = (e) => {
   e.preventDefault();
-  const lane = document.getElementById('laneVal').value;
-  if (lane === 'priority') {
+  if (document.getElementById('laneVal').value === 'priority') {
     document.getElementById('formInputs').style.display = 'none';
     document.getElementById('paymentStep').style.display = 'flex';
   } else {
@@ -244,53 +254,24 @@ document.getElementById('requestForm').onsubmit = function(e) {
 };
 
 function submitFinalRequest(method) {
-  const lane = document.getElementById('laneVal').value;
   const data = {
     song: document.getElementById('formSong').value,
     artist: document.getElementById('formArtist').value,
     note: document.getElementById('userNote').value || "",
     name: document.getElementById('userName').value || "Guest",
     venue: "Granville Warehouse",
-    lane: lane,
+    lane: document.getElementById('laneVal').value,
     payment: method,
     status: 'pending',
     timestamp: Date.now()
   };
-
   db.ref('requests').push(data).then(() => {
-    showFormalMessage(lane);
-  }).catch(err => alert("DB Error: " + err.message));
+    alert("Request sent to the DJ!");
+    closeModal();
+  });
 }
 
-function showFormalMessage(lane) {
-  const overlay = document.getElementById('successOverlay');
-  const title = document.getElementById('sTitle');
-  const text = document.getElementById('sText');
-  const icon = document.getElementById('sIcon');
-  const mainApp = document.getElementById('mainApp');
-
-  mainApp.style.filter = "blur(30px)";
-  closeModal();
-  
-  if (lane === 'priority') {
-    icon.innerText = "⚡";
-    title.innerText = "PRIORITY ACTIVE";
-    text.innerText = "Thank you for the request, song on in 10 minutes.";
-  } else {
-    icon.innerText = "🎵";
-    title.innerText = "REQUEST SENT";
-    text.innerText = "Thank you for requesting, if our dj has the song it will be played.";
-  }
-  
-  overlay.style.display = 'flex';
-}
-
-function resetApp() {
-  document.getElementById('successOverlay').style.display = 'none';
-  document.getElementById('mainApp').style.filter = "none";
-  document.getElementById('requestForm').reset();
-}
-
+// INITIAL RENDER
 TOP_100.forEach(song => mainChart.appendChild(createSongCard(song)));
 </script>
 </body>

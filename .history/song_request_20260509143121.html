@@ -94,13 +94,13 @@ body::before {
   z-index: 3000; text-align: center; padding: 40px;
 }
 .success-msg-box { max-width: 300px; }
-.success-icon { font-size: 50px; margin-bottom: 20px; display: block; filter: drop-shadow(0 0 10px var(--neon-cyan)); }
+.success-icon { font-size: 50px; margin-bottom: 20px; display: block; }
 .success-title { font-size: 20px; font-weight: 800; letter-spacing: 3px; margin-bottom: 15px; text-transform: uppercase; }
 .success-text { font-size: 14px; line-height: 1.6; opacity: 0.8; font-weight: 500; }
 .done-btn { margin-top: 40px; background: white; color: black; border: none; padding: 15px 40px; border-radius: 50px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; }
 
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 90px; background: var(--nav-bg); backdrop-filter: blur(35px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-bottom: 25px; z-index: 999; }
-.nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255,255,255,0.3); text-decoration: none; font-size: 11px; font-weight: 700; cursor: pointer; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255,255,255,0.3); text-decoration: none; font-size: 11px; font-weight: 700; }
 .nav-item.active { color: var(--neon-cyan); }
 </style>
 </head>
@@ -125,34 +125,34 @@ body::before {
     <div class="manual-card prio" onclick="openModal('', '', 'priority')"><i>⚡</i><span>Priority</span></div>
   </div>
 
-  <div class="section-label">Trending Now</div>
+  <div class="section-label">Charts • May 9, 2026</div>
   <div id="mainChartList"></div>
 </div>
 
 <nav class="bottom-nav">
-  <div class="nav-item" onclick="window.location.href='index.html'"><span>🏠</span><span>Home</span></div>
-  <div class="nav-item active"><span>🎵</span><span>Request</span></div>
-  <div class="nav-item" onclick="window.location.href='queue.html'"><span>📊</span><span>Queue</span></div>
-  <div class="nav-item" onclick="window.location.href='admin.html'"><span>⚙️</span><span>Admin</span></div>
+  <a href="#" class="nav-item"><span>🏠</span><span>Home</span></a>
+  <a href="#" class="nav-item active"><span>🎵</span><span>Request</span></a>
+  <a href="#" class="nav-item"><span>📊</span><span>Queue</span></a>
 </nav>
 
 <div class="overlay" id="overlay">
   <div class="modal">
     <h3 id="modalTitle" style="margin-bottom: 25px; text-align: center; letter-spacing: 3px; font-weight: 800;">REQUEST</h3>
     <form id="requestForm">
-      <div id="formInputs">
         <input type="text" id="formSong" placeholder="Song Name" required>
         <input type="text" id="formArtist" placeholder="Artist" required>
         <textarea id="userNote" placeholder="Add a note for the DJ..."></textarea>
         <input type="text" id="userName" placeholder="Your Name (Optional)">
         <input type="hidden" id="laneVal" value="free">
-        <button type="submit" class="submit-btn">Send Request</button>
-      </div>
-      
-      <div id="paymentStep" style="display:none; flex-direction: column; gap: 12px;">
-         <button type="button" class="submit-btn" style="background: #0070ba;" onclick="submitFinalRequest('paypal')">PayPal • $5</button>
-         <button type="button" class="submit-btn" style="background: #2e2e2e;" onclick="submitFinalRequest('cash')">Pay at Booth • $5</button>
-      </div>
+        
+        <div id="submitSection">
+          <button type="submit" class="submit-btn">Send Request</button>
+        </div>
+        
+        <div id="paymentStep" style="display:none; flex-direction: column; gap: 12px;">
+           <button type="button" class="submit-btn" style="background: #0070ba;" onclick="processFinal('paypal')">PayPal • $5</button>
+           <button type="button" class="submit-btn" style="background: #2e2e2e;" onclick="processFinal('cash')">Pay at Booth • $5</button>
+        </div>
       <p onclick="closeModal()" style="text-align:center; font-size: 11px; margin-top: 25px; opacity: 0.4; cursor: pointer;">CANCEL</p>
     </form>
   </div>
@@ -184,10 +184,12 @@ const db = firebase.database();
 const TOP_100 = [
   { title: "Choosin' Texas", artist: "Ella Langley" },
   { title: "I Just Might", artist: "Bruno Mars" },
+  { title: "So Easy (To Fall In Love)", artist: "Olivia Dean" },
   { title: "Drop Dead", artist: "Olivia Rodrigo" },
-  { title: "Ordinary", artist: "Alex Warren" },
-  { title: "Man I Need", artist: "Olivia Dean" },
-  { title: "Daisies", artist: "Justin Bieber" }
+  { title: "Opalite", artist: "Taylor Swift" },
+  { title: "Folded", artist: "Kehlani" },
+  { title: "YUKON", artist: "Justin Bieber" },
+  { title: "Dracula", artist: "Tame Impala" }
 ];
 
 const searchInput = document.getElementById('searchInput');
@@ -198,7 +200,7 @@ function createSongCard(song, isDropdown = false) {
   const div = document.createElement('div');
   div.className = `song-card ${isDropdown ? 'dropdown-item' : ''}`;
   div.onclick = () => {
-    openModal(song.title, song.artist, 'free'); 
+    openModal(song.title, song.artist, 'free');
     dropdown.style.display = 'none';
     searchInput.value = '';
   };
@@ -222,7 +224,7 @@ document.addEventListener('click', (e) => { if (!e.target.closest('.search-wrapp
 
 function openModal(s='', a='', type='free') {
   document.getElementById('overlay').style.display = 'flex';
-  document.getElementById('formInputs').style.display = 'block';
+  document.getElementById('submitSection').style.display = 'block';
   document.getElementById('paymentStep').style.display = 'none';
   document.getElementById('formSong').value = s;
   document.getElementById('formArtist').value = a;
@@ -236,14 +238,14 @@ document.getElementById('requestForm').onsubmit = function(e) {
   e.preventDefault();
   const lane = document.getElementById('laneVal').value;
   if (lane === 'priority') {
-    document.getElementById('formInputs').style.display = 'none';
+    document.getElementById('submitSection').style.display = 'none';
     document.getElementById('paymentStep').style.display = 'flex';
   } else {
-    submitFinalRequest('none');
+    processFinal('none');
   }
 };
 
-function submitFinalRequest(method) {
+function processFinal(method) {
   const lane = document.getElementById('laneVal').value;
   const data = {
     song: document.getElementById('formSong').value,
@@ -258,31 +260,20 @@ function submitFinalRequest(method) {
   };
 
   db.ref('requests').push(data).then(() => {
-    showFormalMessage(lane);
-  }).catch(err => alert("DB Error: " + err.message));
-}
-
-function showFormalMessage(lane) {
-  const overlay = document.getElementById('successOverlay');
-  const title = document.getElementById('sTitle');
-  const text = document.getElementById('sText');
-  const icon = document.getElementById('sIcon');
-  const mainApp = document.getElementById('mainApp');
-
-  mainApp.style.filter = "blur(30px)";
-  closeModal();
-  
-  if (lane === 'priority') {
-    icon.innerText = "⚡";
-    title.innerText = "PRIORITY ACTIVE";
-    text.innerText = "Thank you for the request, song on in 10 minutes.";
-  } else {
-    icon.innerText = "🎵";
-    title.innerText = "REQUEST SENT";
-    text.innerText = "Thank you for requesting, if our dj has the song it will be played.";
-  }
-  
-  overlay.style.display = 'flex';
+    closeModal();
+    document.getElementById('mainApp').style.filter = "blur(25px)";
+    document.getElementById('successOverlay').style.display = 'flex';
+    
+    if (lane === 'priority') {
+      document.getElementById('sIcon').innerText = "⚡";
+      document.getElementById('sTitle').innerText = "PRIORITY ACTIVE";
+      document.getElementById('sText').innerText = "Thank you for the request, song on in 10 minutes.";
+    } else {
+      document.getElementById('sIcon').innerText = "🎵";
+      document.getElementById('sTitle').innerText = "REQUEST SENT";
+      document.getElementById('sText').innerText = "Thank you for requesting, if our dj has the song it will be played.";
+    }
+  });
 }
 
 function resetApp() {

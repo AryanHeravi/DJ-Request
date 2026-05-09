@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ORYX.OS | Request</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-dark: #050507;
+  --neon-purple: #7a5cff;
+  --neon-cyan: #00f0ff;
+  --text-main: #ffffff;
+  --glass: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.1);
+  --nav-bg: rgba(15, 15, 23, 0.85);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 90px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('stux-live-concert-388160_1920.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(10px) brightness(0.25);
+  transform: scale(1.1);
+  z-index: -1;
+}
+
+.container { width: 90%; max-width: 400px; padding-top: 20px; }
+
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-brand h2 { font-size: 18px; font-weight: 800; letter-spacing: 3px; }
+.header-brand p { font-size: 9px; color: var(--neon-cyan); letter-spacing: 2px; text-transform: uppercase; }
+
+.search-box {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.search-box input {
+  background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 14px;
+}
+
+.song-card {
+  background: var(--glass); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+
+.song-art { width: 45px; height: 45px; border-radius: 8px; background: #222; flex-shrink: 0; }
+.song-meta { flex-grow: 1; }
+.song-title { font-size: 14px; font-weight: 600; }
+.song-artist { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+.add-btn {
+  background: rgba(0, 240, 255, 0.1); border: 1px solid var(--neon-cyan); color: var(--neon-cyan);
+  width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold;
+}
+
+.priority-action {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(122, 92, 255, 0.2));
+  border: 1px solid var(--neon-cyan); border-radius: 14px; padding: 15px;
+  display: flex; justify-content: space-between; align-items: center; margin-top: 10px; cursor: pointer;
+}
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: var(--nav-bg);
+  backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex;
+  justify-content: space-around; align-items: center; padding-bottom: 15px; z-index: 1000;
+}
+
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: rgba(255,255,255,0.4); text-decoration: none; font-size: 10px; font-weight: 600; }
+.nav-item.active { color: var(--neon-cyan); }
+.nav-icon { font-size: 20px; }
+
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+.modal { background: #0f0f17; border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 350px; padding: 25px; }
+.modal input { width: 100%; padding: 14px; background: #07070a; border: 1px solid var(--border); color: white; border-radius: 12px; margin-bottom: 10px; outline: none; }
+
+.submit-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); color: white; font-weight: 700; cursor: pointer; }
+
+/* PAYMENT OPTIONS */
+.payment-choice { display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
+.pay-btn { padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--glass); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+.pay-btn:hover { border-color: var(--neon-cyan); background: rgba(0, 240, 255, 0.1); }
+
+/* SUCCESS MODAL */
+.success-overlay { position: fixed; inset: 0; background: rgba(5, 5, 7, 0.8); backdrop-filter: blur(15px); display: none; justify-content: center; align-items: center; z-index: 3000; animation: fadeIn 0.4s ease; }
+.success-card { width: 85%; max-width: 320px; background: var(--glass); border: 1px solid var(--neon-cyan); border-radius: 24px; padding: 40px 20px; text-align: center; }
+.success-icon { font-size: 40px; margin-bottom: 20px; display: block; }
+.success-card h2 { font-size: 18px; letter-spacing: 2px; margin-bottom: 10px; color: var(--text-main); }
+.success-card p { font-size: 13px; line-height: 1.6; opacity: 0.8; color: #fff; }
+.close-success { margin-top: 25px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 50px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-brand">
+    <h2>ORYX.OS</h2>
+    <p id="venueSubtext">Granville Warehouse</p>
+  </div>
+
+  <div class="search-box">
+    <input type="text" placeholder="Search for a song or artist...">
+  </div>
+
+  <h3 style="font-size: 12px; opacity: 0.5; margin-bottom: 10px;">TRENDING</h3>
+  
+  <div id="trendingList">
+    <div class="song-card" onclick="openModal('Calm Down', 'Rema')">
+      <div class="song-art"></div>
+      <div class="song-meta">
+        <div class="song-title">Calm Down</div>
+        <div class="song-artist">Rema</div>
+      </div>
+      <div class="add-btn">+</div>
+    </div>
+  </div>
+
+  <div class="priority-action" onclick="openModal('', '', 'priority')">
+    <div>
+      <div style="font-weight: 800; color: var(--neon-cyan); font-size: 12px;">SKIP THE LINE</div>
+      <div style="font-size: 10px; opacity: 0.7;">Priority Request</div>
+    </div>
+    <div style="font-weight: 800;">$5 ></div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a id="navHome" href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Home</span></a>
+  <a id="navRequest" href="song_request.html" class="nav-item active"><span class="nav-icon">🎵</span><span>Request</span></a>
+  <a id="navQueue" href="queue.html" class="nav-item"><span class="nav-icon">📊</span><span>Queue</span></a>
+  <a href="admin.html" class="nav-item"><span class="nav-icon">🛡️</span><span>Admin</span></a>
+</nav>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle" style="margin-bottom: 20px; text-align: center;">Song Request</h3>
+    
+    <form id="requestForm">
+      <div id="formInputs">
+        <input type="text" name="song" id="formSong" placeholder="Song Name" required>
+        <input type="text" name="artist" id="formArtist" placeholder="Artist" required>
+        <input type="text" name="name" id="userName" placeholder="Your Name">
+        <input type="hidden" id="laneVal" value="free">
+        <button type="submit" class="submit-btn" id="mainSubmitBtn">Submit Request</button>
+      </div>
+
+      <div id="paymentStep" class="payment-choice">
+        <p style="font-size: 11px; text-align: center; margin-bottom: 10px; opacity: 0.7;">SELECT PAYMENT METHOD</p>
+        <button type="button" class="pay-btn" onclick="submitFinalRequest('paypal')">💳 PayPal / Card</button>
+        <button type="button" class="pay-btn" onclick="submitFinalRequest('cash')">💵 Cash at Booth</button>
+      </div>
+
+      <p onclick="closeModal()" style="text-align:center; font-size: 12px; margin-top: 15px; opacity: 0.5; cursor: pointer;">Cancel</p>
+    </form>
+  </div>
+</div>
+
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <span class="success-icon" id="successIcon">✨</span>
+    <h2 id="successTitle">Thank You</h2>
+    <p id="successMsg"></p>
+    <button class="close-success" onclick="closeSuccess()">Dismiss</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  storageBucket: "aryauxsongrequest.firebasestorage.app",
+  messagingSenderId: "376455919089",
+  appId: "1:376455919089:web:4962df21f4145b61c30050"
+});
+
+const db = firebase.database();
+const urlParams = new URLSearchParams(window.location.search);
+let currentVenue = urlParams.get('v') || "Granville";
+
+document.getElementById('venueSubtext').innerText = currentVenue.includes("Warehouse") ? currentVenue : currentVenue + " Warehouse";
+document.getElementById('navHome').href = `index.html?v=${currentVenue}`;
+document.getElementById('navRequest').href = `song_request.html?v=${currentVenue}`;
+document.getElementById('navQueue').href = `queue.html?v=${currentVenue}`;
+
+function openModal(song = '', artist = '', type = 'free') {
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('formInputs').style.display = 'block';
+  document.getElementById('paymentStep').style.display = 'none';
+  document.getElementById('formSong').value = song;
+  document.getElementById('formArtist').value = artist;
+  document.getElementById('laneVal').value = type;
+  document.getElementById('modalTitle').innerText = type === 'priority' ? 'Priority Request ($5)' : 'Free Request';
+}
+
+function closeModal() { document.getElementById('overlay').style.display = 'none'; }
+
+// STEP 1: INITIAL SUBMIT
+document.getElementById('requestForm').onsubmit = (e) => {
+  e.preventDefault();
+  const lane = document.getElementById('laneVal').value;
+
+  if (lane === 'priority') {
+    // Show payment options instead of submitting immediately
+    document.getElementById('formInputs').style.display = 'none';
+    document.getElementById('paymentStep').style.display = 'flex';
+    document.getElementById('modalTitle').innerText = "Complete Priority";
+  } else {
+    submitFinalRequest('free');
+  }
+};
+
+// STEP 2: FINAL FIREBASE PUSH
+function submitFinalRequest(method) {
+  const lane = document.getElementById('laneVal').value;
+  const prettyVenue = currentVenue.replace(/-/g, ' ');
+
+  const data = {
+    song: document.getElementById('formSong').value,
+    artist: document.getElementById('formArtist').value,
+    name: document.getElementById('userName').value || "Guest",
+    venue: currentVenue,
+    lane: lane,
+    payment: method, // 'free', 'paypal', or 'cash'
+    status: 'pending',
+    timestamp: Date.now()
+  };
+
+  db.ref('requests').push(data).then(() => {
+    showSuccessMessage(lane, method, prettyVenue);
+  }).catch(err => alert("Error: " + err.message));
+}
+
+function showSuccessMessage(lane, method, venue) {
+  const overlay = document.getElementById('successOverlay');
+  const title = document.getElementById('successTitle');
+  const msg = document.getElementById('successMsg');
+  const icon = document.getElementById('successIcon');
+
+  if (lane === 'priority') {
+    icon.innerText = "⚡";
+    title.innerText = "Priority Request";
+    msg.innerText = "Thank you for the request, song on in 10 minutes!";
+    overlay.style.display = 'flex';
+
+    if (method === 'paypal') {
+      setTimeout(() => { window.location.href = "https://paypal.me/aryaux/5"; }, 3000);
+    }
+  } else {
+    icon.innerText = "🎵";
+    title.innerText = "Request Sent";
+    msg.innerText = `Thank you for requesting at ${venue}, if our dj has the song it will be played.`;
+    overlay.style.display = 'flex';
+  }
+}
+
+function closeSuccess() {
+  document.getElementById('successOverlay').style.display = 'none';
+  closeModal();
+}
+</script>
+</body>
+</html>

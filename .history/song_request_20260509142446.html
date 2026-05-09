@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ORYX.OS | Request</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-dark: #050507;
+  --neon-purple: #7a5cff;
+  --neon-cyan: #00f0ff;
+  --text-main: #ffffff;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-heavy: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
+  --nav-bg: rgba(10, 10, 15, 0.95);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  position: relative; overflow-x: hidden; padding-bottom: 100px;
+}
+
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background-image: url('stux-live-concert-388160_1920.jpg');
+  background-size: cover; background-position: center;
+  filter: blur(20px) brightness(0.2); transform: scale(1.1); z-index: -1;
+}
+
+.container { width: 92%; max-width: 420px; padding-top: 30px; }
+
+/* HEADER */
+.header-brand { text-align: center; margin-bottom: 30px; }
+.header-brand h2 { 
+  font-size: 22px; font-weight: 800; letter-spacing: 6px; 
+  background: linear-gradient(to right, #fff, var(--neon-cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header-brand p { font-size: 10px; color: var(--neon-purple); letter-spacing: 3px; text-transform: uppercase; margin-top: 5px; font-weight: 700; }
+
+/* SEARCH & DROPDOWN */
+.search-wrapper { position: sticky; top: 20px; z-index: 1000; margin-bottom: 25px; }
+.search-box {
+  background: rgba(20, 20, 25, 0.9); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px 20px; display: flex; align-items: center;
+  backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.search-box input { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
+
+.search-results-dropdown {
+  position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+  background: #0f0f17; border: 1px solid var(--border); border-radius: 18px;
+  max-height: 300px; overflow-y: auto; display: none;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.8); z-index: 1001;
+}
+
+/* MANUAL ADD BUTTONS */
+.manual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+.manual-card {
+  padding: 15px; border-radius: 16px; border: 1px solid var(--border);
+  background: var(--glass); text-align: center; cursor: pointer; transition: 0.2s;
+}
+.manual-card:active { transform: scale(0.95); }
+.manual-card i { font-size: 20px; display: block; margin-bottom: 5px; }
+.manual-card span { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+.manual-card.prio { border-color: var(--neon-cyan); background: rgba(0, 240, 255, 0.05); }
+
+/* LISTS */
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; opacity: 0.4; margin: 0 0 12px 5px; text-transform: uppercase; }
+.song-card {
+  background: var(--glass); border: 1px solid var(--border); border-radius: 18px;
+  padding: 12px 14px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; cursor: pointer;
+}
+.dropdown-item { border: none; border-bottom: 1px solid rgba(255,255,255,0.05); border-radius: 0; margin-bottom: 0; background: transparent; }
+
+.song-art { width: 44px; height: 44px; border-radius: 10px; background: #111; flex-shrink: 0; }
+.song-meta { flex-grow: 1; overflow: hidden; }
+.song-title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-artist { font-size: 11px; opacity: 0.5; }
+
+/* MODALS & NAV (Same as previous style for consistency) */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: var(--nav-bg); backdrop-filter: blur(30px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding-bottom: 20px; z-index: 999; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255,255,255,0.3); text-decoration: none; font-size: 10px; font-weight: 700; }
+.nav-item.active { color: var(--neon-cyan); }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+.modal { background: #0c0c14; border: 1px solid var(--border); border-radius: 28px; width: 100%; max-width: 360px; padding: 30px; }
+.modal input { width: 100%; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: white; border-radius: 14px; margin-bottom: 12px; outline: none; }
+.submit-btn { width: 100%; padding: 18px; border-radius: 14px; border: none; background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); color: white; font-weight: 800; cursor: pointer; }
+.payment-choice { display: none; flex-direction: column; gap: 10px; }
+.pay-btn { padding: 16px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-brand">
+    <h2>ORYX.OS</h2>
+    <p id="venueSubtext">GRANVILLE WAREHOUSE</p>
+  </div>
+
+  <div class="search-wrapper">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search track or artist..." autocomplete="off">
+    </div>
+    <div class="search-results-dropdown" id="dropdownList"></div>
+  </div>
+
+  <div class="section-label">Manual Add</div>
+  <div class="manual-grid">
+    <div class="manual-card" onclick="openModal('', '', 'free')">
+      <i>🎵</i><span>Free</span>
+    </div>
+    <div class="manual-card prio" onclick="openModal('', '', 'priority')">
+      <i>⚡</i><span>Priority</span>
+    </div>
+  </div>
+
+  <div class="section-label">Trending Now</div>
+  <div id="mainChartList"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a id="navHome" href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
+  <a id="navRequest" href="song_request.html" class="nav-item active"><span>🎵</span><span>Request</span></a>
+  <a id="navQueue" href="queue.html" class="nav-item"><span>📊</span><span>Queue</span></a>
+</nav>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle" style="margin-bottom: 25px; text-align: center; letter-spacing: 2px; font-weight: 800;">REQUEST</h3>
+    <form id="requestForm">
+      <div id="formInputs">
+        <input type="text" id="formSong" placeholder="Song Name" required>
+        <input type="text" id="formArtist" placeholder="Artist" required>
+        <input type="text" id="userName" placeholder="Your Name (Optional)">
+        <input type="hidden" id="laneVal" value="free">
+        <button type="submit" class="submit-btn">Send Request</button>
+      </div>
+      <div id="paymentStep" class="payment-choice">
+        <button type="button" class="pay-btn" onclick="submitFinalRequest('paypal')"><span>💳 PayPal</span> <span>$5</span></button>
+        <button type="button" class="pay-btn" onclick="submitFinalRequest('cash')"><span>💵 Cash</span> <span>$5</span></button>
+      </div>
+      <p onclick="closeModal()" style="text-align:center; font-size: 11px; margin-top: 20px; opacity: 0.4; cursor: pointer;">CANCEL</p>
+    </form>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  storageBucket: "aryauxsongrequest.firebasestorage.app",
+  messagingSenderId: "376455919089",
+  appId: "1:376455919089:web:4962df21f4145b61c30050"
+});
+
+const db = firebase.database();
+const TOP_100 = [
+  { title: "Not Like Us", artist: "Kendrick Lamar" },
+  { title: "Espresso", artist: "Sabrina Carpenter" },
+  { title: "A Bar Song", artist: "Shaboozey" },
+  { title: "Million Dollar Baby", artist: "Tommy Richman" },
+  { title: "Birds of a Feather", artist: "Billie Eilish" },
+  { title: "Houdini", artist: "Eminem" },
+  { title: "Pink Skies", artist: "Zach Bryan" },
+  { title: "Too Sweet", artist: "Hozier" }
+];
+
+const searchInput = document.getElementById('searchInput');
+const dropdown = document.getElementById('dropdownList');
+const mainChart = document.getElementById('mainChartList');
+
+// RENDER MAIN LIST
+function renderMain() {
+  TOP_100.slice(0, 8).forEach(song => {
+    const el = createSongCard(song);
+    mainChart.appendChild(el);
+  });
+}
+
+function createSongCard(song, isDropdown = false) {
+  const div = document.createElement('div');
+  div.className = `song-card ${isDropdown ? 'dropdown-item' : ''}`;
+  div.onclick = () => {
+    openModal(song.title, song.artist);
+    dropdown.style.display = 'none';
+    searchInput.value = '';
+  };
+  div.innerHTML = `<div class="song-art"></div><div class="song-meta"><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div>`;
+  return div;
+}
+
+// SEARCH DROPDOWN LOGIC
+searchInput.oninput = (e) => {
+  const val = e.target.value.toLowerCase();
+  dropdown.innerHTML = '';
+  if (val.length > 0) {
+    const filtered = TOP_100.filter(s => s.title.toLowerCase().includes(val) || s.artist.toLowerCase().includes(val));
+    if (filtered.length > 0) {
+      filtered.forEach(s => dropdown.appendChild(createSongCard(s, true)));
+      dropdown.style.display = 'block';
+    } else {
+      dropdown.style.display = 'none';
+    }
+  } else {
+    dropdown.style.display = 'none';
+  }
+};
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrapper')) dropdown.style.display = 'none';
+});
+
+// MODAL & FIREBASE LOGIC
+function openModal(s='', a='', type='free') {
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('formInputs').style.display = 'block';
+  document.getElementById('paymentStep').style.display = 'none';
+  document.getElementById('formSong').value = s;
+  document.getElementById('formArtist').value = a;
+  document.getElementById('laneVal').value = type;
+  document.getElementById('modalTitle').innerText = type === 'priority' ? 'PRIORITY' : 'REQUEST';
+}
+
+function closeModal() { document.getElementById('overlay').style.display = 'none'; }
+
+document.getElementById('requestForm').onsubmit = (e) => {
+  e.preventDefault();
+  if (document.getElementById('laneVal').value === 'priority') {
+    document.getElementById('formInputs').style.display = 'none';
+    document.getElementById('paymentStep').style.display = 'flex';
+  } else {
+    submitFinalRequest('free');
+  }
+};
+
+function submitFinalRequest(method) {
+  const data = {
+    song: document.getElementById('formSong').value,
+    artist: document.getElementById('formArtist').value,
+    name: document.getElementById('userName').value || "Guest",
+    venue: "Granville",
+    lane: document.getElementById('laneVal').value,
+    payment: method,
+    status: 'pending',
+    timestamp: Date.now()
+  };
+  db.ref('requests').push(data).then(() => {
+    alert("Request Sent!");
+    closeModal();
+  });
+}
+
+renderMain();
+</script>
+</body>
+</html>
