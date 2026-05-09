@@ -32,6 +32,7 @@ body {
   position: relative;
 }
 
+/* BLURRED BACKGROUND IMAGE LAYER */
 body::before {
   content: "";
   position: absolute;
@@ -44,6 +45,7 @@ body::before {
   z-index: -1;
 }
 
+/* OVERLAY GRADIENT */
 .overlay {
   position: absolute;
   inset: 0;
@@ -201,7 +203,7 @@ body::before {
   </div>
 
   <div class="hero-card">
-    <h1 class="main-title" id="venueDisplay">INITIALIZING...</h1>
+    <h1 class="main-title" id="venueDisplay">GRANVILLE WAREHOUSE<br>REQUEST <span>YOUR</span> MUSIC.</h1>
 
     <div class="logo-container">
       <div class="logo-glow"></div>
@@ -221,7 +223,7 @@ body::before {
   </div>
 
 <script>
-  // 1. GET VENUE FROM URL (e.g., index.html?v=Calgary)
+  // 1. GET VENUE FROM URL (e.g., index.html?v=Montreal)
   const urlParams = new URLSearchParams(window.location.search);
   let venueKey = urlParams.get('v');
 
@@ -246,19 +248,17 @@ body::before {
     'Thomas': { name: 'THOMAS WAREHOUSE', logo: '/photos/thomas-logo.png' }
   };
 
-  // If no key is provided, default to Granville
+  // Robust check: Default to Granville if key is missing, empty, or invalid
   if (!venueKey || !venueData[venueKey]) {
     venueKey = 'Granville';
   }
 
   // 3. UPDATE PAGE CONTENT DYNAMICALLY
   const venue = venueData[venueKey];
-  
-  // This line updates the "GRANVILLE WAREHOUSE" text to the specific venue name
   document.getElementById('venueDisplay').innerHTML = `${venue.name}<br>REQUEST <span>YOUR</span> MUSIC.`;
   document.getElementById('venueLogo').src = venue.logo;
 
-  // 4. PASS THE VENUE TO THE NEXT PAGES
+  // 4. PASS THE VENUE TO THE NEXT PAGES (Strict URL Param persistence)
   document.getElementById('requestBtn').href = `song_request.html?v=${venueKey}`;
   document.getElementById('queueBtn').href = `queue.html?v=${venueKey}`;
 </script>

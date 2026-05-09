@@ -32,6 +32,7 @@ body {
   position: relative;
 }
 
+/* BLURRED BACKGROUND IMAGE LAYER */
 body::before {
   content: "";
   position: absolute;
@@ -44,6 +45,7 @@ body::before {
   z-index: -1;
 }
 
+/* OVERLAY GRADIENT */
 .overlay {
   position: absolute;
   inset: 0;
@@ -201,7 +203,7 @@ body::before {
   </div>
 
   <div class="hero-card">
-    <h1 class="main-title" id="venueDisplay">INITIALIZING...</h1>
+    <h1 class="main-title" id="venueDisplay">GRANVILLE WAREHOUSE<br>REQUEST <span>YOUR</span> MUSIC.</h1>
 
     <div class="logo-container">
       <div class="logo-glow"></div>
@@ -221,42 +223,48 @@ body::before {
   </div>
 
 <script>
-  // 1. GET VENUE FROM URL (e.g., index.html?v=Calgary)
+  // 1. GET VENUE FROM URL (e.g., index.html?v=Montreal)
   const urlParams = new URLSearchParams(window.location.search);
   let venueKey = urlParams.get('v');
 
   // 2. ALL 17 VENUE SPECIFICS
   const venueData = {
+    // British Columbia
     'Granville': { name: 'GRANVILLE WAREHOUSE', logo: '/photos/wg-1logo.png' },
     'Victoria': { name: 'VICTORIA WAREHOUSE', logo: '/photos/victoria-logo.png' },
     'Whistler': { name: 'WHISTLER WAREHOUSE', logo: '/photos/whistler-logo.png' },
     'Dime': { name: 'THE DIME COMMERCIAL', logo: '/photos/dime-logo.png' },
+    
+    // Ontario
     'Bloor': { name: 'BLOOR ST. WAREHOUSE', logo: '/photos/bloor-logo.png' },
     'London': { name: 'LONDON WAREHOUSE', logo: '/photos/london-logo.png' },
     'Ottawa': { name: 'OTTAWA WAREHOUSE', logo: '/photos/ottawa-logo.png' },
     'Yonge': { name: 'YONGE ST. WAREHOUSE', logo: '/photos/yonge-logo.png' },
     'Queen': { name: 'QUEEN ST. WAREHOUSE', logo: '/photos/queen-logo.png' },
+    
+    // Quebec
     'L-Entrepot': { name: "L'ENTREPÔT MONTREAL", logo: '/photos/l-entrepot-logo.png' },
     'Warehouse-MTL': { name: 'LE WAREHOUSE MONTREAL', logo: '/photos/warehouse-mtl.png' },
     'St-Laurent': { name: 'ST-LAURENT WAREHOUSE', logo: '/photos/st-laurent-logo.png' },
     'Bureau-QC': { name: 'LE BUREAU DE POSTE QC', logo: '/photos/bureau-qc-logo.png' },
     'Bureau-TR': { name: 'LE BUREAU DE POSTE TR', logo: '/photos/bureau-tr-logo.png' },
+    
+    // Alberta
     'Calgary': { name: 'CALGARY WAREHOUSE', logo: '/photos/calgary-logo.png' },
     'Edmonton': { name: 'EDMONTON WAREHOUSE', logo: '/photos/edmonton-logo.png' },
+    
+    // USA
     'Thomas': { name: 'THOMAS WAREHOUSE', logo: '/photos/thomas-logo.png' }
   };
 
-  // If no key is provided, default to Granville
+  // Default to Granville if no key is provided or if the key doesn't match the list
   if (!venueKey || !venueData[venueKey]) {
     venueKey = 'Granville';
   }
 
   // 3. UPDATE PAGE CONTENT DYNAMICALLY
-  const venue = venueData[venueKey];
-  
-  // This line updates the "GRANVILLE WAREHOUSE" text to the specific venue name
-  document.getElementById('venueDisplay').innerHTML = `${venue.name}<br>REQUEST <span>YOUR</span> MUSIC.`;
-  document.getElementById('venueLogo').src = venue.logo;
+  document.getElementById('venueDisplay').innerHTML = `${venueData[venueKey].name}<br>REQUEST <span>YOUR</span> MUSIC.`;
+  document.getElementById('venueLogo').src = venueData[venueKey].logo;
 
   // 4. PASS THE VENUE TO THE NEXT PAGES
   document.getElementById('requestBtn').href = `song_request.html?v=${venueKey}`;

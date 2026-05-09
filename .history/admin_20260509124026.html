@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ORYX.OS | DJ Master Admin</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+  --bg-dark: #050507;
+  --panel-bg: #0c0c12;
+  --neon-cyan: #00f0ff;
+  --neon-purple: #7a5cff;
+  --neon-pink: #ff2fd1;
+  --neon-gold: #ffd166;
+  --border: rgba(255, 255, 255, 0.08);
+  --text-dim: rgba(255, 255, 255, 0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: white;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* SIDEBAR NAVIGATION */
+.sidebar {
+  width: 260px;
+  background: var(--panel-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  flex-shrink: 0;
+}
+
+.brand-area { margin-bottom: 40px; }
+.brand-area h2 { font-size: 18px; letter-spacing: 4px; font-weight: 800; }
+.brand-area p { font-size: 8px; color: var(--neon-cyan); letter-spacing: 1px; text-transform: uppercase; }
+
+.nav-group { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+
+.nav-link {
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 12px 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.3s;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+.nav-link:hover { background: rgba(255,255,255,0.03); color: white; }
+.nav-link.active { background: rgba(0, 240, 255, 0.05); color: var(--neon-cyan); }
+
+.nav-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin-top: auto;
+}
+
+/* MAIN CONTENT AREA */
+.main-dashboard {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.view-section {
+  display: none;
+  padding: 40px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.view-section.active { display: block; }
+
+/* ANALYTICS GRID */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-auto-rows: 350px;
+  gap: 25px;
+  margin-top: 20px;
+  padding-bottom: 40px;
+}
+
+.chart-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 25px;
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chart-title {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--neon-cyan);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* LIVE PULSE FEED ANIMATION */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.pulse-entry {
+  padding: 12px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  font-size: 11px;
+  animation: slideIn 0.3s ease-out;
+  border-left: 3px solid var(--neon-purple);
+}
+
+.pulse-entry.priority {
+  border-left-color: var(--neon-gold);
+  background: rgba(255, 209, 102, 0.03);
+}
+
+/* OVERVIEW & LOCATION STYLES */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.stat-card h4 { font-size: 10px; color: var(--neon-gold); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+.stat-card .value { font-size: 28px; font-weight: 800; }
+
+.province-group { margin-bottom: 40px; }
+.province-header { 
+  font-size: 10px; color: var(--neon-purple); letter-spacing: 3px; font-weight: 800; 
+  margin-bottom: 15px; border-left: 3px solid var(--neon-purple); padding-left: 10px;
+}
+
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 15px;
+}
+
+.location-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.location-card:hover { border-color: var(--neon-cyan); background: rgba(0, 240, 255, 0.02); }
+
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 10px; }
+.status-online { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+
+.loc-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
+
+/* MOBILE RESPONSIVE OVERRIDES */
+@media (max-width: 768px) {
+  body { flex-direction: column; overflow-y: auto; }
+  .sidebar { width: 100%; height: auto; padding: 15px; border-right: none; border-bottom: 1px solid var(--border); }
+  .nav-group { flex-direction: row; overflow-x: auto; padding-bottom: 10px; gap: 15px; }
+  .nav-link { padding: 8px 12px; white-space: nowrap; }
+  .nav-bottom { display: none; }
+  .main-dashboard { height: auto; overflow: visible; }
+  .view-section { padding: 20px; }
+  .stats-row, .analytics-grid, .lane-container { grid-template-columns: 1fr !important; grid-auto-rows: auto; }
+  .chart-container { height: 300px; }
+}
+
+/* AUTH OVERLAY */
+#loginPanel {
+  position: fixed; inset: 0; background: var(--bg-dark);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
+}
+#loginPanel input { 
+  padding: 16px; border-radius: 12px; background: #0c0c14; border: 1px solid var(--border); 
+  color: white; margin-bottom: 12px; width: 300px; outline: none; 
+}
+#loginPanel button { 
+  padding: 16px; width: 300px; border-radius: 12px; font-weight: 800; cursor: pointer;
+  background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); border: none; color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loginPanel">
+  <div class="brand-area" style="text-align: center;">
+    <h2>ORYX.OS ADMIN</h2>
+    <p>SECURE ACCESS REQUIRED</p>
+  </div>
+  <input type="email" id="email" placeholder="Admin Email">
+  <input type="password" id="password" placeholder="Admin Password">
+  <button id="loginBtn">AUTHENTICATE</button>
+</div>
+
+<nav class="sidebar">
+  <div class="brand-area">
+    <h2>ORYX.OS™</h2>
+    <p>Powered by Aryaux</p>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-link active" onclick="showView('overview', this)"><span>🏠</span> OVERVIEW</div>
+    <div class="nav-link" onclick="showView('requests', this)"><span>📥</span> REQUESTS</div>
+    <div class="nav-link" onclick="showView('queue', this)"><span>📊</span> LIVE QUEUE</div>
+    <div class="nav-link" onclick="showView('locations', this)"><span>📍</span> LOCATIONS</div>
+    <div class="nav-link" onclick="showView('analytics', this)"><span>📈</span> ANALYTICS</div>
+    <div class="nav-link" onclick="showView('settings', this)"><span>⚙️</span> SETTINGS</div>
+    
+    <div class="nav-bottom">
+      <a href="index.html" class="nav-link" style="color: var(--neon-pink);"><span>⬅️</span> EXIT TO HOME</a>
+    </div>
+  </div>
+</nav>
+
+<main class="main-dashboard">
+  
+  <section id="overview" class="view-section active">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+      <h1>Network Overview</h1>
+      <div id="clock" style="color: var(--neon-cyan); font-weight: 600; letter-spacing: 1px;">00:00:00</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><h4>System Total Requests</h4><div class="value" id="statTotal">0</div></div>
+      <div class="stat-card"><h4>Network Revenue</h4><div class="value" id="statRev">$0.00</div></div>
+      <div class="stat-card"><h4>Locations Online</h4><div class="value">17/17</div></div>
+    </div>
+    <div class="lane">
+      <h3 style="font-size: 10px; margin-bottom: 15px; color: var(--neon-cyan); letter-spacing: 2px;">LIVE PULSE</h3>
+      <div id="activityFeed" style="display: flex; flex-direction: column-reverse; gap: 10px; min-height: 100px;">
+        <div style="font-size: 11px; color: var(--text-dim);">Listening for network activity...</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="locations" class="view-section">
+    <div style="margin-bottom: 30px;">
+      <h1>Venue Network</h1>
+      <p style="opacity: 0.5; font-size: 12px;">Multi-location Management</p>
+    </div>
+    <div id="locationNetwork"></div>
+  </section>
+
+  <section id="requests" class="view-section">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+      <h1>Pending Requests</h1>
+      <button onclick="clearAll()" style="background: rgba(255,0,0,0.1); color: #ff4d4d; border: 1px solid #ff4d4d; padding: 8px 15px; border-radius: 8px; font-size: 11px; cursor: pointer;">CLEAR ALL</button>
+    </div>
+    <div class="lane-container">
+      <div class="lane">
+        <div style="font-size:12px; font-weight:800; color:var(--neon-gold); margin-bottom:20px;">PRIORITY</div>
+        <div id="priorityLane"></div>
+      </div>
+      <div class="lane">
+        <div style="font-size:12px; font-weight:800; color:var(--neon-cyan); margin-bottom:20px;">STANDARD</div>
+        <div id="freeLane"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="analytics" class="view-section">
+    <h1>Network Intelligence</h1>
+    <div class="analytics-grid">
+      <div class="chart-container">
+        <div class="chart-title">Revenue & Traffic Trend</div>
+        <canvas id="trafficChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <div class="chart-title">Top Requested</div>
+        <div class="ranking-list" id="topSongsList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="queue" class="view-section"><h1>Live Queue</h1></section>
+  <section id="settings" class="view-section"><h1>Settings</h1>
+  <style>
+  .network-hub { background: var(--glass); padding: 25px; border-radius: 16px; border: 1px solid var(--border); backdrop-filter: blur(10px); margin-bottom: 20px; }
+  .hub-header h3 { color: var(--neon-cyan); margin-bottom: 5px; font-size: 14px; letter-spacing: 2px; }
+  .hub-header p { font-size: 10px; opacity: 0.5; margin-bottom: 20px; text-transform: uppercase; }
+  
+  .region-title { font-size: 10px; color: var(--neon-purple); margin-top: 25px; margin-bottom: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(122, 92, 255, 0.3); padding-bottom: 5px; }
+  
+  .location-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  
+  .loc-card { display: flex; background: #0a0a0f; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: 0.3s; }
+  .loc-card:hover { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 240, 255, 0.1); transform: translateY(-2px); }
+  
+  .loc-btn-main { flex-grow: 1; padding: 12px 10px; color: white; text-decoration: none; font-size: 11px; font-weight: 600; text-align: left; background: transparent; border: none; cursor: pointer; display: flex; flex-direction: column; }
+  .loc-btn-main span { font-size: 8px; opacity: 0.5; font-weight: 400; margin-top: 3px; }
+  
+  .loc-btn-admin { background: rgba(255,255,255,0.05); border-left: 1px solid var(--border); padding: 0 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; transition: 0.2s; }
+  .loc-btn-admin:hover { background: rgba(122, 92, 255, 0.2); }
+</style>
+
+<div class="network-hub">
+    <div class="hub-header">
+        <h3>NETWORK LOCATIONS</h3>
+        <p>Master Admin Hub: Access portals and local dashboards</p>
+    </div>
+
+    <div class="region-title">British Columbia</div>
+    <div class="location-grid">
+        <div class="loc-card">
+            <a href="index.html?v=Granville" target="_blank" class="loc-btn-main">Granville <span>Warehouse</span></a>
+            <a href="admin.html?v=Granville" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Victoria" target="_blank" class="loc-btn-main">Victoria <span>Warehouse</span></a>
+            <a href="admin.html?v=Victoria" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Whistler" target="_blank" class="loc-btn-main">Whistler <span>Warehouse</span></a>
+            <a href="admin.html?v=Whistler" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Dime" target="_blank" class="loc-btn-main">The Dime <span>Commercial</span></a>
+            <a href="admin.html?v=Dime" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+    </div>
+
+    <div class="region-title">Ontario</div>
+    <div class="location-grid">
+        <div class="loc-card">
+            <a href="index.html?v=Bloor" target="_blank" class="loc-btn-main">Bloor St. <span>Warehouse</span></a>
+            <a href="admin.html?v=Bloor" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=London" target="_blank" class="loc-btn-main">London <span>Warehouse</span></a>
+            <a href="admin.html?v=London" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Ottawa" target="_blank" class="loc-btn-main">Ottawa <span>Warehouse</span></a>
+            <a href="admin.html?v=Ottawa" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Yonge" target="_blank" class="loc-btn-main">Yonge St. <span>Warehouse</span></a>
+            <a href="admin.html?v=Yonge" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Queen" target="_blank" class="loc-btn-main">Queen St. <span>Warehouse</span></a>
+            <a href="admin.html?v=Queen" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+    </div>
+
+    <div class="region-title">Quebec</div>
+    <div class="location-grid">
+        <div class="loc-card">
+            <a href="index.html?v=L-Entrepot" target="_blank" class="loc-btn-main">L'Entrepôt <span>Montreal</span></a>
+            <a href="admin.html?v=L-Entrepot" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Warehouse-MTL" target="_blank" class="loc-btn-main">Le Warehouse <span>Montreal</span></a>
+            <a href="admin.html?v=Warehouse-MTL" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=St-Laurent" target="_blank" class="loc-btn-main">St-Laurent <span>Warehouse</span></a>
+            <a href="admin.html?v=St-Laurent" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Bureau-QC" target="_blank" class="loc-btn-main">Le Bureau <span>Quebec City</span></a>
+            <a href="admin.html?v=Bureau-QC" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Bureau-TR" target="_blank" class="loc-btn-main">Le Bureau <span>Trois-Rivières</span></a>
+            <a href="admin.html?v=Bureau-TR" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+    </div>
+
+    <div class="region-title">Alberta</div>
+    <div class="location-grid">
+        <div class="loc-card">
+            <a href="index.html?v=Calgary" target="_blank" class="loc-btn-main">Calgary <span>Warehouse</span></a>
+            <a href="admin.html?v=Calgary" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+        <div class="loc-card">
+            <a href="index.html?v=Edmonton" target="_blank" class="loc-btn-main">Edmonton <span>Warehouse</span></a>
+            <a href="admin.html?v=Edmonton" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+    </div>
+
+    <div class="region-title">USA</div>
+    <div class="location-grid">
+        <div class="loc-card">
+            <a href="index.html?v=Thomas" target="_blank" class="loc-btn-main">Thomas <span>Warehouse (WA)</span></a>
+            <a href="admin.html?v=Thomas" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateLink() {
+    const venue = document.getElementById('venueSelector').value;
+    // Uses current origin to ensure it works on local or hosted domains
+    const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+    const fullUrl = `${baseUrl}?v=${venue}`;
+    
+    document.getElementById('finalUrl').value = fullUrl;
+    document.getElementById('generatedLinkBox').style.display = 'block';
+}
+
+function copyLink() {
+    const copyText = document.getElementById("finalUrl");
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value);
+    
+    // Optional: Visual feedback for copy
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "COPIED!";
+    btn.style.background = "#fff";
+    setTimeout(() => {
+        btn.innerText = originalText;
+        btn.style.background = "var(--neon-cyan)";
+    }, 2000);
+}
+</script>
+  </section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  storageBucket: "aryauxsongrequest.appspot.com",
+  messagingSenderId: "376455919089",
+  appId: "1:376455919089:web:4962df21f4145b61c30050"
+});
+
+
+
+let userVenue = "Granville"; // Default fallback
+let isMasterAdmin = false;
+
+// 1. MONITOR AUTHENTICATION STATE
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    // If not logged in, redirect to login page instantly
+    window.location.href = "login.html";
+  } else {
+    processUserPermissions(user);
+  }
+});
+
+// 2. DETERMINE VENUE & USER PERMISSIONS
+function processUserPermissions(user) {
+  const email = user.email.toLowerCase();
+  
+  if (email === "admin@oryx.os") {
+    // Master Admin status
+    isMasterAdmin = true;
+    
+    // Master can manually change their active admin view via URL parameter (admin.html?v=Yonge)
+    const urlParams = new URLSearchParams(window.location.search);
+    userVenue = urlParams.get('v') || "Granville";
+    
+    // Show the master navigation elements if they exist
+    const hub = document.querySelector('.network-hub');
+    if (hub) hub.style.display = 'block';
+  } else {
+    // Local DJ: Extract venue key from email (e.g., "yonge@oryx.os" becomes "Yonge")
+    // Note: This automatically capitalizes the first letter
+    const prefix = email.split('@')[0];
+    userVenue = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    
+    // Hide the master hub so local DJs cannot switch venues
+    const hub = document.querySelector('.network-hub');
+    if (hub) hub.style.display = 'none';
+  }
+
+  // Update page headers to show what venue we are currently managing
+  const header = document.getElementById('adminVenueHeader');
+  if (header) {
+    header.innerText = isMasterAdmin ? `MASTER ADMIN: ${userVenue.toUpperCase()}` : `DASHBOARD: ${userVenue.toUpperCase()}`;
+  }
+
+  // Fire up the requests stream for this specific venue
+  startLiveRequestListener();
+}
+
+// 3. LISTEN TO FIREBASE REQUESTS (FILTERED BY ACTIVE VENUE)
+function startLiveRequestListener() {
+  db.ref('requests').on('value', snap => {
+    const list = document.getElementById('adminRequestList'); // Update with your actual container ID
+    if (!list) return;
+    
+    list.innerHTML = '';
+    let activeCount = 0;
+
+    snap.forEach(child => {
+      const r = child.val();
+      
+      // Match incoming requests to the verified venue
+      if (r.venue === userVenue) {
+        activeCount++;
+        renderRequestRow(child.key, r); // Call your existing function that draws the requests
+      }
+    });
+    
+    // Optional: update badges/counts on admin side
+    const countBadge = document.getElementById('adminCount');
+    if (countBadge) countBadge.innerText = `${activeCount} REQUESTS`;
+  });
+}
+
+// 4. LOGOUT HELPER
+function logout() {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
+}
+
+const db = firebase.database();
+const auth = firebase.auth();
+
+function initLivePulse() {
+  const feed = document.getElementById('activityFeed');
+  db.ref("requests").limitToLast(5).on("child_added", snap => {
+    const data = snap.val();
+    if(!data.song) return;
+    
+    // Clear the placeholder on first real data
+    if(feed.innerText.includes("Listening")) feed.innerHTML = "";
+
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const entry = document.createElement('div');
+    entry.className = `pulse-entry ${data.lane === 'priority' ? 'priority' : ''}`;
+    
+    entry.innerHTML = `
+      <span style="color: var(--text-dim); font-size: 9px;">[${timestamp}]</span> 
+      <b style="color: white;">${data.song}</b> 
+      <span style="color: var(--neon-cyan)">@ ${data.venue || 'Global Network'}</span>
+      ${data.lane === 'priority' ? '<span style="color: var(--neon-gold); float: right; font-weight:800;">★ PRIORITY</span>' : ''}
+    `;
+
+    feed.appendChild(entry);
+    if (feed.children.length > 5) feed.removeChild(feed.firstChild);
+  });
+}
+
+const venues = [
+  { name: "El Furniture", city: "Calgary", region: "Alberta" },
+  { name: "El Furniture", city: "Edmonton", region: "Alberta" },
+  { name: "El Furniture", city: "Granville", region: "British Columbia" },
+  { name: "The Dime", city: "Commercial", region: "British Columbia" },
+  { name: "El Furniture", city: "Victoria", region: "British Columbia" },
+  { name: "El Furniture", city: "Whistler", region: "British Columbia" },
+  { name: "El Furniture", city: "Bloor", region: "Ontario" },
+  { name: "El Furniture", city: "London", region: "Ontario" },
+  { name: "El Furniture", city: "Ottawa", region: "Ontario" },
+  { name: "El Furniture", city: "Yonge", region: "Ontario" },
+  { name: "El Furniture", city: "Queen", region: "Ontario" },
+  { name: "L'Entrepot", city: "Montreal", region: "Quebec" },
+  { name: "Le Bureau De Poste", city: "Quebec City", region: "Quebec" },
+  { name: "Le Bureau De Poste", city: "Trois-Rivieres", region: "Quebec" },
+  { name: "Le Warehouse", city: "Montreal", region: "Quebec" },
+  { name: "El Furniture", city: "St.-Laurent", region: "Quebec" },
+  { name: "El Furniture", city: "Thomas", region: "Washington" }
+];
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    document.getElementById('loginPanel').style.display="none";
+    loadData();
+    initLivePulse();
+    renderLocations();
+  } else {
+    document.getElementById('loginPanel').style.display="flex";
+  }
+});
+
+function loadData(){
+  db.ref("requests").on("value", snap => {
+    const free = document.getElementById('freeLane');
+    const priority = document.getElementById('priorityLane');
+    let total = 0; let rev = 0;
+    free.innerHTML = ""; priority.innerHTML = "";
+    
+    snap.forEach(c => {
+      const r = c.val();
+      total++; if(r.lane === 'priority') rev += 5.0;
+      if(r.status === "pending") {
+        const div = document.createElement("div");
+        div.className = "request-card" + (r.lane === "priority" ? " priority" : "");
+        div.innerHTML = `<div><b>${r.song}</b><br><small>${r.artist}</small></div>
+          <div><button onclick="approve('${c.key}')" style="background:var(--neon-cyan); border:none; padding:5px 10px; border-radius:4px; font-weight:800; cursor:pointer;">PLAY</button></div>`;
+        (r.lane === "priority" ? priority : free).appendChild(div);
+      }
+    });
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statRev').innerText = `$${rev.toFixed(2)}`;
+  });
+}
+
+function showView(viewId, element) {
+  document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  element.classList.add('active');
+}
+
+function renderLocations() {
+  const container = document.getElementById('locationNetwork');
+  const grouped = venues.reduce((acc, v) => { acc[v.region] = acc[v.region] || []; acc[v.region].push(v); return acc; }, {});
+  container.innerHTML = Object.keys(grouped).map(region => `
+    <div class="province-group">
+      <div class="province-header">${region.toUpperCase()}</div>
+      <div class="location-grid">
+        ${grouped[region].map(loc => `
+          <div class="location-card">
+            <div style="display:flex; justify-content:space-between;">
+              <div><h3>${loc.name}</h3><p>${loc.city}</p></div>
+              <span class="status-dot status-online"></span>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function approve(id){ db.ref(`requests/${id}/status`).set("approved"); }
+function clearAll() { if(confirm("Clear?")) db.ref("requests").remove(); }
+document.getElementById('loginBtn').addEventListener('click', () => {
+  auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value).catch(() => alert("Denied"));
+});
+setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORYX.OS | Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #050507;
+  --neon-purple: #7a5cff;
+  --neon-cyan: #00f0ff;
+  --text-main: #ffffff;
+  --glass: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('/photos/stux-live-concert-388160_1920.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(10px) brightness(0.2);
+  transform: scale(1.1);
+  z-index: -1;
+}
+.login-card {
+  width: 90%;
+  max-width: 360px;
+  background: rgba(15, 15, 23, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px 30px;
+  backdrop-filter: blur(20px);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.branding h2 {
+  font-weight: 800;
+  letter-spacing: 4px;
+  font-size: 28px;
+  background: linear-gradient(to right, #fff, var(--neon-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.branding p {
+  font-size: 9px;
+  color: var(--neon-purple);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+.input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+input {
+  width: 100%;
+  padding: 14px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: 0.3s;
+}
+input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+}
+.btn-login {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--neon-purple), #5a3fff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+.btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(122, 92, 255, 0.3);
+}
+#errorMessage {
+  color: #ff4a4a;
+  font-size: 11px;
+  margin-top: 15px;
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="branding">
+    <h2>ORYX.OS</h2>
+    <p>Control Center</p>
+  </div>
+
+  <form id="loginForm">
+    <div class="input-group">
+      <label>Station Email</label>
+      <input type="email" id="email" placeholder="venue@oryx.os" required>
+    </div>
+    <div class="input-group">
+      <label>Passcode</label>
+      <input type="password" id="password" placeholder="••••••••" required>
+    </div>
+    <button type="submit" class="btn-login">Access Dashboard</button>
+    <p id="errorMessage"></p>
+  </form>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  projectId: "aryauxsongrequest"
+});
+
+const auth = firebase.auth();
+
+document.getElementById('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const errorMsg = document.getElementById('errorMessage');
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      // Login successful, redirect to admin panel
+      window.location.href = "admin.html";
+    })
+    .catch((error) => {
+      errorMsg.innerText = "INVALID CREDENTIALS. TRY AGAIN.";
+      errorMsg.style.display = 'block';
+    });
+});
+</script>
+</body>
+</html>

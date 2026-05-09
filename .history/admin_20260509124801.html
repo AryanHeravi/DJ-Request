@@ -27,7 +27,7 @@ body {
   font-family: 'Montserrat', sans-serif;
   background-color: var(--bg-dark);
   color: white;
-  display: none; /* Hidden until Firebase verifies login */
+  display: none; /* Hidden by default until Firebase verifies the login */
   height: 100vh;
   overflow: hidden;
 }
@@ -121,7 +121,7 @@ body {
   flex-shrink: 0;
 }
 
-/* LIVE PULSE FEED */
+/* LIVE PULSE FEED ANIMATION */
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(-10px); }
   to { opacity: 1; transform: translateX(0); }
@@ -141,7 +141,7 @@ body {
   background: rgba(255, 209, 102, 0.03);
 }
 
-/* STATS & CARDS */
+/* OVERVIEW & LOCATION STYLES */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -159,6 +159,41 @@ body {
 .stat-card h4 { font-size: 10px; color: var(--neon-gold); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
 .stat-card .value { font-size: 28px; font-weight: 800; }
 
+.province-group { margin-bottom: 40px; }
+.province-header { 
+  font-size: 10px; color: var(--neon-purple); letter-spacing: 3px; font-weight: 800; 
+  margin-bottom: 15px; border-left: 3px solid var(--neon-purple); padding-left: 10px;
+}
+
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 15px;
+}
+
+.location-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.location-card:hover { border-color: var(--neon-cyan); background: rgba(0, 240, 255, 0.02); }
+
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 10px; }
+.status-online { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+
+.loc-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
+
+/* REQUESTS CONTAINER & CARD CSS */
 .lane-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -187,36 +222,20 @@ body {
   background: rgba(255, 209, 102, 0.03);
 }
 
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 15px;
-  margin-top: 10px;
+/* MOBILE RESPONSIVE OVERRIDES */
+@media (max-width: 768px) {
+  body { flex-direction: column; overflow-y: auto; }
+  .sidebar { width: 100%; height: auto; padding: 15px; border-right: none; border-bottom: 1px solid var(--border); }
+  .nav-group { flex-direction: row; overflow-x: auto; padding-bottom: 10px; gap: 15px; }
+  .nav-link { padding: 8px 12px; white-space: nowrap; }
+  .nav-bottom { display: none; }
+  .main-dashboard { height: auto; overflow: visible; }
+  .view-section { padding: 20px; }
+  .stats-row, .analytics-grid, .lane-container { grid-template-columns: 1fr !important; grid-auto-rows: auto; }
+  .chart-container { height: 300px; }
 }
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border);
-  padding: 12px;
-  border-radius: 12px;
-  transition: 0.3s;
-}
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.dot.online { background-color: #00ff88; color: #00ff88; }
-.dot.offline { background-color: #ff4d4d; color: #ff4d4d; }
 
-.loc-info { flex-grow: 1; }
-.loc-info h5 { font-size: 11px; font-weight: 700; margin: 0; }
-.loc-info p { font-size: 9px; opacity: 0.5; text-transform: uppercase; margin-top: 2px; }
-
-/* NETWORK HUB */
+/* NETWORK HUB SPECIFICS */
 .network-hub { background: var(--glass); padding: 25px; border-radius: 16px; border: 1px solid var(--border); backdrop-filter: blur(10px); margin-bottom: 20px; }
 .hub-header h3 { color: var(--neon-cyan); margin-bottom: 5px; font-size: 14px; letter-spacing: 2px; }
 .hub-header p { font-size: 10px; opacity: 0.5; margin-bottom: 20px; text-transform: uppercase; }
@@ -233,17 +252,6 @@ body {
 
 .loc-btn-admin { background: rgba(255,255,255,0.05); border-left: 1px solid var(--border); padding: 0 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; transition: 0.2s; }
 .loc-btn-admin:hover { background: rgba(122, 92, 255, 0.2); }
-
-@media (max-width: 768px) {
-  body { flex-direction: column; overflow-y: auto; }
-  .sidebar { width: 100%; height: auto; padding: 15px; border-right: none; border-bottom: 1px solid var(--border); }
-  .nav-group { flex-direction: row; overflow-x: auto; padding-bottom: 10px; gap: 15px; }
-  .nav-link { padding: 8px 12px; white-space: nowrap; }
-  .nav-bottom { display: none; }
-  .main-dashboard { height: auto; overflow: visible; }
-  .view-section { padding: 20px; }
-  .stats-row, .analytics-grid, .lane-container { grid-template-columns: 1fr !important; }
-}
 </style>
 </head>
 
@@ -291,48 +299,12 @@ body {
   </section>
 
   <section id="locations" class="view-section">
-  <div style="margin-bottom: 30px;">
-    <h1>Live Network Status</h1>
-    <p style="opacity: 0.5; font-size: 12px;">Real-time connectivity for all 17 locations</p>
-  </div>
-
-  <div class="region-title">British Columbia</div>
-  <div class="status-grid">
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Granville</h5><p>Vancouver</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Victoria</h5><p>Victoria</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Whistler</h5><p>Whistler</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Dime</h5><p>Commercial</p></div></div>
-  </div>
-
-  <div class="region-title">Alberta</div>
-  <div class="status-grid">
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Calgary</h5><p>Calgary</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Edmonton</h5><p>Edmonton</p></div></div>
-  </div>
-
-  <div class="region-title">Ontario</div>
-  <div class="status-grid">
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Bloor</h5><p>Toronto</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>London</h5><p>London</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Ottawa</h5><p>Ottawa</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Yonge</h5><p>Toronto</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Queen</h5><p>Toronto</p></div></div>
-  </div>
-
-  <div class="region-title">Quebec</div>
-  <div class="status-grid">
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>L'Entrepôt</h5><p>Montreal</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Warehouse-MTL</h5><p>Montreal</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>St-Laurent</h5><p>Montreal</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Bureau-QC</h5><p>Quebec City</p></div></div>
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Bureau-TR</h5><p>Trois-Rivières</p></div></div>
-  </div>
-
-  <div class="region-title">United States</div>
-  <div class="status-grid">
-    <div class="status-indicator"><div class="dot online"></div><div class="loc-info"><h5>Thomas</h5><p>Phoenix</p></div></div>
-  </div>
-</section>
+    <div style="margin-bottom: 30px;">
+      <h1>Venue Network</h1>
+      <p style="opacity: 0.5; font-size: 12px;">Multi-location Management</p>
+    </div>
+    <div id="locationNetwork"></div>
+  </section>
 
   <section id="requests" class="view-section">
     <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
@@ -368,55 +340,104 @@ body {
   <section id="queue" class="view-section"><h1>Live Queue</h1></section>
   
   <section id="settings" class="view-section">
-  <div style="margin-bottom: 30px;">
-    <h1>System Configuration</h1>
-    <p style="opacity: 0.5; font-size: 12px;">Global administrative controls</p>
-  </div>
+    <h1>Settings</h1>
+    <br>
+    
+    <div class="network-hub" style="display: none;">
+        <div class="hub-header">
+            <h3>NETWORK LOCATIONS</h3>
+            <p>Master Admin Hub: Access portals and local dashboards</p>
+        </div>
 
-  <div class="network-hub">
-    <div class="hub-header">
-      <h3>MASTER NETWORK PORTAL</h3>
-      <p>Administrative routing for all 17 venues</p>
-    </div>
+        <div class="region-title">British Columbia</div>
+        <div class="location-grid">
+            <div class="loc-card">
+                <a href="index.html?v=Granville" target="_blank" class="loc-btn-main">Granville <span>Warehouse</span></a>
+                <a href="admin.html?v=Granville" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Victoria" target="_blank" class="loc-btn-main">Victoria <span>Warehouse</span></a>
+                <a href="admin.html?v=Victoria" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Whistler" target="_blank" class="loc-btn-main">Whistler <span>Warehouse</span></a>
+                <a href="admin.html?v=Whistler" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Dime" target="_blank" class="loc-btn-main">The Dime <span>Commercial</span></a>
+                <a href="admin.html?v=Dime" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+        </div>
 
-    <div class="region-title">British Columbia</div>
-    <div class="location-grid">
-      <div class="loc-card"><a href="index.html?v=Granville" target="_blank" class="loc-btn-main">Granville</a><a href="admin.html?v=Granville" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Victoria" target="_blank" class="loc-btn-main">Victoria</a><a href="admin.html?v=Victoria" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Whistler" target="_blank" class="loc-btn-main">Whistler</a><a href="admin.html?v=Whistler" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Dime" target="_blank" class="loc-btn-main">Dime</a><a href="admin.html?v=Dime" class="loc-btn-admin">⚙️</a></div>
-    </div>
+        <div class="region-title">Ontario</div>
+        <div class="location-grid">
+            <div class="loc-card">
+                <a href="index.html?v=Bloor" target="_blank" class="loc-btn-main">Bloor St. <span>Warehouse</span></a>
+                <a href="admin.html?v=Bloor" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=London" target="_blank" class="loc-btn-main">London <span>Warehouse</span></a>
+                <a href="admin.html?v=London" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Ottawa" target="_blank" class="loc-btn-main">Ottawa <span>Warehouse</span></a>
+                <a href="admin.html?v=Ottawa" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Yonge" target="_blank" class="loc-btn-main">Yonge St. <span>Warehouse</span></a>
+                <a href="admin.html?v=Yonge" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Queen" target="_blank" class="loc-btn-main">Queen St. <span>Warehouse</span></a>
+                <a href="admin.html?v=Queen" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+        </div>
 
-    <div class="region-title">Alberta</div>
-    <div class="location-grid">
-      <div class="loc-card"><a href="index.html?v=Calgary" target="_blank" class="loc-btn-main">Calgary</a><a href="admin.html?v=Calgary" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Edmonton" target="_blank" class="loc-btn-main">Edmonton</a><a href="admin.html?v=Edmonton" class="loc-btn-admin">⚙️</a></div>
-    </div>
+        <div class="region-title">Quebec</div>
+        <div class="location-grid">
+            <div class="loc-card">
+                <a href="index.html?v=L-Entrepot" target="_blank" class="loc-btn-main">L'Entrepôt <span>Montreal</span></a>
+                <a href="admin.html?v=L-Entrepot" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Warehouse-MTL" target="_blank" class="loc-btn-main">Le Warehouse <span>Montreal</span></a>
+                <a href="admin.html?v=Warehouse-MTL" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=St-Laurent" target="_blank" class="loc-btn-main">St-Laurent <span>Warehouse</span></a>
+                <a href="admin.html?v=St-Laurent" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Bureau-QC" target="_blank" class="loc-btn-main">Le Bureau <span>Quebec City</span></a>
+                <a href="admin.html?v=Bureau-QC" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Bureau-TR" target="_blank" class="loc-btn-main">Le Bureau <span>Trois-Rivières</span></a>
+                <a href="admin.html?v=Bureau-TR" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+        </div>
 
-    <div class="region-title">Ontario</div>
-    <div class="location-grid">
-      <div class="loc-card"><a href="index.html?v=Bloor" target="_blank" class="loc-btn-main">Bloor</a><a href="admin.html?v=Bloor" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=London" target="_blank" class="loc-btn-main">London</a><a href="admin.html?v=London" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Ottawa" target="_blank" class="loc-btn-main">Ottawa</a><a href="admin.html?v=Ottawa" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Yonge" target="_blank" class="loc-btn-main">Yonge</a><a href="admin.html?v=Yonge" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Queen" target="_blank" class="loc-btn-main">Queen</a><a href="admin.html?v=Queen" class="loc-btn-admin">⚙️</a></div>
-    </div>
+        <div class="region-title">Alberta</div>
+        <div class="location-grid">
+            <div class="loc-card">
+                <a href="index.html?v=Calgary" target="_blank" class="loc-btn-main">Calgary <span>Warehouse</span></a>
+                <a href="admin.html?v=Calgary" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+            <div class="loc-card">
+                <a href="index.html?v=Edmonton" target="_blank" class="loc-btn-main">Edmonton <span>Warehouse</span></a>
+                <a href="admin.html?v=Edmonton" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+        </div>
 
-    <div class="region-title">Quebec</div>
-    <div class="location-grid">
-      <div class="loc-card"><a href="index.html?v=L-Entrepot" target="_blank" class="loc-btn-main">L'Entrepôt</a><a href="admin.html?v=L-Entrepot" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Warehouse-MTL" target="_blank" class="loc-btn-main">Warehouse-MTL</a><a href="admin.html?v=Warehouse-MTL" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=St-Laurent" target="_blank" class="loc-btn-main">St-Laurent</a><a href="admin.html?v=St-Laurent" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Bureau-QC" target="_blank" class="loc-btn-main">Bureau-QC</a><a href="admin.html?v=Bureau-QC" class="loc-btn-admin">⚙️</a></div>
-      <div class="loc-card"><a href="index.html?v=Bureau-TR" target="_blank" class="loc-btn-main">Bureau-TR</a><a href="admin.html?v=Bureau-TR" class="loc-btn-admin">⚙️</a></div>
+        <div class="region-title">USA</div>
+        <div class="location-grid">
+            <div class="loc-card">
+                <a href="index.html?v=Thomas" target="_blank" class="loc-btn-main">Thomas <span>Warehouse (WA)</span></a>
+                <a href="admin.html?v=Thomas" class="loc-btn-admin" title="Manage Queue">⚙️</a>
+            </div>
+        </div>
     </div>
-
-    <div class="region-title">USA</div>
-    <div class="location-grid">
-      <div class="loc-card"><a href="index.html?v=Thomas" target="_blank" class="loc-btn-main">Thomas</a><a href="admin.html?v=Thomas" class="loc-btn-admin">⚙️</a></div>
-    </div>
-  </div>
-</section>
+  </section>
 
 </main>
 
@@ -425,7 +446,7 @@ body {
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// 1. INITIALIZE FIREBASE
+// 1. INITIALIZE FIREBASE (Only once)
 firebase.initializeApp({
   apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
   authDomain: "aryauxsongrequest.firebaseapp.com",
@@ -442,36 +463,54 @@ const auth = firebase.auth();
 let userVenue = "Granville"; // Default fallback
 let isMasterAdmin = false;
 
-// UPDATED: Security mapping ledger
+// Translates incoming email prefixes to official venue database keys
 const emailToVenueKey = {
-  'granvillewh': 'Granville', 'granville': 'Granville',
-  'victoriawh': 'Victoria', 'victoria': 'Victoria',
-  'whistlerwh': 'Whistler', 'whistler': 'Whistler',
-  'dimewh': 'Dime', 'dime': 'Dime', 'commercialwh': 'Dime',
-  'bloorwh': 'Bloor', 'bloor': 'Bloor',
-  'londonwh': 'London', 'london': 'London',
-  'ottawawh': 'Ottawa', 'ottawa': 'Ottawa',
-  'yongewh': 'Yonge', 'yonge': 'Yonge',
-  'queenwh': 'Queen', 'queen': 'Queen',
-  'montrealwh': 'Warehouse-MTL',   // FIXED: Swapped
-  'montrealwh2': 'L-Entrepot',     // FIXED: Swapped
-  'l-entrepotwh': 'L-Entrepot', 'l-entrepot': 'L-Entrepot',
-  'warehouse-mtlwh': 'Warehouse-MTL', 'warehouse-mtl': 'Warehouse-MTL',
-  'st.laurentwh': 'St-Laurent',    // FIXED: Support period
-  'st.laurent': 'St-Laurent',      // FIXED: Support period
-  'st-laurentwh': 'St-Laurent', 'st-laurent': 'St-Laurent',
-  'bureau-qcwh': 'Bureau-QC', 'bureau-qc': 'Bureau-QC',
-  'bureau-trwh': 'Bureau-TR', 'bureau-tr': 'Bureau-TR',
-  'calgarywh': 'Calgary', 'calgary': 'Calgary',
-  'edmontonwh': 'Edmonton', 'edmonton': 'Edmonton',
-  'thomaswh': 'Thomas', 'thomas': 'Thomas'
+  'granville': 'Granville',
+  'victoria': 'Victoria',
+  'whistler': 'Whistler',
+  'dime': 'Dime',
+  'bloor': 'Bloor',
+  'london': 'London',
+  'ottawa': 'Ottawa',
+  'yonge': 'Yonge',
+  'queen': 'Queen',
+  'l-entrepot': 'L-Entrepot',
+  'warehouse-mtl': 'Warehouse-MTL',
+  'st-laurent': 'St-Laurent',
+  'bureau-qc': 'Bureau-QC',
+  'bureau-tr': 'Bureau-TR',
+  'calgary': 'Calgary',
+  'edmonton': 'Edmonton',
+  'thomas': 'Thomas'
 };
+
+const venues = [
+  { name: "El Furniture", city: "Calgary", region: "Alberta" },
+  { name: "El Furniture", city: "Edmonton", region: "Alberta" },
+  { name: "El Furniture", city: "Granville", region: "British Columbia" },
+  { name: "The Dime", city: "Commercial", region: "British Columbia" },
+  { name: "El Furniture", city: "Victoria", region: "British Columbia" },
+  { name: "El Furniture", city: "Whistler", region: "British Columbia" },
+  { name: "El Furniture", city: "Bloor", region: "Ontario" },
+  { name: "El Furniture", city: "London", region: "Ontario" },
+  { name: "El Furniture", city: "Ottawa", region: "Ontario" },
+  { name: "El Furniture", city: "Yonge", region: "Ontario" },
+  { name: "El Furniture", city: "Queen", region: "Ontario" },
+  { name: "L'Entrepot", city: "Montreal", region: "Quebec" },
+  { name: "Le Bureau De Poste", city: "Quebec City", region: "Quebec" },
+  { name: "Le Bureau De Poste", city: "Trois-Rivieres", region: "Quebec" },
+  { name: "Le Warehouse", city: "Montreal", region: "Quebec" },
+  { name: "El Furniture", city: "St.-Laurent", region: "Quebec" },
+  { name: "El Furniture", city: "Thomas", region: "Washington" }
+];
 
 // 2. MONITOR AUTHENTICATION STATE
 auth.onAuthStateChanged(user => {
   if (!user) {
+    // Session unverified, kick straight to login
     window.location.href = "login.html";
   } else {
+    // Session verified! Reveal the body and process security
     document.body.style.display = "flex";
     processUserPermissions(user);
   }
@@ -481,29 +520,39 @@ auth.onAuthStateChanged(user => {
 function processUserPermissions(user) {
   const email = user.email.toLowerCase();
   
-  if (email === "admin@oryx.os" || email === "admin@oryx.com") {
+  if (email === "admin@oryx.os") {
     isMasterAdmin = true;
+    
+    // Master Admin views whatever venue is requested in the URL param (admin.html?v=Yonge)
     const urlParams = new URLSearchParams(window.location.search);
     userVenue = urlParams.get('v') || "Granville";
+    
+    // Show Master Hub controls
     const hub = document.querySelector('.network-hub');
     if (hub) hub.style.display = 'block';
   } else {
+    // Local DJ: Map email prefix to their specific key
     const prefix = email.split('@')[0];
     userVenue = emailToVenueKey[prefix] || "Granville";
+    
+    // Lock them out of Master Hub controls completely
     const hub = document.querySelector('.network-hub');
     if (hub) hub.style.display = 'none';
   }
 
+  // Update branding line in sidebar to display active venue
   const header = document.getElementById('adminVenueHeader');
   if (header) {
     header.innerText = isMasterAdmin ? `MASTER: ${userVenue.toUpperCase()}` : `DASHBOARD: ${userVenue.toUpperCase()}`;
   }
 
+  // Kickstart live feeds
   loadData();
   initLivePulse();
+  renderLocations();
 }
 
-// 4. LOAD QUEUE (FILTERED)
+// 4. LOAD QUEUE (FILTERED LIVE STREAM)
 function loadData(){
   db.ref("requests").on("value", snap => {
     const free = document.getElementById('freeLane');
@@ -512,14 +561,15 @@ function loadData(){
     
     free.innerHTML = ""; 
     priority.innerHTML = "";
+    
     let total = 0; 
     let rev = 0;
     
     snap.forEach(c => {
       const r = c.val();
       
-      // FIXED: Case-insensitive matching prevents "Calgary" vs "calgary" errors
-      if (r.venue && r.venue.toLowerCase() === userVenue.toLowerCase()) {
+      // Security Check: Only stream requests meant for this DJ's assigned venue!
+      if (r.venue === userVenue) {
         total++; 
         if (r.lane === 'priority') rev += 5.0;
         
@@ -536,8 +586,20 @@ function loadData(){
       }
     });
 
+    // Display localized statistics for local DJs, global for master
     document.getElementById('statTotal').innerText = total;
     document.getElementById('statRev').innerText = `$${rev.toFixed(2)}`;
+    
+    const statsRowHeaders = document.querySelectorAll('.stat-card h4');
+    if (statsRowHeaders.length >= 2) {
+      if (isMasterAdmin) {
+        statsRowHeaders[0].innerText = "System Total Requests";
+        statsRowHeaders[1].innerText = "Network Revenue";
+      } else {
+        statsRowHeaders[0].innerText = "Local Requests";
+        statsRowHeaders[1].innerText = "Local Revenue";
+      }
+    }
   });
 }
 
@@ -550,8 +612,8 @@ function initLivePulse() {
     const data = snap.val();
     if(!data.song) return;
     
-    // Security check for local DJs
-    if (!isMasterAdmin && data.venue.toLowerCase() !== userVenue.toLowerCase()) return;
+    // If not master, don't fill the feed with other venues' songs
+    if (!isMasterAdmin && data.venue !== userVenue) return;
 
     if(feed.innerText.includes("Listening")) feed.innerHTML = "";
 
@@ -562,7 +624,8 @@ function initLivePulse() {
     entry.innerHTML = `
       <span style="color: var(--text-dim); font-size: 9px;">[${timestamp}]</span> 
       <b style="color: white;">${data.song}</b> 
-      <span style="color: var(--neon-cyan)">@ ${data.venue}</span>
+      <span style="color: var(--neon-cyan)">@ ${data.venue || 'Global Network'}</span>
+      ${data.lane === 'priority' ? '<span style="color: var(--neon-gold); float: right; font-weight:800;">★ PRIORITY</span>' : ''}
     `;
 
     feed.appendChild(entry);
@@ -570,13 +633,41 @@ function initLivePulse() {
   });
 }
 
+// 6. RENDER MASTER NETWORK VENUES TAB
+function renderLocations() {
+  const container = document.getElementById('locationNetwork');
+  if (!container) return;
+
+  const grouped = venues.reduce((acc, v) => { 
+    acc[v.region] = acc[v.region] || []; 
+    acc[v.region].push(v); 
+    return acc; 
+  }, {});
+
+  container.innerHTML = Object.keys(grouped).map(region => `
+    <div class="province-group">
+      <div class="province-header">${region.toUpperCase()}</div>
+      <div class="location-grid">
+        ${grouped[region].map(loc => `
+          <div class="location-card">
+            <div style="display:flex; justify-content:space-between;">
+              <div><h3>${loc.name}</h3><p>${loc.city}</p></div>
+              <span class="status-dot status-online"></span>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// HELPER ACTIONS
 function approve(id){ db.ref(`requests/${id}/status`).set("approved"); }
 
 function clearAll() { 
-  if(confirm(`Clear ALL requests for ${userVenue.toUpperCase()}?`)) {
+  if(confirm(`Are you sure you want to clear ALL requests for ${userVenue.toUpperCase()}?`)) {
+    // If master admin, clears everything. If local DJ, only clears their own requests node.
     db.ref("requests").once("value", snap => {
       snap.forEach(child => {
-        if (child.val().venue.toLowerCase() === userVenue.toLowerCase()) {
+        if (child.val().venue === userVenue) {
           db.ref(`requests/${child.key}`).remove();
         }
       });
@@ -591,8 +682,13 @@ function showView(viewId, element) {
   element.classList.add('active');
 }
 
-function logout() { auth.signOut().then(() => { window.location.href = "login.html"; }); }
+function logout() {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
+}
 
+// Clock UI
 setInterval(() => { 
   const clockEl = document.getElementById('clock');
   if(clockEl) clockEl.innerText = new Date().toLocaleTimeString(); 
