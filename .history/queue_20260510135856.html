@@ -93,8 +93,8 @@ body::before {
 .vip-badge {
   font-size: 9px;
   font-weight: 800;
-  color: var(--neon-purple);
-  border: 1px solid var(--neon-purple);
+  color: #ffd166;
+  border: 1px solid #ffd166;
   padding: 2px 6px;
   border-radius: 4px;
   text-transform: uppercase;
@@ -173,7 +173,7 @@ firebase.initializeApp({
   authDomain: "aryauxsongrequest.firebaseapp.com",
   databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
   projectId: "aryauxsongrequest",
-  storageBucket: "aryauxsongrequest.firebasestorage.app",
+  storageBucket: "aryauxsongrequest.appspot.com",
   messagingSenderId: "376455919089",
   appId: "1:376455919089:web:4962df21f4145b61c30050"
 });
@@ -198,15 +198,17 @@ db.ref('requests').on('value', snap => {
 
   const requests = [];
   
-  // Robust venue matching setup
+  // Clean target venue string for robust matching (e.g., "Granville" or "Granville Warehouse" -> "granville")
   let targetVenueClean = currentVenue.toLowerCase().replace(" warehouse", "").trim();
 
   snap.forEach(child => {
     const r = child.val();
+    
+    // Clean record venue string from DB
     let recordVenueClean = r.venue ? r.venue.toLowerCase().replace(" warehouse", "").trim() : "";
 
-    // ONLY display requests that are APPROVED and match this venue
-    if (r.status === 'approved' && recordVenueClean === targetVenueClean) {
+    // Show pending upcoming requests for this venue
+    if (r.status === 'pending' && recordVenueClean === targetVenueClean) {
       requests.push(r);
     }
   });
@@ -223,6 +225,7 @@ db.ref('requests').on('value', snap => {
     const div = document.createElement('div');
     div.className = 'song-row';
     
+    // Check if customer name exists, otherwise use a generic placeholder
     const displayName = r.name ? `REQ BY: ${r.name.toUpperCase()}` : 'GUEST REQUEST';
 
     div.innerHTML = `
@@ -238,7 +241,7 @@ db.ref('requests').on('value', snap => {
 
   countDisp.innerText = `${count} SONGS`;
   if(count === 0) {
-    list.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; font-size:12px;">The queue is currently empty at ${currentVenue}. Only accepted requests will appear here.</div>`;
+    list.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; font-size:12px;">The queue is currently empty at ${currentVenue}.</div>`;
   }
 });
 </script>

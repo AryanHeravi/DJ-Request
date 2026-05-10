@@ -136,7 +136,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 15px;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 .status-indicator {
   display: flex;
@@ -148,29 +148,19 @@ body {
   border-radius: 12px;
 }
 .dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: 0.3s;
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
 }
-.dot.online { background-color: #00ff88; box-shadow: 0 0 8px #00ff88; }
-.dot.offline { background-color: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; opacity: 0.4; }
+.dot.online { background-color: #00ff88; }
 
 .region-title { font-size: 10px; color: var(--neon-purple); margin-top: 25px; margin-bottom: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(122, 92, 255, 0.3); padding-bottom: 5px; }
 
-.location-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
+.location-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 
 .loc-card { display: flex; background: #0a0a0f; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: 0.3s; }
-.loc-card:hover { border-color: var(--neon-cyan); }
 
-.loc-btn-main { flex-grow: 1; padding: 12px 10px; color: white; text-decoration: none; font-size: 11px; font-weight: 600; background: transparent; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; }
-.loc-btn-main span:last-child { font-size: 9px; opacity: 0.5; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;}
+.loc-btn-main { flex-grow: 1; padding: 12px 10px; color: white; text-decoration: none; font-size: 11px; font-weight: 600; background: transparent; border: none; cursor: pointer; display: flex; flex-direction: column; }
 
-.chart-container {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-  margin-top: 20px;
-  height: 400px;
-}
+.loc-btn-admin { background: rgba(255,255,255,0.05); border-left: 1px solid var(--border); padding: 0 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; }
 
 @media (max-width: 768px) {
   body { flex-direction: column; overflow-y: auto; }
@@ -192,7 +182,7 @@ body {
   <div class="nav-group">
     <div class="nav-link active" onclick="showView('overview', this)"><span>🏠</span> OVERVIEW</div>
     <div class="nav-link" onclick="showView('requests', this)"><span>📥</span> REQUESTS</div>
-    <div class="nav-link" onclick="showView('queue', this)"><span>📋</span> LIVE QUEUE</div>
+    <div class="nav-link" onclick="showView('queue', this)"><span>📊</span> LIVE QUEUE</div>
     <div class="nav-link" onclick="showView('locations', this)"><span>📍</span> LOCATIONS</div>
     <div class="nav-link" onclick="showView('analytics', this)"><span>📈</span> ANALYTICS</div>
     <div class="nav-link" onclick="showView('settings', this)"><span>⚙️</span> SETTINGS</div>
@@ -214,7 +204,7 @@ body {
     <div class="stats-row">
       <div class="stat-card"><h4>System Total Requests</h4><div class="value" id="statTotal">0</div></div>
       <div class="stat-card"><h4>Network Revenue</h4><div class="value" id="statRev">$0.00</div></div>
-      <div class="stat-card"><h4>Locations Online</h4><div class="value" id="onlineCount">0/17</div></div>
+      <div class="stat-card"><h4>Locations Online</h4><div class="value">17/17</div></div>
     </div>
     <div class="lane">
       <h3 style="font-size: 10px; margin-bottom: 15px; color: var(--neon-cyan); letter-spacing: 2px;">LIVE PULSE</h3>
@@ -231,11 +221,11 @@ body {
     </div>
     <div class="lane-container">
       <div class="lane">
-        <div style="font-size:12px; font-weight:800; color:var(--neon-gold); margin-bottom:20px;">PRIORITY</div>
+        <div style="font-size:12px; font-weight:800; color:var(--neon-gold); margin-bottom:20px;">PENDING PRIORITY</div>
         <div id="priorityLane"></div>
       </div>
       <div class="lane">
-        <div style="font-size:12px; font-weight:800; color:var(--neon-cyan); margin-bottom:20px;">STANDARD</div>
+        <div style="font-size:12px; font-weight:800; color:var(--neon-cyan); margin-bottom:20px;">PENDING STANDARD</div>
         <div id="freeLane"></div>
       </div>
     </div>
@@ -246,33 +236,17 @@ body {
       <h1>Live Queue Control</h1>
       <span id="activeQueueCount" style="font-size: 11px; color: var(--neon-cyan); font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">0 Songs Active</span>
     </div>
-    <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 25px; line-height: 1.6;">
-      These tracks have been approved and are actively showing on the public customer screens. Click "MARK PLAYED" to transition them out of the active queue once mixed in.
+    <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 25px; line-height: 1.6;">
+      These songs have been approved and are actively showing on the public customer screens. Use the controls below to mark tracks as played as you mix them in.
     </p>
     <div class="lane" style="max-width: 650px;">
       <div id="adminQueueList"></div>
     </div>
   </section>
 
-  <section id="locations" class="view-section">
-    <h1>Live Network Status</h1>
-    <p style="color: var(--text-dim); font-size: 12px;">Real-time connection status of all 17 venues.</p>
-    <div class="status-grid" id="locationsGrid"></div>
-  </section>
-
-  <section id="analytics" class="view-section">
-    <h1>Network Intelligence</h1>
-    <p style="color: var(--text-dim); font-size: 12px;">Most requested tracks across the database.</p>
-    <div class="chart-container">
-      <canvas id="analyticsChart"></canvas>
-    </div>
-  </section>
-
-  <section id="settings" class="view-section">
-    <h1>System Configuration</h1>
-    <p style="color: var(--text-dim); font-size: 12px;">Select a venue to hijack and monitor its live queue remotely.</p>
-    <div class="location-grid" id="settingsGrid"></div>
-  </section>
+  <section id="locations" class="view-section"><h1>Live Network Status</h1></section>
+  <section id="analytics" class="view-section"><h1>Network Intelligence</h1></section>
+  <section id="settings" class="view-section"><h1>System Configuration</h1></section>
 
 </main>
 
@@ -296,14 +270,6 @@ const auth = firebase.auth();
 
 let userVenue = "Granville Warehouse"; 
 let isMasterAdmin = false;
-let analyticsChartInstance = null;
-
-const ALL_VENUES = [
-  "Granville Warehouse", "Victoria", "Whistler", "Dime", "Bloor", 
-  "London", "Ottawa", "Yonge", "Queen", "Warehouse-MTL", 
-  "L-Entrepot", "St-Laurent", "Bureau-QC", "Bureau-TR", 
-  "Calgary", "Edmonton", "Thomas"
-];
 
 const emailToVenueKey = {
   'granvillewh': 'Granville Warehouse', 'granville': 'Granville Warehouse',
@@ -329,82 +295,11 @@ const emailToVenueKey = {
   'thomaswh': 'Thomas', 'thomas': 'Thomas'
 };
 
-function buildLocationViews() {
-  const locGrid = document.getElementById('locationsGrid');
-  const setGrid = document.getElementById('settingsGrid');
-  if(!locGrid || !setGrid) return;
-  
-  locGrid.innerHTML = '';
-  setGrid.innerHTML = '';
-
-  ALL_VENUES.forEach(venue => {
-    const safeId = venue.replace(/\s+/g, '-');
-
-    locGrid.innerHTML += `
-      <div class="status-indicator">
-        <div class="dot offline" id="dot-${safeId}"></div>
-        <span style="font-size: 11px; font-weight: 700;">${venue}</span>
-      </div>
-    `;
-
-    setGrid.innerHTML += `
-      <div class="loc-card">
-        <button class="loc-btn-main" onclick="window.location.href='admin.html?v=${encodeURIComponent(venue)}'">
-          <span>${venue}</span>
-          <span>Access Controls</span>
-        </button>
-      </div>
-    `;
-  });
-}
-
-function listenToNetworkStatus() {
-  db.ref('status').on('value', snap => {
-    const statuses = snap.val() || {};
-    let onlineCount = 0;
-
-    ALL_VENUES.forEach(venue => {
-      const safeId = venue.replace(/\s+/g, '-');
-      const isOnline = statuses[venue] && statuses[venue].online === true;
-      
-      if(isOnline) onlineCount++;
-
-      const dot = document.getElementById(`dot-${safeId}`);
-      if (dot) {
-        dot.className = `dot ${isOnline ? 'online' : 'offline'}`;
-      }
-    });
-    
-    const countEl = document.getElementById('onlineCount');
-    if (countEl) countEl.innerText = `${onlineCount}/17`;
-  });
-}
-
-function setupPresence(venue) {
-  const statusRef = db.ref(`status/${venue}`);
-  
-  db.ref('.info/connected').on('value', snap => {
-    if (snap.val() === false) return;
-    
-    statusRef.onDisconnect().set({ 
-      online: false, 
-      last_active: firebase.database.ServerValue.TIMESTAMP 
-    }).then(() => {
-      statusRef.set({ 
-        online: true, 
-        last_active: firebase.database.ServerValue.TIMESTAMP 
-      });
-    });
-  });
-}
-
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "login.html";
   } else {
     document.body.style.display = "flex";
-    buildLocationViews();
-    listenToNetworkStatus();
     processUserPermissions(user);
   }
 });
@@ -416,12 +311,10 @@ function processUserPermissions(user) {
     isMasterAdmin = true;
     const urlParams = new URLSearchParams(window.location.search);
     let v = urlParams.get('v') || "Granville Warehouse";
-    userVenue = v.includes("Warehouse") ? v : v; 
-    setupPresence(userVenue);
+    userVenue = v.includes("Warehouse") ? v : v + " Warehouse"; 
   } else {
     const prefix = email.split('@')[0];
     userVenue = emailToVenueKey[prefix] || "Granville Warehouse";
-    setupPresence(userVenue);
   }
 
   const header = document.getElementById('adminVenueHeader');
@@ -447,25 +340,17 @@ function loadData(){
     let activeQueueCount = 0;
     const approvedRequests = [];
     
-    let songCounts = {};
-
     snap.forEach(c => {
       const r = c.val();
-      
-      let recordVenueClean = r.venue ? r.venue.toLowerCase().replace(" warehouse", "").trim() : "";
-      let targetVenueClean = userVenue.toLowerCase().replace(" warehouse", "").trim();
+      let recordVenue = r.venue ? r.venue.toLowerCase().replace(" warehouse", "").trim() : "";
+      let targetVenue = userVenue.toLowerCase().replace(" warehouse", "").trim();
 
-      if (isMasterAdmin || recordVenueClean === targetVenueClean) {
-         if(r.song) {
-           songCounts[r.song] = (songCounts[r.song] || 0) + 1;
-         }
-      }
-
-      if (recordVenueClean === targetVenueClean) {
+      if (recordVenue === targetVenue) {
         total++; 
         if (r.lane === 'priority') rev += 5.0;
         
         if (r.status === "pending") {
+          // Render pending requests in the Moderation view
           const div = document.createElement("div");
           div.className = "request-card" + (r.lane === "priority" ? " priority" : "");
           div.innerHTML = `
@@ -475,10 +360,11 @@ function loadData(){
             </div>
             <div style="display: flex; gap: 8px;">
               <button onclick="denyRequest('${c.key}')" style="background: rgba(255,77,77,0.12); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); padding: 6px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 10px;">DENY</button>
-              <button onclick="approve('${c.key}')" style="background:var(--neon-cyan); color: black; border:none; padding:6px 12px; border-radius:6px; font-weight:800; cursor:pointer; font-size:10px;">APPROVE</button>
+              <button onclick="approve('${c.key}')" style="background: var(--neon-cyan); color: black; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 10px;">APPROVE</button>
             </div>`;
           (r.lane === "priority" ? priority : free).appendChild(div);
         } else if (r.status === "approved") {
+          // Collect currently live/approved tracks to display on the Control view
           approvedRequests.push({ key: c.key, ...r });
         }
       }
@@ -486,14 +372,15 @@ function loadData(){
 
     document.getElementById('statTotal').innerText = total;
     document.getElementById('statRev').innerText = `$${rev.toFixed(2)}`;
-    
-    // Sort active songs so VIP displays first, then chronologically
+
+    // Sort approved queue matching customer view logic (Priority lanes first, then Timestamp)
     approvedRequests.sort((a, b) => {
       if (a.lane === 'priority' && b.lane !== 'priority') return -1;
       if (a.lane !== 'priority' && b.lane === 'priority') return 1;
       return a.timestamp - b.timestamp;
     });
 
+    // Populate Admin Queue controller
     if (adminQueueList) {
       approvedRequests.forEach(r => {
         activeQueueCount++;
@@ -501,7 +388,7 @@ function loadData(){
         div.className = "request-card" + (r.lane === "priority" ? " priority" : "");
         div.innerHTML = `
           <div>
-            <span style="font-size: 9px; font-weight: 800; color: ${r.lane === 'priority' ? 'var(--neon-gold)' : 'var(--neon-cyan)'}; margin-right: 8px; border: 1px solid currentColor; padding: 1px 4px; border-radius: 3px;">
+            <span style="font-size: 10px; font-weight: 800; color: ${r.lane === 'priority' ? 'var(--neon-gold)' : 'var(--neon-cyan)'}; margin-right: 8px; border: 1px solid currentColor; padding: 1px 4px; border-radius: 3px;">
               ${r.lane === 'priority' ? 'VIP' : 'STD'}
             </span>
             <b>${r.song}</b><br>
@@ -520,51 +407,7 @@ function loadData(){
       const activeCounter = document.getElementById('activeQueueCount');
       if (activeCounter) activeCounter.innerText = `${activeQueueCount} Songs Active`;
     }
-
-    updateAnalyticsChart(songCounts);
   });
-}
-
-function updateAnalyticsChart(songCounts) {
-  const ctx = document.getElementById('analyticsChart');
-  if (!ctx) return;
-
-  const sortedSongs = Object.entries(songCounts)
-                            .sort((a, b) => b[1] - a[1])
-                            .slice(0, 10);
-                            
-  const labels = sortedSongs.map(s => s[0]);
-  const data = sortedSongs.map(s => s[1]);
-
-  if (analyticsChartInstance) {
-    analyticsChartInstance.data.labels = labels;
-    analyticsChartInstance.data.datasets[0].data = data;
-    analyticsChartInstance.update();
-  } else {
-    analyticsChartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Total Requests',
-          data: data,
-          backgroundColor: '#00f0ff',
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.5)', stepSize: 1 } },
-          x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 10 } } }
-        },
-        plugins: {
-          legend: { display: false }
-        }
-      }
-    });
-  }
 }
 
 function initLivePulse() {
@@ -585,26 +428,24 @@ function initLivePulse() {
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const entry = document.createElement('div');
     entry.className = `pulse-entry ${data.lane === 'priority' ? 'priority' : ''}`;
-    entry.innerHTML = `<span style="color: var(--text-dim); font-size: 9px;">[${timestamp}]</span> <b style="margin: 0 5px;">${data.song}</b> <span style="color: var(--neon-cyan); font-size: 10px;">@ ${data.venue}</span>`;
+    entry.innerHTML = `<span style="color: var(--text-dim); font-size: 9px;">[${timestamp}]</span> <b>${data.song}</b> <span style="color: var(--neon-cyan)">@ ${data.venue}</span>`;
     feed.appendChild(entry);
-    if (feed.children.length > 6) feed.removeChild(feed.firstChild);
+    if (feed.children.length > 5) feed.removeChild(feed.firstChild);
   });
 }
 
-// System Operations
+// State transition updates
 function approve(id){ db.ref(`requests/${id}/status`).set("approved"); }
 function denyRequest(id){ db.ref(`requests/${id}/status`).set("denied"); }
 function markPlayed(id){ db.ref(`requests/${id}/status`).set("played"); }
 
 function clearAll() { 
-  if(confirm(`Clear ALL pending requests for ${userVenue.toUpperCase()}?`)) {
+  if(confirm(`Clear ALL requests for ${userVenue.toUpperCase()}?`)) {
     db.ref("requests").once("value", snap => {
       snap.forEach(child => {
-        if(child.val().status === "pending") {
-           let recordVenue = child.val().venue ? child.val().venue.toLowerCase().replace(" warehouse", "").trim() : "";
-           let targetVenue = userVenue.toLowerCase().replace(" warehouse", "").trim();
-           if (recordVenue === targetVenue) db.ref(`requests/${child.key}`).remove();
-        }
+        let recordVenue = child.val().venue ? child.val().venue.toLowerCase().replace(" warehouse", "").trim() : "";
+        let targetVenue = userVenue.toLowerCase().replace(" warehouse", "").trim();
+        if (recordVenue === targetVenue) db.ref(`requests/${child.key}`).remove();
       });
     });
   } 
@@ -617,11 +458,7 @@ function showView(viewId, element) {
   element.classList.add('active');
 }
 
-function logout() { 
-  db.ref(`status/${userVenue}`).set({ online: false, last_active: firebase.database.ServerValue.TIMESTAMP }).then(() => {
-    auth.signOut().then(() => { window.location.href = "login.html"; }); 
-  });
-}
+function logout() { auth.signOut().then(() => { window.location.href = "login.html"; }); }
 
 setInterval(() => { 
   const clockEl = document.getElementById('clock');

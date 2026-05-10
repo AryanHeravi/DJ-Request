@@ -192,7 +192,6 @@ body {
   <div class="nav-group">
     <div class="nav-link active" onclick="showView('overview', this)"><span>🏠</span> OVERVIEW</div>
     <div class="nav-link" onclick="showView('requests', this)"><span>📥</span> REQUESTS</div>
-    <div class="nav-link" onclick="showView('queue', this)"><span>📋</span> LIVE QUEUE</div>
     <div class="nav-link" onclick="showView('locations', this)"><span>📍</span> LOCATIONS</div>
     <div class="nav-link" onclick="showView('analytics', this)"><span>📈</span> ANALYTICS</div>
     <div class="nav-link" onclick="showView('settings', this)"><span>⚙️</span> SETTINGS</div>
@@ -241,23 +240,11 @@ body {
     </div>
   </section>
 
-  <section id="queue" class="view-section">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-      <h1>Live Queue Control</h1>
-      <span id="activeQueueCount" style="font-size: 11px; color: var(--neon-cyan); font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">0 Songs Active</span>
-    </div>
-    <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 25px; line-height: 1.6;">
-      These tracks have been approved and are actively showing on the public customer screens. Click "MARK PLAYED" to transition them out of the active queue once mixed in.
-    </p>
-    <div class="lane" style="max-width: 650px;">
-      <div id="adminQueueList"></div>
-    </div>
-  </section>
-
   <section id="locations" class="view-section">
     <h1>Live Network Status</h1>
     <p style="color: var(--text-dim); font-size: 12px;">Real-time connection status of all 17 venues.</p>
-    <div class="status-grid" id="locationsGrid"></div>
+    <div class="status-grid" id="locationsGrid">
+      </div>
   </section>
 
   <section id="analytics" class="view-section">
@@ -271,7 +258,8 @@ body {
   <section id="settings" class="view-section">
     <h1>System Configuration</h1>
     <p style="color: var(--text-dim); font-size: 12px;">Select a venue to hijack and monitor its live queue remotely.</p>
-    <div class="location-grid" id="settingsGrid"></div>
+    <div class="location-grid" id="settingsGrid">
+      </div>
   </section>
 
 </main>
@@ -298,6 +286,7 @@ let userVenue = "Granville Warehouse";
 let isMasterAdmin = false;
 let analyticsChartInstance = null;
 
+// The 17 Warehouse Group Locations
 const ALL_VENUES = [
   "Granville Warehouse", "Victoria", "Whistler", "Dime", "Bloor", 
   "London", "Ottawa", "Yonge", "Queen", "Warehouse-MTL", 
@@ -329,6 +318,7 @@ const emailToVenueKey = {
   'thomaswh': 'Thomas', 'thomas': 'Thomas'
 };
 
+// 1. POPULATE LOCATIONS HTML (All offline by default)
 function buildLocationViews() {
   const locGrid = document.getElementById('locationsGrid');
   const setGrid = document.getElementById('settingsGrid');
@@ -338,6 +328,7 @@ function buildLocationViews() {
   setGrid.innerHTML = '';
 
   ALL_VENUES.forEach(venue => {
+    // Replace spaces with dashes to create a safe HTML ID for the dot
     const safeId = venue.replace(/\s+/g, '-');
 
     locGrid.innerHTML += `
@@ -358,6 +349,7 @@ function buildLocationViews() {
   });
 }
 
+// 2. LISTEN TO LIVE NETWORK STATUS
 function listenToNetworkStatus() {
   db.ref('status').on('value', snap => {
     const statuses = snap.val() || {};
@@ -365,31 +357,38 @@ function listenToNetworkStatus() {
 
     ALL_VENUES.forEach(venue => {
       const safeId = venue.replace(/\s+/g, '-');
+      // Check if venue exists in DB and is marked online
       const isOnline = statuses[venue] && statuses[venue].online === true;
       
       if(isOnline) onlineCount++;
 
+      // Update the dot UI
       const dot = document.getElementById(`dot-${safeId}`);
       if (dot) {
         dot.className = `dot ${isOnline ? 'online' : 'offline'}`;
       }
     });
     
+    // Update master counter
     const countEl = document.getElementById('onlineCount');
     if (countEl) countEl.innerText = `${onlineCount}/17`;
   });
 }
 
+// 3. SET PRESENCE FOR CURRENT USER
 function setupPresence(venue) {
   const statusRef = db.ref(`status/${venue}`);
   
+  // Watch the special Firebase connection state
   db.ref('.info/connected').on('value', snap => {
-    if (snap.val() === false) return;
+    if (snap.val() === false) return; // Not connected
     
+    // When I disconnect, tell the database to set me offline
     statusRef.onDisconnect().set({ 
       online: false, 
       last_active: firebase.database.ServerValue.TIMESTAMP 
     }).then(() => {
+      // After setting up the disconnect rule, set me online right now
       statusRef.set({ 
         online: true, 
         last_active: firebase.database.ServerValue.TIMESTAMP 
@@ -398,13 +397,14 @@ function setupPresence(venue) {
   });
 }
 
+// 4. AUTHENTICATION & INITIALIZATION
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "login.html";
   } else {
     document.body.style.display = "flex";
     buildLocationViews();
-    listenToNetworkStatus();
+    listenToNetworkStatus(); // Start listening to everyone else
     processUserPermissions(user);
   }
 });
@@ -417,10 +417,16 @@ function processUserPermissions(user) {
     const urlParams = new URLSearchParams(window.location.search);
     let v = urlParams.get('v') || "Granville Warehouse";
     userVenue = v.includes("Warehouse") ? v : v; 
+    
+    // Optional: If Master logs in without a 'v' parameter, do they show Granville as online?
+    // We'll set presence for whichever venue they are currently viewing.
     setupPresence(userVenue);
+
   } else {
     const prefix = email.split('@')[0];
     userVenue = emailToVenueKey[prefix] || "Granville Warehouse";
+    
+    // Set presence for the logged-in manager
     setupPresence(userVenue);
   }
 
@@ -433,19 +439,15 @@ function processUserPermissions(user) {
   initLivePulse();
 }
 
+// 5. LOAD DATA & BUILD ANALYTICS
 function loadData(){
   db.ref("requests").on("value", snap => {
     const free = document.getElementById('freeLane');
     const priority = document.getElementById('priorityLane');
-    const adminQueueList = document.getElementById('adminQueueList');
     if (!free || !priority) return;
     
     free.innerHTML = ""; priority.innerHTML = "";
-    if (adminQueueList) adminQueueList.innerHTML = "";
-    
     let total = 0; let rev = 0;
-    let activeQueueCount = 0;
-    const approvedRequests = [];
     
     let songCounts = {};
 
@@ -469,17 +471,11 @@ function loadData(){
           const div = document.createElement("div");
           div.className = "request-card" + (r.lane === "priority" ? " priority" : "");
           div.innerHTML = `
+            <div><b>${r.song}</b><br><small style="opacity: 0.6;">${r.artist}</small></div>
             <div>
-              <b>${r.song}</b><br>
-              <small style="opacity: 0.6;">${r.artist} ${r.name ? `| Req by: ${r.name.toUpperCase()}` : ''}</small>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button onclick="denyRequest('${c.key}')" style="background: rgba(255,77,77,0.12); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); padding: 6px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 10px;">DENY</button>
-              <button onclick="approve('${c.key}')" style="background:var(--neon-cyan); color: black; border:none; padding:6px 12px; border-radius:6px; font-weight:800; cursor:pointer; font-size:10px;">APPROVE</button>
+              <button onclick="approve('${c.key}')" style="background:var(--neon-cyan); color: black; border:none; padding:6px 12px; border-radius:6px; font-weight:800; cursor:pointer; font-size:10px;">PLAY</button>
             </div>`;
           (r.lane === "priority" ? priority : free).appendChild(div);
-        } else if (r.status === "approved") {
-          approvedRequests.push({ key: c.key, ...r });
         }
       }
     });
@@ -487,40 +483,6 @@ function loadData(){
     document.getElementById('statTotal').innerText = total;
     document.getElementById('statRev').innerText = `$${rev.toFixed(2)}`;
     
-    // Sort active songs so VIP displays first, then chronologically
-    approvedRequests.sort((a, b) => {
-      if (a.lane === 'priority' && b.lane !== 'priority') return -1;
-      if (a.lane !== 'priority' && b.lane === 'priority') return 1;
-      return a.timestamp - b.timestamp;
-    });
-
-    if (adminQueueList) {
-      approvedRequests.forEach(r => {
-        activeQueueCount++;
-        const div = document.createElement("div");
-        div.className = "request-card" + (r.lane === "priority" ? " priority" : "");
-        div.innerHTML = `
-          <div>
-            <span style="font-size: 9px; font-weight: 800; color: ${r.lane === 'priority' ? 'var(--neon-gold)' : 'var(--neon-cyan)'}; margin-right: 8px; border: 1px solid currentColor; padding: 1px 4px; border-radius: 3px;">
-              ${r.lane === 'priority' ? 'VIP' : 'STD'}
-            </span>
-            <b>${r.song}</b><br>
-            <small style="opacity: 0.6;">${r.artist} ${r.name ? `| Req by: ${r.name.toUpperCase()}` : ''}</small>
-          </div>
-          <div>
-            <button onclick="markPlayed('${r.key}')" style="background: var(--neon-purple); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 10px; letter-spacing: 0.5px;">MARK PLAYED</button>
-          </div>`;
-        adminQueueList.appendChild(div);
-      });
-
-      if (activeQueueCount === 0) {
-        adminQueueList.innerHTML = `<div style="padding: 40px; text-align: center; opacity: 0.3; font-size: 12px; font-style: italic;">No active approved songs in the queue. Accept pending tracks to add them here!</div>`;
-      }
-
-      const activeCounter = document.getElementById('activeQueueCount');
-      if (activeCounter) activeCounter.innerText = `${activeQueueCount} Songs Active`;
-    }
-
     updateAnalyticsChart(songCounts);
   });
 }
@@ -591,10 +553,7 @@ function initLivePulse() {
   });
 }
 
-// System Operations
 function approve(id){ db.ref(`requests/${id}/status`).set("approved"); }
-function denyRequest(id){ db.ref(`requests/${id}/status`).set("denied"); }
-function markPlayed(id){ db.ref(`requests/${id}/status`).set("played"); }
 
 function clearAll() { 
   if(confirm(`Clear ALL pending requests for ${userVenue.toUpperCase()}?`)) {
@@ -617,6 +576,7 @@ function showView(viewId, element) {
   element.classList.add('active');
 }
 
+// Clean logout: remove presence before signing out
 function logout() { 
   db.ref(`status/${userVenue}`).set({ online: false, last_active: firebase.database.ServerValue.TIMESTAMP }).then(() => {
     auth.signOut().then(() => { window.location.href = "login.html"; }); 
