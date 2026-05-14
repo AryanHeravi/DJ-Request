@@ -109,7 +109,7 @@ body::before {
 <div class="container" id="mainApp">
   <div class="header-brand">
     <h2>ORYX.OS</h2>
-    <p id="venueDisplay">Loading Venue...</p>
+    <p id="venueDisplay">INITIALIZING...</p>
   </div>
 
   <div class="search-wrapper">
@@ -130,10 +130,10 @@ body::before {
 </div>
 
 <nav class="bottom-nav">
-  <div class="nav-item" onclick="navigate('index.html')"><span>🏠</span><span>Home</span></div>
-  <div class="nav-item active"><span>🎵</span><span>Request</span></div>
-  <div class="nav-item" onclick="navigate('queue.html')"><span>📊</span><span>Queue</span></div>
-  <div class="nav-item" onclick="navigate('admin.html')"><span>⚙️</span><span>Admin</span></div>
+  <a id="navHome" href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
+  <a id="navRequest" href="song_request.html" class="nav-item active"><span>🎵</span><span>Request</span></a>
+  <a id="navQueue" href="queue.html" class="nav-item"><span>📊</span><span>Queue</span></a>
+  <a id="navAdmin" href="admin.html" class="nav-item"><span>⚙️</span><span>Admin</span></a>
 </nav>
 
 <div class="overlay" id="overlay">
@@ -182,15 +182,42 @@ firebase.initializeApp({
 
 const db = firebase.database();
 
-// --- MULTI-LOCATION ROUTING ENGINE ---
+// --- VENUE TRACKING & CONTEXT ROUTING ---
 const urlParams = new URLSearchParams(window.location.search);
-const currentVenue = urlParams.get('v') || "Granville Warehouse";
-document.getElementById('venueDisplay').innerText = currentVenue.toUpperCase();
+let venueKey = urlParams.get('v') || 'Granville';
 
-// UPDATED: Navigational Lock to ensure ?v= stays in URL
-function navigate(page) {
-  window.location.href = `${page}?v=${encodeURIComponent(currentVenue)}`;
+const venueData = {
+  'Granville': { name: 'GRANVILLE WAREHOUSE' },
+  'Victoria': { name: 'VICTORIA WAREHOUSE' },
+  'Whistler': { name: 'WHISTLER WAREHOUSE' },
+  'Dime': { name: 'THE DIME COMMERCIAL' },
+  'Bloor': { name: 'BLOOR ST. WAREHOUSE' },
+  'London': { name: 'LONDON WAREHOUSE' },
+  'Ottawa': { name: 'OTTAWA WAREHOUSE' },
+  'Yonge': { name: 'YONGE ST. WAREHOUSE' },
+  'Queen': { name: 'QUEEN ST. WAREHOUSE' },
+  'L-Entrepot': { name: "L'ENTREPÔT MONTREAL" },
+  'Warehouse-MTL': { name: 'LE WAREHOUSE MONTREAL' },
+  'St-Laurent': { name: 'ST-LAURENT WAREHOUSE' },
+  'Bureau-QC': { name: 'LE BUREAU DE POSTE QC' },
+  'Bureau-TR': { name: 'LE BUREAU DE POSTE TR' },
+  'Calgary': { name: 'CALGARY WAREHOUSE' },
+  'Edmonton': { name: 'EDMONTON WAREHOUSE' },
+  'Thomas': { name: 'THOMAS WAREHOUSE' }
+};
+
+if (!venueKey || !venueData[venueKey]) {
+  venueKey = 'Granville';
 }
+
+// Update UI Layout with accurate venue title
+document.getElementById('venueDisplay').innerText = venueData[venueKey].name;
+
+// Bind persistent links on bottom routing controls
+document.getElementById('navHome').href = `index.html?v=${venueKey}`;
+document.getElementById('navRequest').href = `song_request.html?v=${venueKey}`;
+document.getElementById('navQueue').href = `queue.html?v=${venueKey}`;
+document.getElementById('navAdmin').href = `admin.html?v=${venueKey}`;
 
 const TOP_100 = [
   { title: "Choosin' Texas", artist: "Ella Langley" },
@@ -261,7 +288,7 @@ function submitFinalRequest(method) {
     artist: document.getElementById('formArtist').value,
     note: document.getElementById('userNote').value || "",
     name: document.getElementById('userName').value || "Guest",
-    venue: currentVenue, // UPDATED: Dynamically uses the venue from URL
+    venue: venueData[venueKey].name, // Dynamic submission based on current URL parameters
     lane: lane,
     payment: method,
     status: 'pending',

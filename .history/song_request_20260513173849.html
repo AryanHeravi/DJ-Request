@@ -187,7 +187,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const currentVenue = urlParams.get('v') || "Granville Warehouse";
 document.getElementById('venueDisplay').innerText = currentVenue.toUpperCase();
 
-// UPDATED: Navigational Lock to ensure ?v= stays in URL
 function navigate(page) {
   window.location.href = `${page}?v=${encodeURIComponent(currentVenue)}`;
 }
@@ -261,7 +260,7 @@ function submitFinalRequest(method) {
     artist: document.getElementById('formArtist').value,
     note: document.getElementById('userNote').value || "",
     name: document.getElementById('userName').value || "Guest",
-    venue: currentVenue, // UPDATED: Dynamically uses the venue from URL
+    venue: currentVenue, // Dynmically injected location context
     lane: lane,
     payment: method,
     status: 'pending',

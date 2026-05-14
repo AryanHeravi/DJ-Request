@@ -126,7 +126,7 @@ body::before {
 }
 
 .nav-item.active { color: var(--neon-cyan); }
-.nav-icon { font-size: 16px; }
+.nav-icon { font-size: 20px; }
 </style>
 </head>
 <body>
@@ -173,54 +173,54 @@ firebase.initializeApp({
   authDomain: "aryauxsongrequest.firebaseapp.com",
   databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
   projectId: "aryauxsongrequest",
-  storageBucket: "aryauxsongrequest.firebasestorage.app",
+  storageBucket: "aryauxsongrequest.appspot.com",
   messagingSenderId: "376455919089",
   appId: "1:376455919089:web:4962df21f4145b61c30050"
 });
 
 const db = firebase.database();
 
-// --- LOCATION LOCK ENGINE ---
+// --- VENUE TRACKING ---
 const urlParams = new URLSearchParams(window.location.search);
-const currentVenue = urlParams.get('v') || "Granville Warehouse";
+const currentVenue = urlParams.get('v') || "Granville";
 document.getElementById('venueDisplay').innerText = `${currentVenue.toUpperCase()} Experience`;
 
-// Update Navigation Links dynamically to preserve the venue context
-const venueSuffix = `?v=${encodeURIComponent(currentVenue)}`;
-document.getElementById('navHome').href = `index.html${venueSuffix}`;
-document.getElementById('navRequest').href = `song_request.html${venueSuffix}`;
-document.getElementById('navQueue').href = `queue.html${venueSuffix}`;
-document.getElementById('navAdmin').href = `admin.html${venueSuffix}`;
+// Persistent Nav Links
+document.getElementById('navHome').href = `index.html?v=${currentVenue}`;
+document.getElementById('navRequest').href = `song_request.html?v=${currentVenue}`;
+document.getElementById('navQueue').href = `queue.html?v=${currentVenue}`;
+document.getElementById('navAdmin').href = `admin.html?v=${currentVenue}`;
 
-// --- FILTERED DATA LISTENER ---
 db.ref('requests').on('value', snap => {
   const list = document.getElementById('queueList');
   const countDisp = document.getElementById('qCount');
   list.innerHTML = '';
-  
+  let count = 0;
+
   const requests = [];
-  const targetVenueClean = currentVenue.toLowerCase().trim(); 
+  
+  // Robust venue matching setup
+  let targetVenueClean = currentVenue.toLowerCase().replace(" warehouse", "").trim();
 
   snap.forEach(child => {
     const r = child.val();
-    // Normalize stored venue name for strict comparison
-    const recordVenueClean = r.venue ? r.venue.toLowerCase().trim() : "";
+    let recordVenueClean = r.venue ? r.venue.toLowerCase().replace(" warehouse", "").trim() : "";
 
-    // FILTER: Only show requests that are approved AND match this specific location
+    // ONLY display requests that are APPROVED and match this venue
     if (r.status === 'approved' && recordVenueClean === targetVenueClean) {
       requests.push(r);
     }
   });
 
-  // Sort by lane (priority first) then timestamp
+  // Sorting: Priority first, then by timestamp
   requests.sort((a, b) => {
     if (a.lane === 'priority' && b.lane !== 'priority') return -1;
     if (a.lane !== 'priority' && b.lane === 'priority') return 1;
     return a.timestamp - b.timestamp;
   });
 
-  // Render the filtered queue
   requests.forEach(r => {
+    count++;
     const div = document.createElement('div');
     div.className = 'song-row';
     
@@ -237,10 +237,9 @@ db.ref('requests').on('value', snap => {
     list.appendChild(div);
   });
 
-  countDisp.innerText = `${requests.length} SONGS`;
-
-  if(requests.length === 0) {
-    list.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; font-size:12px;">The queue is currently empty at ${currentVenue}. Only accepted requests will appear here.</div>`;
+  countDisp.innerText = `${count} SONGS`;
+  if(count === 0) {
+    list.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; font-style:italic; font-size:12px;">The queue is currently empty at ${currentVenue}. Only accepted requests will appear here.</div>`;
   }
 });
 </script>
