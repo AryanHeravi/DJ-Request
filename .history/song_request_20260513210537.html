@@ -186,9 +186,9 @@ firebase.initializeApp({
 });
 
 const db = firebase.database();
-// FIXED: Removed .app() to avoid context issues in compat mode
-const fs = firebase.firestore(); 
+const fs = firebase.firestore();
 
+// --- MULTI-LOCATION ROUTING ENGINE ---
 const urlParams = new URLSearchParams(window.location.search);
 const currentVenue = urlParams.get('v') || "Granville Warehouse";
 document.getElementById('venueDisplay').innerText = currentVenue.toUpperCase();
@@ -202,81 +202,37 @@ let fullLibrary = [];
 let fuse;
 
 function loadLibrary() {
-  console.log("ORYX.OS | Fetching Library...");
   fs.collection('songLibrary').get().then((querySnapshot) => {
     fullLibrary = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
-        // Bulletproof field matching for space-separated or lowercase keys
-        title: data['Song Title'] || data.title || data.SongTitle || "Unknown",
-        artist: data['Artist'] || data.artist || "Unknown"
+        title: data['Song Title'] || data.title,
+        artist: data['Artist'] || data.artist
       };
     });
-    
-    console.log("ORYX.OS | Library Loaded: " + fullLibrary.length + " tracks.");
     
     fuse = new Fuse(fullLibrary, {
       keys: ['title', 'artist'],
       threshold: 0.3,
       distance: 100
     });
-  }).catch(err => {
-    console.error("ORYX.OS | Firestore Error:", err.message);
-    if(err.message.includes("permission-denied")) {
-        console.warn("Check Firebase Rules: songLibrary needs public read access.");
-    }
-  });
-}
-
-// --- DYNAMIC TRENDING ENGINE ---
-function loadTrending() {
-  const requestsRef = db.ref('requests');
-  
-  requestsRef.on('value', (snapshot) => {
-    const allRequests = snapshot.val();
-    if (!allRequests) return;
-
-    const counts = {};
     
-    Object.values(allRequests).forEach(req => {
-      if (req.song && req.artist) {
-        const key = `${req.song.trim().toLowerCase()}|${req.artist.trim().toLowerCase()}`;
-        counts[key] = (counts[key] || 0) + 1;
-      }
-    });
-
-    const sorted = Object.keys(counts)
-      .map(key => {
-        const [title, artist] = key.split('|');
-        return { 
-          title: title.charAt(0).toUpperCase() + title.slice(1), 
-          artist: artist.charAt(0).toUpperCase() + artist.slice(1), 
-          count: counts[key] 
-        };
-      })
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
-    renderTrending(sorted);
-  });
+    // Optional: Refresh trending list with real data if needed
+  }).catch(err => console.error("Library load error:", err));
 }
 
-function renderTrending(songs) {
-  const mainChart = document.getElementById('mainChartList');
-  mainChart.innerHTML = ''; 
-  
-  songs.forEach(song => {
-    const card = createSongCard(song);
-    const badge = document.createElement('span');
-    badge.style.cssText = "font-size: 10px; color: var(--neon-cyan); margin-left: auto; font-weight: 800; padding-right: 5px;";
-    badge.innerText = `${song.count} REQS`;
-    card.appendChild(badge);
-    mainChart.appendChild(card);
-  });
-}
+const TOP_100 = [
+  { title: "Choosin' Texas", artist: "Ella Langley" },
+  { title: "I Just Might", artist: "Bruno Mars" },
+  { title: "Drop Dead", artist: "Olivia Rodrigo" },
+  { title: "Ordinary", artist: "Alex Warren" },
+  { title: "Man I Need", artist: "Olivia Dean" },
+  { title: "Daisies", artist: "Justin Bieber" }
+];
 
 const searchInput = document.getElementById('searchInput');
 const dropdown = document.getElementById('dropdownList');
+const mainChart = document.getElementById('mainChartList');
 
 function createSongCard(song, isDropdown = false) {
   const div = document.createElement('div');
@@ -295,7 +251,7 @@ searchInput.oninput = (e) => {
   dropdown.innerHTML = '';
   if (val.length > 1) {
     if (fuse) {
-      const results = fuse.search(val).slice(0, 15);
+      const results = fuse.search(val).slice(0, 15); // Show top 15 matches
       if (results.length > 0) {
         results.forEach(r => dropdown.appendChild(createSongCard(r.item, true)));
         dropdown.style.display = 'block';
@@ -377,9 +333,9 @@ function resetApp() {
   document.getElementById('requestForm').reset();
 }
 
-// Initializing components
+// Initialize components
+TOP_100.forEach(song => mainChart.appendChild(createSongCard(song)));
 loadLibrary();
-loadTrending();
 </script>
 </body>
 </html>

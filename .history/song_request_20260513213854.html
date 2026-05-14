@@ -186,8 +186,7 @@ firebase.initializeApp({
 });
 
 const db = firebase.database();
-// FIXED: Removed .app() to avoid context issues in compat mode
-const fs = firebase.firestore(); 
+const fs = firebase.app().firestore();
 
 const urlParams = new URLSearchParams(window.location.search);
 const currentVenue = urlParams.get('v') || "Granville Warehouse";
@@ -202,30 +201,21 @@ let fullLibrary = [];
 let fuse;
 
 function loadLibrary() {
-  console.log("ORYX.OS | Fetching Library...");
   fs.collection('songLibrary').get().then((querySnapshot) => {
     fullLibrary = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
-        // Bulletproof field matching for space-separated or lowercase keys
         title: data['Song Title'] || data.title || data.SongTitle || "Unknown",
         artist: data['Artist'] || data.artist || "Unknown"
       };
     });
-    
-    console.log("ORYX.OS | Library Loaded: " + fullLibrary.length + " tracks.");
     
     fuse = new Fuse(fullLibrary, {
       keys: ['title', 'artist'],
       threshold: 0.3,
       distance: 100
     });
-  }).catch(err => {
-    console.error("ORYX.OS | Firestore Error:", err.message);
-    if(err.message.includes("permission-denied")) {
-        console.warn("Check Firebase Rules: songLibrary needs public read access.");
-    }
-  });
+  }).catch(err => console.error("Library load error:", err));
 }
 
 // --- DYNAMIC TRENDING ENGINE ---
@@ -240,7 +230,7 @@ function loadTrending() {
     
     Object.values(allRequests).forEach(req => {
       if (req.song && req.artist) {
-        const key = `${req.song.trim().toLowerCase()}|${req.artist.trim().toLowerCase()}`;
+        const key = `${req.song.trim()}|${req.artist.trim()}`;
         counts[key] = (counts[key] || 0) + 1;
       }
     });
@@ -248,11 +238,7 @@ function loadTrending() {
     const sorted = Object.keys(counts)
       .map(key => {
         const [title, artist] = key.split('|');
-        return { 
-          title: title.charAt(0).toUpperCase() + title.slice(1), 
-          artist: artist.charAt(0).toUpperCase() + artist.slice(1), 
-          count: counts[key] 
-        };
+        return { title, artist, count: counts[key] };
       })
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
