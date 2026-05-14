@@ -116,7 +116,7 @@ body::before {
 
   <div class="search-wrapper">
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Initializing engine..." autocomplete="off">
+      <input type="text" id="searchInput" placeholder="Search track or artist..." autocomplete="off">
     </div>
     <div class="search-results-dropdown" id="dropdownList"></div>
   </div>
@@ -188,6 +188,7 @@ firebase.initializeApp({
 const db = firebase.database();
 const fs = firebase.firestore();
 
+// Enable Local Persistence (Caches the 10k songs for instant future loading)
 fs.enablePersistence().catch((err) => {
     console.warn("Persistence failed:", err.code);
 });
@@ -200,56 +201,38 @@ function navigate(page) {
   window.location.href = `${page}?v=${encodeURIComponent(currentVenue)}`;
 }
 
+// --- SONG LIBRARY & SEARCH ENGINE ---
 let fullLibrary = [];
 let fuse;
 
 function loadLibrary() {
-  const searchInput = document.getElementById('searchInput');
-  searchInput.placeholder = "Syncing with ORYX.OS...";
-  searchInput.disabled = true;
-
   console.log("ORYX.OS | Handshaking with Firestore...");
   
-  // Adjusted to lowercase 'songlibrary' to match database screenshots
-  fs.collection('songlibrary').get().then((querySnapshot) => {
-    fullLibrary = querySnapshot.docs.map((doc, index) => {
+  // Use a targeted fetch to ensure we get the data correctly
+  fs.collection('songLibrary').get({ source: 'server' }).then((querySnapshot) => {
+    fullLibrary = querySnapshot.docs.map(doc => {
       const data = doc.data();
-      
-      // LOG DATA SAMPLE: See exactly how titles are labeled in your DB
-      if (index === 0) console.log("ORYX.OS | Data Sample:", data);
-
       return {
-        // Multi-fallback for Title to handle different CSV header names
-        title: data['Title'] || data['songTitle'] || data['title'] || data['SongTitle'] || data['Track'] || data['Name'] || "Unknown",
-        artist: data['Artist'] || data['artist'] || data['ArtistName'] || data['Artist Name'] || "Unknown"
+        // Robust matching for CSV headers like 'Song Title' or 'Artist'
+        title: data['Song Title'] || data.title || data.SongTitle || "Unknown",
+        artist: data['Artist'] || data.artist || "Unknown"
       };
     });
     
     console.log("ORYX.OS | Sync Complete. " + fullLibrary.length + " tracks indexed.");
     
-    if (fullLibrary.length === 0) {
-        searchInput.placeholder = "Error: Library Empty";
-    } else {
-        searchInput.placeholder = `Search ${fullLibrary.length.toLocaleString()} tracks...`;
-        searchInput.disabled = false;
-    }
-
     fuse = new Fuse(fullLibrary, {
       keys: ['title', 'artist'],
-      threshold: 0.35,
+      threshold: 0.35, // Balanced for faster mobile performance
       distance: 100,
       minMatchCharLength: 2
     });
   }).catch(err => {
-    console.error("ORYX.OS | DATABASE ERROR:", err.code, "-", err.message);
-    if (err.code === 'permission-denied') {
-        searchInput.placeholder = "Error: Security Rules Blocked";
-    } else {
-        searchInput.placeholder = "Error: Connection Failed";
-    }
+    console.error("ORYX.OS | Critical Error:", err.message);
   });
 }
 
+// --- DYNAMIC TRENDING ENGINE ---
 function loadTrending() {
   db.ref('requests').limitToLast(100).on('value', (snapshot) => {
     const allRequests = snapshot.val();
@@ -288,7 +271,7 @@ function renderTrending(songs) {
   });
 }
 
-const searchInputInput = document.getElementById('searchInput');
+const searchInput = document.getElementById('searchInput');
 const dropdown = document.getElementById('dropdownList');
 
 function createSongCard(song, isDropdown = false) {
@@ -297,17 +280,18 @@ function createSongCard(song, isDropdown = false) {
   div.onclick = () => {
     openModal(song.title, song.artist, 'free'); 
     dropdown.style.display = 'none';
-    searchInputInput.value = '';
+    searchInput.value = '';
   };
   div.innerHTML = `<div class="song-art">💿</div><div class="song-meta"><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div>`;
   return div;
 }
 
-searchInputInput.addEventListener('input', (e) => {
+// Optimized Search Listener
+searchInput.addEventListener('input', (e) => {
   const val = e.target.value;
   dropdown.innerHTML = '';
   
-  if (val.length > 2) { 
+  if (val.length > 2) { // Only search after 3 characters to save CPU
     if (fuse) {
       const results = fuse.search(val).slice(0, 10);
       if (results.length > 0) {
@@ -392,6 +376,7 @@ function resetApp() {
   document.getElementById('requestForm').reset();
 }
 
+// Start Engines
 loadLibrary();
 loadTrending();
 </script>

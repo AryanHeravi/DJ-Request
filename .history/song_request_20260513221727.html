@@ -220,7 +220,7 @@ function loadLibrary() {
 
       return {
         // Multi-fallback for Title to handle different CSV header names
-        title: data['Title'] || data['songTitle'] || data['title'] || data['SongTitle'] || data['Track'] || data['Name'] || "Unknown",
+        title: data['Title'] || data['Song Title'] || data['title'] || data['SongTitle'] || data['Track'] || data['Name'] || "Unknown",
         artist: data['Artist'] || data['artist'] || data['ArtistName'] || data['Artist Name'] || "Unknown"
       };
     });

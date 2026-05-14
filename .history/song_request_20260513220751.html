@@ -188,6 +188,7 @@ firebase.initializeApp({
 const db = firebase.database();
 const fs = firebase.firestore();
 
+// Offline persistence helps with quick loading in club environments
 fs.enablePersistence().catch((err) => {
     console.warn("Persistence failed:", err.code);
 });
@@ -210,18 +211,13 @@ function loadLibrary() {
 
   console.log("ORYX.OS | Handshaking with Firestore...");
   
-  // Adjusted to lowercase 'songlibrary' to match database screenshots
+  // Removed { source: 'server' } to allow more stable connections
   fs.collection('songlibrary').get().then((querySnapshot) => {
-    fullLibrary = querySnapshot.docs.map((doc, index) => {
+    fullLibrary = querySnapshot.docs.map(doc => {
       const data = doc.data();
-      
-      // LOG DATA SAMPLE: See exactly how titles are labeled in your DB
-      if (index === 0) console.log("ORYX.OS | Data Sample:", data);
-
       return {
-        // Multi-fallback for Title to handle different CSV header names
-        title: data['Title'] || data['songTitle'] || data['title'] || data['SongTitle'] || data['Track'] || data['Name'] || "Unknown",
-        artist: data['Artist'] || data['artist'] || data['ArtistName'] || data['Artist Name'] || "Unknown"
+        title: data['Song Title'] || data['title'] || data['SongTitle'] || data['Name'] || "Unknown",
+        artist: data['Artist'] || data['artist'] || data['ArtistName'] || "Unknown"
       };
     });
     
@@ -241,7 +237,9 @@ function loadLibrary() {
       minMatchCharLength: 2
     });
   }).catch(err => {
+    // This will print the SPECIFIC error (e.g., "Missing or insufficient permissions")
     console.error("ORYX.OS | DATABASE ERROR:", err.code, "-", err.message);
+    
     if (err.code === 'permission-denied') {
         searchInput.placeholder = "Error: Security Rules Blocked";
     } else {
@@ -288,7 +286,7 @@ function renderTrending(songs) {
   });
 }
 
-const searchInputInput = document.getElementById('searchInput');
+const searchInput = document.getElementById('searchInput');
 const dropdown = document.getElementById('dropdownList');
 
 function createSongCard(song, isDropdown = false) {
@@ -297,13 +295,13 @@ function createSongCard(song, isDropdown = false) {
   div.onclick = () => {
     openModal(song.title, song.artist, 'free'); 
     dropdown.style.display = 'none';
-    searchInputInput.value = '';
+    searchInput.value = '';
   };
   div.innerHTML = `<div class="song-art">💿</div><div class="song-meta"><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div>`;
   return div;
 }
 
-searchInputInput.addEventListener('input', (e) => {
+searchInput.addEventListener('input', (e) => {
   const val = e.target.value;
   dropdown.innerHTML = '';
   
