@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DECIBRA.OS | Master HQ Control</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-dark: #050507;
+  --panel-bg: rgba(12, 12, 18, 0.7);
+  --neon-cyan: #00f0ff;
+  --neon-purple: #7a5cff;
+  --neon-pink: #ff2fd1;
+  --neon-gold: #ffd166;
+  --neon-red: #ff3366;
+  --neon-green: #00ff88;
+  --border: rgba(255, 255, 255, 0.08);
+  --text-dim: rgba(255, 255, 255, 0.5);
+  --glass: rgba(255, 255, 255, 0.02);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: white;
+  height: 100vh;
+  display: none; /* Hidden until auth confirms super-admin */
+  flex-direction: column;
+  overflow: hidden;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(122, 92, 255, 0.03) 0%, transparent 50%);
+}
+
+/* --- TOP HUD --- */
+.top-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(5, 5, 7, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.brand h1 { font-size: 16px; letter-spacing: 4px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+.brand span { font-size: 9px; background: rgba(255,255,255,0.1); padding: 3px 6px; border-radius: 4px; letter-spacing: 1px; color: var(--neon-cyan); }
+
+.network-pulse {
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: var(--neon-green);
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pulse-dot { width: 6px; height: 6px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 8px var(--neon-green); animation: pulse 2s infinite; }
+
+.horizon-clocks { display: flex; gap: 20px; }
+.clock-widget { display: flex; flex-direction: column; align-items: flex-end; }
+.clock-widget span:first-child { font-size: 8px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+.clock-widget span:last-child { font-size: 12px; font-weight: 600; color: white; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+
+/* --- 3-COLUMN LAYOUT --- */
+.hq-workspace {
+  display: grid;
+  grid-template-columns: 300px 1fr 320px;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.panel {
+  padding: 25px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+}
+.panel:last-child { border-right: none; }
+
+.panel-title { font-size: 10px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 25px; font-weight: 800; }
+
+/* --- LEFT COLUMN: GLOBAL CONTROLS --- */
+.control-group { margin-bottom: 35px; }
+.control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.control-header h3 { font-size: 12px; font-weight: 600; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
+.control-header.warning h3 { color: var(--neon-red); }
+
+/* iOS Style Toggle */
+.toggle-switch { position: relative; width: 44px; height: 24px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .3s; border-radius: 24px; border: 1px solid var(--border); }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--neon-cyan); border-color: var(--neon-cyan); }
+input:checked + .slider:before { transform: translateX(20px); background-color: #000; }
+
+input.danger-toggle:checked + .slider { background-color: var(--neon-red); border-color: var(--neon-red); }
+
+.broadcast-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 11px; margin-bottom: 10px; resize: none; outline: none; }
+.broadcast-input:focus { border-color: var(--neon-cyan); }
+.btn-primary { width: 100%; background: rgba(0, 240, 255, 0.1); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); padding: 10px; border-radius: 8px; font-weight: 800; font-size: 10px; letter-spacing: 2px; cursor: pointer; transition: 0.2s; }
+.btn-primary:hover { background: var(--neon-cyan); color: black; }
+
+/* --- CENTER COLUMN: VENUE GRID --- */
+.venue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.venue-card {
+  background: rgba(10, 10, 15, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  transition: 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Status Borders */
+.venue-card.status-online { border-color: rgba(0, 255, 136, 0.4); box-shadow: 0 0 15px rgba(0, 255, 136, 0.05); }
+.venue-card.status-standby { border-color: rgba(255, 209, 102, 0.4); }
+.venue-card.status-offline { opacity: 0.6; }
+
+.v-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+.v-name { font-size: 12px; font-weight: 800; letter-spacing: 1px; }
+.v-status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-online .v-status-dot { background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+.status-standby .v-status-dot { background: var(--neon-gold); box-shadow: 0 0 8px var(--neon-gold); }
+.status-offline .v-status-dot { background: #444; }
+
+.v-metrics { display: flex; gap: 15px; margin-bottom: 15px; }
+.metric { display: flex; flex-direction: column; }
+.metric-lbl { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+.metric-val { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.metric-val.highlight { color: var(--neon-cyan); }
+.metric-val.vip { color: var(--neon-gold); }
+
+.jump-btn {
+  background: rgba(255,255,255,0.05);
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: 0.2s;
+  text-align: center;
+  text-decoration: none;
+}
+.venue-card:hover .jump-btn { background: rgba(255,255,255,0.1); }
+.status-online .jump-btn { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
+
+/* --- RIGHT COLUMN: ANALYTICS --- */
+.leaderboard-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; }
+.lb-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border); }
+.lb-rank { font-size: 10px; font-weight: 800; color: var(--text-dim); width: 20px; }
+.lb-name { font-size: 11px; font-weight: 600; flex-grow: 1; }
+.lb-score { font-size: 12px; font-weight: 800; color: var(--neon-cyan); }
+
+.sys-log { font-size: 10px; color: var(--text-dim); display: flex; flex-direction: column; gap: 8px; font-family: monospace; }
+.sys-log div { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+.log-ok { color: var(--neon-green); }
+
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<header class="top-hud">
+  <div class="brand">
+    <h1>DECIBRA.OS</h1>
+    <span>HQ COMMAND</span>
+  </div>
+  
+  <div class="network-pulse">
+    <div class="pulse-dot"></div>
+    <span id="globalOnlineCount">0/17 ACTIVE</span>
+  </div>
+
+  <div class="horizon-clocks">
+    <div class="clock-widget">
+      <span>PACIFIC</span>
+      <span id="clock-pac">00:00:00</span>
+    </div>
+    <div class="clock-widget">
+      <span>MOUNTAIN</span>
+      <span id="clock-mtn">00:00:00</span>
+    </div>
+    <div class="clock-widget">
+      <span>EASTERN</span>
+      <span id="clock-est">00:00:00</span>
+    </div>
+  </div>
+</header>
+
+<main class="hq-workspace">
+  
+  <section class="panel">
+    <div class="panel-title">Master Controls</div>
+    
+    <div class="control-group">
+      <div class="control-header warning">
+        <h3>⚠️ EMERGENCY FREEZE</h3>
+        <label class="toggle-switch">
+          <input type="checkbox" class="danger-toggle" id="freezeToggle" onchange="toggleGlobalSetting('freeze', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p style="font-size: 9px; color: var(--text-dim); line-height: 1.4;">Instantly locks request submissions network-wide. Overrides all local venue settings.</p>
+    </div>
+
+    <div class="control-group">
+      <div class="control-header">
+        <h3>💎 VIP MULTIPLIER</h3>
+        <label class="toggle-switch">
+          <input type="checkbox" id="multiplierToggle" onchange="toggleGlobalSetting('multiplier', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p style="font-size: 9px; color: var(--text-dim); line-height: 1.4;">Activates 1.5x surge pricing for Priority lanes across all active locations.</p>
+    </div>
+
+    <div class="control-group">
+      <div class="control-header">
+        <h3>📢 SYSTEM BROADCAST</h3>
+      </div>
+      <textarea class="broadcast-input" rows="3" id="broadcastMsg" placeholder="Type a message to push to all live queue screens..."></textarea>
+      <button class="btn-primary" onclick="sendBroadcast()">PUSH BROADCAST</button>
+    </div>
+    
+    <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px;">
+      <button onclick="logoutHQ()" style="background: transparent; border: none; color: #ff4d4d; font-size: 10px; font-weight: 800; cursor: pointer; letter-spacing: 1px;">🔒 LOCK HQ & LOGOUT</button>
+    </div>
+  </section>
+
+  <section class="panel" style="background: rgba(0,0,0,0.2);">
+    <div class="panel-title">Live Network Grid</div>
+    <div class="venue-grid" id="hqVenueGrid">
+      </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-title">Pulse Analytics</div>
+    
+    <h3 style="font-size: 11px; font-weight: 600; margin-bottom: 15px; color: var(--neon-cyan); letter-spacing: 1px;">🔥 TOP VENUES TONIGHT</h3>
+    <div class="leaderboard-list" id="hqLeaderboard">
+      </div>
+
+    <h3 style="font-size: 11px; font-weight: 600; margin-bottom: 15px; color: var(--neon-purple); letter-spacing: 1px;">⚙️ SYSTEM STATUS</h3>
+    <div class="sys-log">
+      <div><span>Firebase API Core</span> <span class="log-ok">100% ONLINE</span></div>
+      <div><span>Auth Gateway</span> <span class="log-ok">SECURE</span></div>
+      <div><span>Master Socket</span> <span class="log-ok">CONNECTED</span></div>
+      <div><span>Last Data Sync</span> <span id="lastSyncTime" style="color: white;">Just now</span></div>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCRzE9DheGAxan7h2NLB14Va3hI4Pc5EKM",
+  authDomain: "aryauxsongrequest.firebaseapp.com",
+  databaseURL: "https://aryauxsongrequest-default-rtdb.firebaseio.com",
+  projectId: "aryauxsongrequest",
+  storageBucket: "aryauxsongrequest.appspot.com",
+  messagingSenderId: "376455919089",
+  appId: "1:376455919089:web:4962df21f4145b61c30050"
+});
+
+const db = firebase.database();
+const auth = firebase.auth();
+
+const ALL_VENUES = [
+  "Granville Warehouse", "Victoria", "Whistler", "Dime", "Bloor", 
+  "London", "Ottawa", "Yonge", "Queen", "Warehouse-MTL", 
+  "L-Entrepot", "St-Laurent", "Bureau-QC", "Bureau-TR", 
+  "Calgary", "Edmonton", "Thomas"
+];
+
+function getCleanVenueKey(venueName) {
+  if (!venueName) return '';
+  const clean = venueName.toLowerCase().trim();
+  if (clean.includes('granville')) return 'granville warehouse';
+  if (clean.includes('victoria')) return 'victoria';
+  if (clean.includes('whistler')) return 'whistler';
+  if (clean.includes('dime')) return 'dime';
+  if (clean.includes('bloor')) return 'bloor';
+  if (clean.includes('london')) return 'london';
+  if (clean.includes('ottawa')) return 'ottawa';
+  if (clean.includes('yonge')) return 'yonge';
+  if (clean.includes('queen')) return 'queen';
+  if (clean.includes('montreal') || clean.includes('warehouse-mtl')) return 'warehouse-mtl';
+  if (clean.includes('entrepot') || clean.includes('l-entrepot')) return 'l-entrepot';
+  if (clean.includes('st-laurent') || clean.includes('st.laurent')) return 'st-laurent';
+  if (clean.includes('bureau-qc')) return 'bureau-qc';
+  if (clean.includes('bureau-tr')) return 'bureau-tr';
+  if (clean.includes('calgary')) return 'calgary';
+  if (clean.includes('edmonton')) return 'edmonton';
+  if (clean.includes('thomas')) return 'thomas';
+  return clean;
+}
+
+// --- 1. SECURITY INTERCEPT ---
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+  
+  const email = user.email.toLowerCase();
+  if (email === "admin@oryx.os" || email === "admin@oryx.com" || email === "aryaux@oryx.os") {
+    document.body.style.display = "flex"; 
+    initHQ();
+  } else {
+    window.location.href = "admin.html";
+  }
+});
+
+// --- 2. INITIALIZATION ---
+function initHQ() {
+  buildVenueGrid();
+  startHorizonClocks();
+  syncGlobalStateToggles();
+  listenToGlobalData();
+}
+
+function buildVenueGrid() {
+  const grid = document.getElementById('hqVenueGrid');
+  grid.innerHTML = '';
+
+  ALL_VENUES.forEach(venue => {
+    const safeId = venue.replace(/\s+/g, '-').toLowerCase();
+    
+    grid.innerHTML += `
+      <div class="venue-card status-offline" id="card-${safeId}">
+        <div class="v-header">
+          <span class="v-name">${venue.toUpperCase()}</span>
+          <div class="v-status-dot"></div>
+        </div>
+        <div class="v-metrics">
+          <div class="metric">
+            <span class="metric-lbl">Total Req</span>
+            <span class="metric-val highlight" id="req-${safeId}">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-lbl">Priority</span>
+            <span class="metric-val vip" id="vip-${safeId}">0</span>
+          </div>
+        </div>
+        <a href="admin.html?v=${encodeURIComponent(venue)}" target="_blank" class="jump-btn">JUMP IN ↗</a>
+      </div>
+    `;
+  });
+}
+
+// Keep switches inside HQ sync'd up with current database realities
+function syncGlobalStateToggles() {
+  db.ref('settings/global/freeze').on('value', snap => {
+    document.getElementById('freezeToggle').checked = snap.val() === true;
+  });
+  db.ref('settings/global/multiplier').on('value', snap => {
+    document.getElementById('multiplierToggle').checked = snap.val() === true;
+  });
+}
+
+// --- 3. LIVE DATA AGGREGATOR ---
+function listenToGlobalData() {
+  // Listen for Online Status using matching clean lowercase path layouts
+  db.ref('status').on('value', snap => {
+    const statuses = snap.val() || {};
+    let onlineCount = 0;
+
+    ALL_VENUES.forEach(venue => {
+      const safeId = venue.replace(/\s+/g, '-').toLowerCase();
+      const cleanKey = getCleanVenueKey(venue);
+      const card = document.getElementById(`card-${safeId}`);
+      
+      if (card) {
+        const isOnline = statuses[cleanKey] && statuses[cleanKey].online === true;
+        if (isOnline) {
+          onlineCount++;
+          card.className = "venue-card status-online";
+        } else {
+          card.className = "venue-card status-offline";
+        }
+      }
+    });
+
+    document.getElementById('globalOnlineCount').innerText = `${onlineCount}/${ALL_VENUES.length} ACTIVE`;
+  });
+
+  // Listen for Request Volumes & Build Leaderboard
+  db.ref('requests').on('value', snap => {
+    let venueStats = {};
+    ALL_VENUES.forEach(v => venueStats[getCleanVenueKey(v)] = { total: 0, vip: 0, rawName: v });
+
+    snap.forEach(child => {
+      const r = child.val();
+      let recordVenueClean = getCleanVenueKey(r.venue);
+      
+      if (venueStats[recordVenueClean]) {
+        venueStats[recordVenueClean].total++;
+        if (r.lane === 'priority') venueStats[recordVenueClean].vip++;
+      }
+    });
+
+    // Update Grid Cards
+    Object.keys(venueStats).forEach(key => {
+      const stat = venueStats[key];
+      const safeId = stat.rawName.replace(/\s+/g, '-').toLowerCase();
+      
+      const elReq = document.getElementById(`req-${safeId}`);
+      const elVip = document.getElementById(`vip-${safeId}`);
+      
+      if (elReq) elReq.innerText = stat.total;
+      if (elVip) elVip.innerText = stat.vip;
+    });
+
+    // Build Leaderboard (Top 5)
+    const sortedVenues = Object.values(venueStats).sort((a, b) => b.total - a.total).slice(0, 5);
+    const lbContainer = document.getElementById('hqLeaderboard');
+    lbContainer.innerHTML = '';
+
+    sortedVenues.forEach((v, index) => {
+      if (v.total > 0) {
+        lbContainer.innerHTML += `
+          <div class="lb-row">
+            <span class="lb-rank">${index + 1}</span>
+            <span class="lb-name">${v.rawName}</span>
+            <span class="lb-score">${v.total}</span>
+          </div>
+        `;
+      }
+    });
+
+    if (lbContainer.innerHTML === '') {
+      lbContainer.innerHTML = `<div style="font-size: 10px; color: var(--text-dim); font-style: italic;">No request data for tonight yet.</div>`;
+    }
+    
+    document.getElementById('lastSyncTime').innerText = new Date().toLocaleTimeString();
+  });
+}
+
+// --- 4. HORIZON CLOCKS ---
+function startHorizonClocks() {
+  setInterval(() => {
+    const now = new Date();
+    const opts = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+    
+    document.getElementById('clock-pac').innerText = now.toLocaleTimeString('en-US', { ...opts, timeZone: 'America/Vancouver' });
+    document.getElementById('clock-mtn').innerText = now.toLocaleTimeString('en-US', { ...opts, timeZone: 'America/Edmonton' });
+    document.getElementById('clock-est').innerText = now.toLocaleTimeString('en-US', { ...opts, timeZone: 'America/Toronto' });
+  }, 1000);
+}
+
+// --- 5. GLOBAL ACTIONS WRITING TO LIVE NODES ---
+function toggleGlobalSetting(setting, state) {
+  db.ref(`settings/global/${setting}`).set(state)
+    .then(() => console.log(`Global ${setting} successfully updated to: ${state}`))
+    .catch(err => alert("HQ Master Override Error: " + err.message));
+}
+
+function sendBroadcast() {
+  const msg = document.getElementById('broadcastMsg').value;
+  if (msg.trim() === "") return;
+  
+  db.ref('settings/global/broadcast').set({
+    message: msg,
+    timestamp: Date.now()
+  }).then(() => {
+    document.getElementById('broadcastMsg').value = '';
+    alert("System message broadcasted successfully!");
+  }).catch(err => alert("Broadcast Delivery Failed: " + err.message));
+}
+
+function logoutHQ() {
+  auth.signOut().then(() => { window.location.href = "login.html"; });
+}
+</script>
+</body>
+</html>
