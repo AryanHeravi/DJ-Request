@@ -185,7 +185,7 @@ input.danger-toggle:checked + .slider { background-color: var(--neon-red); borde
 
 <header class="top-hud">
   <div class="brand">
-    <h1>ORYX.OS</h1>
+    <h1>DECIBRA.OS</h1>
     <span>HQ COMMAND</span>
   </div>
   
@@ -375,7 +375,6 @@ function buildVenueGrid() {
   });
 }
 
-// Keep switches inside HQ sync'd up with current database realities
 function syncGlobalStateToggles() {
   db.ref('settings/global/freeze').on('value', snap => {
     document.getElementById('freezeToggle').checked = snap.val() === true;
@@ -387,7 +386,6 @@ function syncGlobalStateToggles() {
 
 // --- 3. LIVE DATA AGGREGATOR ---
 function listenToGlobalData() {
-  // Listen for Online Status using matching clean lowercase path layouts
   db.ref('status').on('value', snap => {
     const statuses = snap.val() || {};
     let onlineCount = 0;
@@ -411,7 +409,6 @@ function listenToGlobalData() {
     document.getElementById('globalOnlineCount').innerText = `${onlineCount}/${ALL_VENUES.length} ACTIVE`;
   });
 
-  // Listen for Request Volumes & Build Leaderboard
   db.ref('requests').on('value', snap => {
     let venueStats = {};
     ALL_VENUES.forEach(v => venueStats[getCleanVenueKey(v)] = { total: 0, vip: 0, rawName: v });
@@ -426,7 +423,6 @@ function listenToGlobalData() {
       }
     });
 
-    // Update Grid Cards
     Object.keys(venueStats).forEach(key => {
       const stat = venueStats[key];
       const safeId = stat.rawName.replace(/\s+/g, '-').toLowerCase();
@@ -438,7 +434,6 @@ function listenToGlobalData() {
       if (elVip) elVip.innerText = stat.vip;
     });
 
-    // Build Leaderboard (Top 5)
     const sortedVenues = Object.values(venueStats).sort((a, b) => b.total - a.total).slice(0, 5);
     const lbContainer = document.getElementById('hqLeaderboard');
     lbContainer.innerHTML = '';
