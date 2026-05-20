@@ -54,14 +54,11 @@ body::before {
   z-index: 0;
 }
 
-/* --- RESPONSIVE BRANDING WRAPPER --- */
 .branding {
   text-align: center;
   margin-bottom: 20px;
   animation: fadeInDown 0.8s ease;
   z-index: 10;
-  width: 100%;
-  padding: 0 10px;
 }
 
 .branding h2 {
@@ -73,8 +70,6 @@ body::before {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 5px;
-  word-wrap: break-word;
-  word-break: keep-all;
 }
 
 .branding p {
@@ -194,39 +189,6 @@ body::before {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* --- PERFECT MOBILE RESPONSIVENESS OVERRIDES --- */
-@media (max-width: 480px) {
-  .branding h2 {
-    font-size: 34px;
-    letter-spacing: 6px;
-  }
-  .branding p {
-    font-size: 11px;
-    letter-spacing: 3px;
-  }
-}
-
-@media (max-width: 380px) {
-  .branding h2 {
-    font-size: 26px;
-    letter-spacing: 4px;
-  }
-  .branding p {
-    font-size: 9px;
-    letter-spacing: 2px;
-  }
-  .main-title {
-    font-size: 12px;
-    margin-bottom: 20px;
-  }
-  .main-logo {
-    width: 140px;
-  }
-  .logo-container {
-    margin-bottom: 25px;
-  }
-}
 </style>
 </head>
 <body>
@@ -234,7 +196,7 @@ body::before {
   <div class="overlay"></div>
 
   <div class="branding">
-    <h2>DECIBRA.OS™</h2>
+    <h3>DECIBRA.OS™</h3>
     <p>POWERED BY ARYAUX</p>
   </div>
 
@@ -294,10 +256,10 @@ body::before {
   
   // This line updates the "GRANVILLE WAREHOUSE" text to the specific venue name
   document.getElementById('venueDisplay').innerHTML = `${venue.name}<br>REQUEST <span>YOUR</span> MUSIC.`;
-  const venueLogo = document.getElementById('venueLogo');
+ const venueLogo = document.getElementById('venueLogo');
   if (venueLogo) {
-    venueLogo.src = venue.logo; // Patched path variable error
-  }
+  venueLogo.src = "/photos/wg-1logo.png";
+}
 
   // 4. PASS THE VENUE TO THE NEXT PAGES
   document.getElementById('requestBtn').href = `song_request.html?v=${venueKey}`;
