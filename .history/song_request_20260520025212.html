@@ -28,7 +28,6 @@ body {
   min-height: 100vh;
   display: flex; flex-direction: column; align-items: center;
   position: relative; overflow-x: hidden; padding-bottom: 110px;
-  transition: padding-top 0.4s ease-in-out;
 }
 
 body::before {
@@ -332,41 +331,20 @@ function initSettingsSessionSync() {
     recalculatePriorityDisplay();
   });
 
-  // 5. MASTER HQ OVERRIDE: DYNAMIC LIVE BROADCAST TICKER (WITH 10-SEC AUTO-DISMISS)
+  // 5. MASTER HQ OVERRIDE: DYNAMIC LIVE BROADCAST TICKER
   db.ref('settings/global/broadcast').on('value', snap => {
     if (snap.exists()) {
       const data = snap.val();
-      
-      // Prevent historical logs from firing on initial load or late sessions
-      if (Date.now() - data.timestamp < 15000) {
+      if (Date.now() - data.timestamp < 14400000) { // 4 Hour expiration
         let broadcastTicker = document.getElementById('systemBroadcastTicker');
-        
-        // Formulate canvas element if missing from active layout trees
         if (!broadcastTicker) {
           broadcastTicker = document.createElement('div');
           broadcastTicker.id = 'systemBroadcastTicker';
-          broadcastTicker.style.cssText = "width:100%; background:linear-gradient(90deg, var(--neon-purple), var(--neon-pink)); color:white; padding:10px; font-size:11px; font-weight:800; text-align:center; letter-spacing:1px; position:fixed; top:0; left:0; z-index:9999; text-transform:uppercase; transition: opacity 0.4s ease-in-out;";
+          broadcastTicker.style.cssText = "width:100%; background:linear-gradient(90deg, var(--neon-purple), var(--neon-pink)); color:white; padding:10px; font-size:11px; font-weight:800; text-align:center; letter-spacing:1px; position:fixed; top:0; left:0; z-index:9999; text-transform:uppercase;";
           document.body.appendChild(broadcastTicker);
+          document.body.style.paddingTop = "40px";
         }
-        
-        // Refresh message contents and push down app wrapper layout safely
-        broadcastTicker.innerText = `📢 ALERT: ${data.message}`;
-        broadcastTicker.style.opacity = "1";
-        document.body.style.paddingTop = "40px";
-        
-        // Destroy existing dismiss queues to prevent execution collision loops
-        if (window.broadcastClearTimeout) clearTimeout(window.broadcastClearTimeout);
-        
-        // ⏱️ Absolute 10-second dismiss trigger sequence
-        window.broadcastClearTimeout = setTimeout(() => {
-          broadcastTicker.style.opacity = "0";
-          document.body.style.paddingTop = "0px";
-          
-          // Allow fade transition parameters to finalize before clearing DOM footprint
-          setTimeout(() => {
-            if (broadcastTicker) broadcastTicker.remove();
-          }, 400);
-        }, 10000); // 10000ms = 10 Seconds
+        broadcastTicker.innerText = `📢 NETWORK ALERT: ${data.message}`;
       }
     }
   });

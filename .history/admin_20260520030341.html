@@ -536,6 +536,52 @@ function processUserPermissions(user) {
 }
 
 
+// --- 🆕 MASTER HQ DJ-TO-DJ BROADCAST SYSTEM ---
+function initHQBroadcastListener() {
+  // Listen for global real-time master notifications
+  db.ref('settings/global/broadcast').on('value', snap => {
+    if (snap.exists()) {
+      const data = snap.val();
+      
+      // Ignore pushes older than 15 seconds to prevent old alerts firing on page reload
+      if (Date.now() - data.timestamp < 15000) {
+        
+        // Build or fetch the dynamic alert banner element
+        let djAlert = document.getElementById('hqDJAlertOverlay');
+        if (!djAlert) {
+          djAlert = document.createElement('div');
+          djAlert.id = 'hqDJAlertOverlay';
+          // Styled with high-visibility z-index to instantly capture attention over maps/charts
+          djAlert.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(5,5,7,0.95); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:99999; backdrop-filter:blur(15px); border:4px solid var(--neon-pink); font-family:'Montserrat',sans-serif; color:white; padding:30px; text-align:center; box-sizing:border-box; transition:opacity 0.5s ease;";
+          
+          djAlert.innerHTML = `
+            <div style="font-size:11px; letter-spacing:4px; color:var(--neon-pink); font-weight:800; margin-bottom:15px; text-transform:uppercase; animation: pulse 1s infinite alternate;">📢 TRANSMISSION FROM HQ</div>
+            <div id="hqAlertMessage" style="font-size:24px; font-weight:800; line-height:1.4; max-width:600px; margin-bottom:20px; text-transform:uppercase;"></div>
+            <div style="font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:1px;">This alert will auto-dismiss in 10 seconds...</div>
+          `;
+          document.body.appendChild(djAlert);
+        }
+        
+        // Inject the message text and make it visible
+        document.getElementById('hqAlertMessage').innerText = data.message;
+        djAlert.style.opacity = '1';
+        djAlert.style.pointerEvents = 'all';
+        
+        // Clear any lingering dismiss timers before setting a fresh one
+        if (window.hqAlertTimeout) clearTimeout(window.hqAlertTimeout);
+        
+        // ⏱️ Auto-dismiss engine: exactly 10 seconds
+        window.hqAlertTimeout = setTimeout(() => {
+          djAlert.style.opacity = '0';
+          djAlert.style.pointerEvents = 'none';
+        }, 1000); // 10000ms = 10 Seconds
+      }
+    }
+  });
+}
+
+// Invoke the setup alongside your initialization sequences
+initHQBroadcastListener();
 
 // --- SETTINGS INTEGRATION SYSTEM SYNC ---
 function syncSettingsPanel() {

@@ -17,20 +17,8 @@
   --neon-pink: #ff2fd1;
   --neon-gold: #ffd166;
   --border: rgba(255, 255, 255, 0.08);
-  --text-main: #ffffff;
   --text-dim: rgba(255, 255, 255, 0.5);
   --glass: rgba(255, 255, 255, 0.03);
-}
-
-/* Light / Matrix Mode Core Tokens */
-body.light-theme {
-  --bg-dark: #f4f4f9;
-  --panel-bg: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
-  --text-main: #121214;
-  --text-dim: rgba(0, 0, 0, 0.5);
-  --glass: rgba(0, 0, 0, 0.02);
-  --neon-purple: #5c3bfa;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,11 +26,10 @@ body.light-theme {
 body {
   font-family: 'Montserrat', sans-serif;
   background-color: var(--bg-dark);
-  color: var(--text-main);
+  color: white;
   display: none; 
   height: 100vh;
   overflow: hidden;
-  transition: background-color 0.3s, color 0.3s;
 }
 
 .sidebar {
@@ -53,17 +40,16 @@ body {
   flex-direction: column;
   padding: 30px 20px;
   flex-shrink: 0;
-  transition: background 0.3s, border-color 0.3s;
 }
 
 .brand-area { margin-bottom: 40px; }
-.brand-area h2 { font-size: 18px; letter-spacing: 4px; font-weight: 800; color: var(--text-main); }
+.brand-area h2 { font-size: 18px; letter-spacing: 4px; font-weight: 800; }
 .brand-area p { font-size: 8px; color: var(--neon-cyan); letter-spacing: 1px; text-transform: uppercase; }
 
 .nav-group { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
 
 .nav-link {
-  color: var(--text-dim);
+  color: rgba(255,255,255,0.4);
   text-decoration: none;
   font-size: 11px;
   font-weight: 700;
@@ -77,8 +63,7 @@ body {
   letter-spacing: 1px;
 }
 
-.nav-link:hover { background: rgba(255,255,255,0.03); color: var(--text-main); }
-body.light-theme .nav-link:hover { background: rgba(0,0,0,0.03); }
+.nav-link:hover { background: rgba(255,255,255,0.03); color: white; }
 .nav-link.active { background: rgba(0, 240, 255, 0.05); color: var(--neon-cyan); }
 
 .nav-bottom {
@@ -102,7 +87,6 @@ body.light-theme .nav-link:hover { background: rgba(0,0,0,0.03); }
 }
 
 .view-section.active { display: block; }
-.view-section h1 { color: var(--text-main); }
 
 .stats-row {
   display: grid;
@@ -112,14 +96,14 @@ body.light-theme .nav-link:hover { background: rgba(0,0,0,0.03); }
 }
 
 .stat-card {
-  background: var(--glass);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   padding: 20px;
   border-radius: 16px;
 }
 
 .stat-card h4 { font-size: 10px; color: var(--neon-gold); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
-.stat-card .value { font-size: 28px; font-weight: 800; color: var(--text-main); }
+.stat-card .value { font-size: 28px; font-weight: 800; }
 
 .lane-container {
   display: grid;
@@ -134,7 +118,7 @@ body.light-theme .nav-link:hover { background: rgba(0,0,0,0.03); }
   padding: 20px;
 }
 .request-card {
-  background: var(--glass);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 15px;
@@ -142,126 +126,51 @@ body.light-theme .nav-link:hover { background: rgba(0,0,0,0.03); }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-main);
 }
 .request-card.priority {
   border-color: var(--neon-gold);
   background: rgba(255, 209, 102, 0.03);
 }
 
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 12px;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: 0.3s;
+}
+.dot.online { background-color: #00ff88; box-shadow: 0 0 8px #00ff88; }
+.dot.offline { background-color: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; opacity: 0.4; }
+
+.region-title { font-size: 10px; color: var(--neon-purple); margin-top: 25px; margin-bottom: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(122, 92, 255, 0.3); padding-bottom: 5px; }
+
+.location-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
+
+.loc-card { display: flex; background: #0a0a0f; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: 0.3s; }
+.loc-card:hover { border-color: var(--neon-cyan); }
+
+.loc-btn-main { flex-grow: 1; padding: 12px 10px; color: white; text-decoration: none; font-size: 11px; font-weight: 600; background: transparent; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; }
+.loc-btn-main span:last-child { font-size: 9px; opacity: 0.5; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;}
+
 .chart-container {
-  background: var(--glass);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 20px;
   margin-top: 20px;
   height: 400px;
 }
-
-/* Settings Operational CSS Modules */
-.settings-grid-panel {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
-  margin-top: 20px;
-}
-
-.settings-card {
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 25px;
-}
-
-.settings-card h3 {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
-  color: var(--text-main);
-}
-
-.settings-card p {
-  font-size: 11px;
-  color: var(--text-dim);
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-
-/* Custom Neon Toggle Switch */
-.switch-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--glass);
-  padding: 15px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-}
-
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 26px;
-}
-
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #333;
-  transition: .3s;
-  border-radius: 34px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px; width: 18px;
-  left: 4px; bottom: 4px;
-  background-color: white;
-  transition: .3s;
-  border-radius: 50%;
-}
-
-input:checked + .slider { background-color: var(--neon-cyan); }
-input:checked + .slider:before { transform: translateX(24px); }
-
-.settings-input-group {
-  display: flex;
-  gap: 10px;
-}
-
-.settings-input {
-  flex-grow: 1;
-  background: var(--bg-dark);
-  border: 1px solid var(--border);
-  padding: 12px;
-  border-radius: 8px;
-  color: var(--text-main);
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.settings-btn {
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 800;
-  font-size: 11px;
-  cursor: pointer;
-  border: none;
-  letter-spacing: 0.5px;
-  transition: 0.2s;
-}
-
-.btn-cyan { background: var(--neon-cyan); color: #000; }
-.btn-purple { background: var(--neon-purple); color: #fff; }
-.btn-danger { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; }
-.btn-danger:hover { background: #ff4d4d; color: #fff; }
 
 @media (max-width: 768px) {
   body { flex-direction: column; overflow-y: auto; }
@@ -288,7 +197,6 @@ input:checked + .slider:before { transform: translateX(24px); }
     <div class="nav-link" onclick="showView('settings', this)"><span>⚙️</span> SETTINGS</div>
     
     <div class="nav-bottom">
-      <div class="nav-link" onclick="toggleTheme()" id="themeToggleBtn" style="color: var(--neon-gold);"><span>☀️</span> LIGHT MATRIX</div>
       <a href="index.html" class="nav-link" style="color: var(--neon-pink);"><span>⬅️</span> EXIT TO HOME</a>
       <div class="nav-link" onclick="logout()" style="color: #ff4d4d;"><span>🔒</span> LOGOUT</div>
     </div>
@@ -305,7 +213,7 @@ input:checked + .slider:before { transform: translateX(24px); }
     <div class="stats-row">
       <div class="stat-card"><h4>System Total Requests</h4><div class="value" id="statTotal">0</div></div>
       <div class="stat-card"><h4>Network Revenue</h4><div class="value" id="statRev">$0.00</div></div>
-      <div class="stat-card"><h4>System Operational Status</h4><div class="value" id="sysModeDisplay" style="color: var(--neon-cyan); font-size: 20px; margin-top: 8px;">ONLINE</div></div>
+      <div class="stat-card"><h4>Locations Online</h4><div class="value" id="onlineCount">0/17</div></div>
     </div>
     <div class="lane">
       <h3 style="font-size: 10px; margin-bottom: 15px; color: var(--neon-cyan); letter-spacing: 2px;">LIVE PULSE</h3>
@@ -345,6 +253,8 @@ input:checked + .slider:before { transform: translateX(24px); }
     </div>
   </section>
 
+  
+
   <section id="analytics" class="view-section">
     <h1>Network Intelligence</h1>
     <p style="color: var(--text-dim); font-size: 12px;">Most requested tracks across the database.</p>
@@ -355,40 +265,8 @@ input:checked + .slider:before { transform: translateX(24px); }
 
   <section id="settings" class="view-section">
     <h1>System Configuration</h1>
-    <p style="color: var(--text-dim); font-size: 12px;">Local deck parameters for managing the active event session.</p>
-    
-    <div class="settings-grid-panel">
-      <div class="settings-card">
-        <h3>Queue Status Controller</h3>
-        <p>Temporarily halt incoming requests when the booth gets slammed. Disabling requests will display a custom locked view to customers instantly.</p>
-        <div class="switch-container">
-          <span style="font-size: 11px; font-weight: 700; letter-spacing: 1px;" id="toggleStatusText">ACCEPTING REQUESTS</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="queueStateCheckbox" checked onchange="toggleQueueAcceptance()">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <h3>Dynamic VIP Floor Price</h3>
-        <p>Modify the entry value required to jump into the Priority Request lane. Surge price dynamically during peak capacity floor hours.</p>
-        <div class="settings-input-group">
-          <span style="display: flex; align-items: center; padding: 0 10px; font-weight:800;">$</span>
-          <input type="number" class="settings-input" id="priorityPriceInput" value="5.00" step="1.00" min="0.00">
-          <button class="settings-btn btn-cyan" onclick="updateVipPricing()">SAVE</button>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <h3>End of Night Automation</h3>
-        <p>Operational system utilities to perform system wipes at close. Wipes all working memory structures for the location.</p>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button class="settings-btn btn-purple" style="width: 100%; text-align: left;" onclick="archiveActiveQueue()">⚡ MARK ALL ACTIVE AS PLAYED</button>
-          <button class="settings-btn btn-danger" style="width: 100%; text-align: left;" onclick="purgeEntireVenueSession()">🛑 FULL SYSTEM PURGE FOR TONIGHT</button>
-        </div>
-      </div>
-    </div>
+    <p style="color: var(--text-dim); font-size: 12px;">Select a venue to hijack and monitor its live queue remotely.</p>
+    <div class="location-grid" id="settingsGrid"></div>
   </section>
 
 </main>
@@ -415,6 +293,14 @@ let userVenue = "Granville Warehouse";
 let isMasterAdmin = false;
 let analyticsChartInstance = null;
 
+const ALL_VENUES = [
+  "Granville Warehouse", "Victoria", "Whistler", "Dime", "Bloor", 
+  "London", "Ottawa", "Yonge", "Queen", "Warehouse-MTL", 
+  "L-Entrepot", "St-Laurent", "Bureau-QC", "Bureau-TR", 
+  "Calgary", "Edmonton", "Thomas"
+];
+
+// Timezone dictionary mappings across Canada/US nodes
 const VENUE_TIMEZONES = {
   'granville warehouse': 'America/Vancouver', 'victoria': 'America/Vancouver', 'whistler': 'America/Vancouver', 'dime': 'America/Vancouver',
   'calgary': 'America/Edmonton', 'edmonton': 'America/Edmonton',
@@ -439,6 +325,7 @@ const emailToVenueKey = {
   'thomaswh': 'Thomas', 'thomas': 'Thomas'
 };
 
+// --- ROUTING FIX: CANONICAL MATCH ENGINE ---
 function getCleanVenueKey(venueName) {
   if (!venueName) return 'granville warehouse';
   const clean = venueName.toLowerCase().trim();
@@ -464,36 +351,72 @@ function getCleanVenueKey(venueName) {
   return clean;
 }
 
-// --- NATIVE THEME CONTROLLER MODULE ---
-function toggleTheme() {
-  const isLight = document.body.classList.toggle('light-theme');
-  const btn = document.getElementById('themeToggleBtn');
-  if(btn) {
-    btn.innerHTML = isLight ? `<span>🌙</span> MATRIX DARK` : `<span>☀️</span> LIGHT MATRIX`;
-  }
-  // Store preference in localStorage for continuity
-  localStorage.setItem('oryx_theme', isLight ? 'light' : 'dark');
+function buildLocationViews() {
+  const locGrid = document.getElementById('locationsGrid');
+  const setGrid = document.getElementById('settingsGrid');
+  if(!locGrid || !setGrid) return;
+  
+  locGrid.innerHTML = '';
+  setGrid.innerHTML = '';
+
+  ALL_VENUES.forEach(venue => {
+    const safeId = venue.replace(/\s+/g, '-');
+
+    locGrid.innerHTML += `
+      <div class="status-indicator">
+        <div class="dot offline" id="dot-${safeId}"></div>
+        <span style="font-size: 11px; font-weight: 700;">${venue}</span>
+      </div>
+    `;
+
+    setGrid.innerHTML += `
+      <div class="loc-card">
+        <button class="loc-btn-main" onclick="window.location.href='admin.html?v=${encodeURIComponent(venue)}'">
+          <span>${venue}</span>
+          <span>Access Controls</span>
+        </button>
+      </div>
+    `;
+  });
 }
 
-// Apply stored theme priority settings on page thread start
-if (localStorage.getItem('oryx_theme') === 'light') {
-  document.body.classList.add('light-theme');
-  setTimeout(() => {
-    const btn = document.getElementById('themeToggleBtn');
-    if(btn) btn.innerHTML = `<span>🌙</span> MATRIX DARK`;
-  }, 100);
+function listenToNetworkStatus() {
+  db.ref('status').on('value', snap => {
+    const statuses = snap.val() || {};
+    let onlineCount = 0;
+
+    ALL_VENUES.forEach(venue => {
+      const safeId = venue.replace(/\s+/g, '-');
+      const isOnline = statuses[venue] && statuses[venue].online === true;
+      
+      if(isOnline) onlineCount++;
+
+      const dot = document.getElementById(`dot-${safeId}`);
+      if (dot) {
+        dot.className = `dot ${isOnline ? 'online' : 'offline'}`;
+      }
+    });
+    
+    const countEl = document.getElementById('onlineCount');
+    if (countEl) countEl.innerText = `${onlineCount}/17`;
+  });
 }
 
 function setupPresence(venue) {
-  const cleanKey = getCleanVenueKey(venue);
-  const statusRef = db.ref(`status/${cleanKey}/online`);
-  const activeRef = db.ref(`status/${cleanKey}/last_active`);
+  const statusRef = db.ref(`status/${venue}`);
   
   db.ref('.info/connected').on('value', snap => {
     if (snap.val() === false) return;
-    statusRef.onDisconnect().set(false);
-    statusRef.set(true);
-    activeRef.set(firebase.database.ServerValue.TIMESTAMP);
+    
+    statusRef.onDisconnect().set({ 
+      online: false, 
+      last_active: firebase.database.ServerValue.TIMESTAMP 
+    }).then(() => {
+      statusRef.set({ 
+        online: true, 
+        last_active: firebase.database.ServerValue.TIMESTAMP 
+      });
+    });
   });
 }
 
@@ -502,6 +425,8 @@ auth.onAuthStateChanged(user => {
     window.location.href = "login.html";
   } else {
     document.body.style.display = "flex";
+    buildLocationViews();
+    listenToNetworkStatus();
     processUserPermissions(user);
   }
 });
@@ -512,7 +437,8 @@ function processUserPermissions(user) {
   if (email === "admin@oryx.os" || email === "admin@oryx.com" || email === "aryaux@oryx.os") {
     isMasterAdmin = true;
     const urlParams = new URLSearchParams(window.location.search);
-    userVenue = urlParams.get('v') || "Granville Warehouse";
+    let v = urlParams.get('v') || "Granville Warehouse";
+    userVenue = v; 
     setupPresence(userVenue);
   } else {
     const prefix = email.split('@')[0];
@@ -525,6 +451,7 @@ function processUserPermissions(user) {
     header.innerText = isMasterAdmin ? `MASTER: ${userVenue.toUpperCase()}` : `DASHBOARD: ${userVenue.toUpperCase()}`;
   }
 
+  // --- EXIT CONTEXT HANDLER ---
   const exitLink = document.querySelector('.nav-bottom a[href="index.html"]');
   if (exitLink) {
     exitLink.href = `index.html?v=${encodeURIComponent(userVenue)}`;
@@ -532,76 +459,6 @@ function processUserPermissions(user) {
 
   loadData();
   initLivePulse();
-  syncSettingsPanel();
-}
-
-
-
-// --- SETTINGS INTEGRATION SYSTEM SYNC ---
-function syncSettingsPanel() {
-  const cleanKey = getCleanVenueKey(userVenue);
-  
-  // Listen for Live Open/Closed Queue Parameter changes
-  db.ref(`status/${cleanKey}/accepting_requests`).on('value', snap => {
-    const closed = snap.val() === false; // Defaults to accepting if node missing
-    document.getElementById('queueStateCheckbox').checked = !closed;
-    document.getElementById('toggleStatusText').innerText = closed ? "BOOTH LOCKED (CLOSED)" : "ACCEPTING REQUESTS";
-    document.getElementById('sysModeDisplay').innerText = closed ? "LOCKED" : "ONLINE";
-    document.getElementById('sysModeDisplay').style.color = closed ? "var(--neon-pink)" : "var(--neon-cyan)";
-  });
-
-  // Listen for Live Entry Priority Pricing Tier changes
-  db.ref(`status/${cleanKey}/priority_fee`).on('value', snap => {
-    if (snap.exists()) {
-      document.getElementById('priorityPriceInput').value = parseFloat(snap.val()).toFixed(2);
-    }
-  });
-}
-
-function toggleQueueAcceptance() {
-  const cleanKey = getCleanVenueKey(userVenue);
-  const isAccepting = document.getElementById('queueStateCheckbox').checked;
-  db.ref(`status/${cleanKey}/accepting_requests`).set(isAccepting);
-}
-
-function updateVipPricing() {
-  const cleanKey = getCleanVenueKey(userVenue);
-  const targetFee = parseFloat(document.getElementById('priorityPriceInput').value) || 5.00;
-  db.ref(`status/${cleanKey}/priority_fee`).set(targetFee).then(() => {
-    alert(`VIP Priority Limit modified successfully to $${targetFee.toFixed(2)}`);
-  });
-}
-
-function archiveActiveQueue() {
-  if (confirm("Transition all currently approved songs out of the live dashboard view?")) {
-    const cleanKey = getCleanVenueKey(userVenue);
-    db.ref("requests").once("value", snap => {
-      snap.forEach(child => {
-        const data = child.val();
-        if (data.status === "approved" && getCleanVenueKey(data.venue) === cleanKey) {
-          db.ref(`requests/${child.key}/status`).set("played");
-        }
-      });
-      alert("All active items transitioned to archive storage keys.");
-    });
-  }
-}
-
-function purgeEntireVenueSession() {
-  if (confirm(`CRITICAL CRASH ALERT: Completely wipe ALL requests (Pending & Approved) for ${userVenue.toUpperCase()}? This cannot be undone.`)) {
-    const cleanKey = getCleanVenueKey(userVenue);
-    db.ref("requests").once("value", snap => {
-      let count = 0;
-      snap.forEach(child => {
-        const data = child.val();
-        if (getCleanVenueKey(data.venue) === cleanKey) {
-          db.ref(`requests/${child.key}`).remove();
-          count++;
-        }
-      });
-      alert(`Purge complete. Cleaned ${count} node rows from memory space.`);
-    });
-  }
 }
 
 function loadData(){
@@ -763,9 +620,10 @@ function initLivePulse() {
 function approve(id){ db.ref(`requests/${id}/status`).set("approved"); }
 function denyRequest(id){ db.ref(`requests/${id}/status`).set("denied"); }
 
+// --- FIXED QUEUE CONTROL HANDLER ---
 function markPlayed(id){ 
   db.ref(`requests/${id}/status`).set("played")
-    .then(() => console.log(`Request ${id} marked played.`))
+    .then(() => console.log(`Request ${id} successfully marked as played.`))
     .catch(err => console.error("Database status update error:", err));
 }
 
@@ -791,8 +649,7 @@ function showView(viewId, element) {
 }
 
 function logout() { 
-  const cleanKey = getCleanVenueKey(userVenue);
-  db.ref(`status/${cleanKey}/online`).set(false).then(() => {
+  db.ref(`status/${userVenue}`).set({ online: false, last_active: firebase.database.ServerValue.TIMESTAMP }).then(() => {
     auth.signOut().then(() => { window.location.href = "login.html"; }); 
   });
 }
